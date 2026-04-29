@@ -1,6 +1,6 @@
-package enums;
+﻿package com.pet.common.enums;
 
-import constant.ApiConstant;
+import com.pet.common.constant.ApiConstant;
 
 /**
  * 统一返回码枚举

@@ -1,6 +1,6 @@
-package result;
+﻿package com.pet.common.result;
 
-import enums.ResultCodeEnum;
+import com.pet.common.enums.ResultCodeEnum;
 
 /**
  * 统一返回类

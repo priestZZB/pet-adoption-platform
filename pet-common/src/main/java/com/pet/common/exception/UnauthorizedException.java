@@ -1,6 +1,6 @@
-package com.pet.common.exception;
+﻿package com.pet.common.exception;
 
-import enums.ResultCodeEnum;
+import com.pet.common.enums.ResultCodeEnum;
 
 /**
  * 未授权异常（401/403）

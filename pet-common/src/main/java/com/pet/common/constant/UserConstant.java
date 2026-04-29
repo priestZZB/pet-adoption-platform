@@ -1,4 +1,4 @@
-package constant;
+﻿package com.pet.common.constant;
 
 /**
  * 用户角色常量

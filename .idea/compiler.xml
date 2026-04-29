@@ -6,6 +6,15 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="pet-framework" />
+        <module name="pet-module-pet" />
+        <module name="pet-module-ai" />
+        <module name="pet-module-system" />
+        <module name="pet-common" />
+        <module name="pet-module-volunteer" />
+        <module name="pet-module-mall" />
+        <module name="pet-module-adopt" />
+        <module name="pet-gateway" />
       </profile>
     </annotationProcessing>
   </component>

@@ -1,4 +1,4 @@
-package enums;
+﻿package com.pet.common.enums;
 
 /**
  * 宠物状态枚举

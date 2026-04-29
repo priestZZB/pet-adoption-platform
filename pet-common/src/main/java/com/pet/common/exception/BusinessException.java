@@ -1,6 +1,6 @@
-package exception;
+﻿package com.pet.common.exception;
 
-import enums.ResultCodeEnum;
+import com.pet.common.enums.ResultCodeEnum;
 
 /**
  * 业务异常类

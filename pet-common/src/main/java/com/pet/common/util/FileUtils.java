@@ -1,7 +1,7 @@
-package util;
+﻿package com.pet.common.util;
 
-import exception.BusinessException;
-import enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
+import com.pet.common.enums.ResultCodeEnum;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
