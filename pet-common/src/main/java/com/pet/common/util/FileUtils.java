@@ -15,8 +15,8 @@ import java.util.UUID;
  */
 public class FileUtils {
 
-    /** 上传根目录 */
-    public static final String UPLOAD_DIR = "/data/pet/uploads";
+    /** 上传根目录（开发 & 云服务器统一） */
+    public static final String UPLOAD_DIR = "/data/pet-adoption/uploads";
     /** 最大文件大小 10MB */
     private static final long MAX_SIZE = 10 * 1024 * 1024L;
     /** 允许的图片扩展名 */
@@ -25,8 +25,8 @@ public class FileUtils {
     /**
      * 上传文件
      * @param file   文件
-     * @param module 模块目录，如 avatar / pet / health / feedback / visit
-     * @return 相对路径，如 /pet/2026/04/27/uuid.jpg
+     * @param module 模块目录，如 avatar / pet
+     * @return Web 可访问路径，如 /uploads/pet/2026/04/30/uuid.jpg
      */
     public static String upload(MultipartFile file, String module) {
         if (file == null || file.isEmpty()) {
@@ -41,10 +41,11 @@ public class FileUtils {
             throw new BusinessException(ResultCodeEnum.FILE_TYPE_ERROR);
         }
 
-        String dir = UPLOAD_DIR + "/" + module + "/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         String fileName = UUID.randomUUID().toString().replace("-", "") + ext;
 
-        File dest = new File(dir, fileName);
+        // 物理存储：/data/pet-adoption/uploads/avatar/2026/04/30/uuid.jpg
+        File dest = new File(UPLOAD_DIR + "/" + module + "/" + datePath, fileName);
         if (!dest.getParentFile().exists()) {
             dest.getParentFile().mkdirs();
         }
@@ -55,12 +56,10 @@ public class FileUtils {
             throw new BusinessException(ResultCodeEnum.FILE_UPLOAD_ERROR, "文件上传失败");
         }
 
-        return "/" + module + "/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")) + "/" + fileName;
+        // Web 路径（前端通过这个 URL 访问）：/uploads/avatar/2026/04/30/uuid.jpg
+        return "/uploads/" + module + "/" + datePath + "/" + fileName;
     }
 
-    /**
-     * 获取文件大小（可读格式）
-     */
     public static String getReadableSize(long bytes) {
         if (bytes < 1024) return bytes + "B";
         if (bytes < 1024 * 1024) return String.format("%.1fKB", bytes / 1024.0);

@@ -46,7 +46,7 @@
         <spring-data-redis.version>2.7.18</spring-data-redis.version>
 
         <!-- Swagger / Knife4j -->
-        <knife4j.version>4.1.0</knife4j.version>
+        <knife4j.version>3.0.3</knife4j.version>
 
         <!-- JWT -->
         <jjwt.version>0.12.5</jjwt.version>
