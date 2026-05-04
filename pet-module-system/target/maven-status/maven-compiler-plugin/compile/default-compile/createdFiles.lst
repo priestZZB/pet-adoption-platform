@@ -25,6 +25,7 @@ com\pet\module\system\model\entity\SysFeedback.class
 com\pet\module\system\service\RoleService.class
 com\pet\module\system\service\impl\RoleServiceImpl.class
 com\pet\module\system\model\entity\SysOperationLog.class
+com\pet\module\system\model\dto\VolunteerApplyDto.class
 com\pet\module\system\model\entity\SysUserRole.class
 com\pet\module\system\model\dto\LoginDto.class
 com\pet\module\system\model\dto\RealNameDto.class

@@ -186,4 +186,31 @@ public class UserServiceImpl implements UserService {
         update.setStatus(user.getStatus() == 0 ? 1 : 0);
         userMapper.updateById(update);
     }
+
+    @Override
+    @Transactional
+    public void volunteerApply(Long userId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+        SysUser update = new SysUser();
+        update.setId(userId);
+        update.setVolunteerStatus("PENDING");
+        userMapper.updateById(update);
+    }
+
+    @Override
+    public String getVolunteerStatus(Long userId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+        return user.getVolunteerStatus() != null ? user.getVolunteerStatus() : "NONE";
+    }
+
+    @Override
+    public List<SysUser> getVolunteerApplies() {
+        return userMapper.selectVolunteerApplies();
+    }
 }

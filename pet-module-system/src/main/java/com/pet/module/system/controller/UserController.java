@@ -109,4 +109,26 @@ public class UserController {
         userService.realNameAuth(userId, dto);
         return Result.success("实名认证成功");
     }
+
+    /**
+     * 申请成为志愿者
+     */
+    @PostMapping("/volunteer/apply")
+    public Result<String> volunteerApply(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        userService.volunteerApply(userId);
+        return Result.success("申请成功，等待审核");
+    }
+
+    /**
+     * 查看志愿者申请进度
+     */
+    @GetMapping("/volunteer/apply/status")
+    public Result<Map<String, String>> volunteerStatus(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        String status = userService.getVolunteerStatus(userId);
+        Map<String, String> data = new HashMap<>();
+        data.put("volunteerStatus", status);
+        return Result.success(data);
+    }
 }

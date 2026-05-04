@@ -14,4 +14,6 @@ public interface RoleService {
     List<String> getUserRoleCodes(Long userId);
 
     void assignRole(Long userId, Long roleId);
+
+    void reviewVolunteerApply(Long userId, String action, String remark);
 }

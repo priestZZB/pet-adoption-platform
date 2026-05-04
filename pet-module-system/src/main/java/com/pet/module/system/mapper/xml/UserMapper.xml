@@ -15,13 +15,14 @@
         <result column="id_card" property="idCard"/>
         <result column="is_real_name" property="isRealName"/>
         <result column="status" property="status"/>
+        <result column="volunteer_status" property="volunteerStatus"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
 
     <sql id="BaseColumns">
         id, username, password, nickname, phone, email, avatar,
-        real_name, id_card, is_real_name, status, created_at, updated_at
+        real_name, id_card, is_real_name, status, volunteer_status, created_at, updated_at
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -49,8 +50,13 @@
             <if test="isRealName != null">is_real_name = #{isRealName},</if>
             <if test="status != null">status = #{status},</if>
             <if test="password != null">password = #{password},</if>
+            <if test="volunteerStatus != null">volunteer_status = #{volunteerStatus},</if>
         </set>
         WHERE id = #{id}
+    </update>
+
+    <update id="updateVolunteerStatus">
+        UPDATE sys_user SET volunteer_status = #{volunteerStatus} WHERE id = #{userId}
     </update>
 
     <select id="selectPage" resultMap="BaseResultMap">
@@ -63,6 +69,13 @@
             </if>
         </where>
         ORDER BY created_at DESC
+    </select>
+
+    <select id="selectVolunteerApplies" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM sys_user
+        WHERE volunteer_status IS NOT NULL AND volunteer_status != 'NONE'
+        ORDER BY updated_at DESC
     </select>
 
     <select id="countByUsername" resultType="int">

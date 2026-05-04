@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.pet.mapper.PetFavoriteMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.pet.model.entity.PetFavorite">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="pet_id" property="petId"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, user_id, pet_id, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pet_favorite (user_id, pet_id)
+        VALUES (#{userId}, #{petId})
+    </insert>
+
+    <delete id="deleteByUserAndPet">
+        DELETE FROM pet_favorite WHERE user_id = #{userId} AND pet_id = #{petId}
+    </delete>
+
+    <select id="selectByUserAndPet" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_favorite
+        WHERE user_id = #{userId} AND pet_id = #{petId}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_favorite WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+    <select id="countByPetId" resultType="int">
+        SELECT COUNT(*) FROM pet_favorite WHERE pet_id = #{petId}
+    </select>
+</mapper>

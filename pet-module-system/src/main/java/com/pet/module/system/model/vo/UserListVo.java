@@ -16,6 +16,7 @@ public class UserListVo {
     private String avatar;
     private Integer isRealName;
     private Integer status;
+    private String volunteerStatus;
     private List<String> roles;
     private LocalDateTime createdAt;
 
@@ -35,6 +36,8 @@ public class UserListVo {
     public void setIsRealName(Integer isRealName) { this.isRealName = isRealName; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+    public String getVolunteerStatus() { return volunteerStatus; }
+    public void setVolunteerStatus(String volunteerStatus) { this.volunteerStatus = volunteerStatus; }
     public List<String> getRoles() { return roles; }
     public void setRoles(List<String> roles) { this.roles = roles; }
     public LocalDateTime getCreatedAt() { return createdAt; }

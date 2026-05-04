@@ -1,0 +1,220 @@
+package com.pet.module.pet.service.impl;
+
+import com.github.pagehelper.PageHelper;
+import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
+import com.pet.module.pet.mapper.PetCategoryMapper;
+import com.pet.module.pet.mapper.PetFavoriteMapper;
+import com.pet.module.pet.mapper.PetImageMapper;
+import com.pet.module.pet.mapper.PetInfoMapper;
+import com.pet.module.pet.model.dto.PetPublishDto;
+import com.pet.module.pet.model.dto.PetUpdateDto;
+import com.pet.module.pet.model.entity.PetCategory;
+import com.pet.module.pet.model.entity.PetImage;
+import com.pet.module.pet.model.entity.PetInfo;
+import com.pet.module.pet.model.vo.PetDetailVo;
+import com.pet.module.pet.model.vo.PetListVo;
+import com.pet.module.pet.service.PetImageService;
+import com.pet.module.pet.service.PetService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class PetServiceImpl implements PetService {
+
+    @Autowired
+    private PetInfoMapper petInfoMapper;
+
+    @Autowired
+    private PetCategoryMapper petCategoryMapper;
+
+    @Autowired
+    private PetImageMapper petImageMapper;
+
+    @Autowired
+    private PetFavoriteMapper petFavoriteMapper;
+
+    @Autowired
+    private PetImageService petImageService;
+
+    @Override
+    public List<PetListVo> getPetList(Long categoryId, String keyword, String status, int page, int size) {
+        PageHelper.startPage(page, size);
+        String queryStatus = (status != null && !status.isEmpty()) ? status : "APPROVED";
+        List<PetInfo> list = petInfoMapper.selectPage(categoryId, keyword, queryStatus);
+        return list.stream().map(this::convertToListVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public PetDetailVo getPetDetail(Long petId) {
+        PetInfo pet = petInfoMapper.selectById(petId);
+        if (pet == null) {
+            throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
+        }
+        return convertToDetailVo(pet);
+    }
+
+    @Override
+    @Transactional
+    public Long publish(Long userId, PetPublishDto dto) {
+        if (dto.getImages() == null || dto.getImages().size() < 3) {
+            throw new BusinessException(ResultCodeEnum.PET_IMAGE_MIN);
+        }
+
+        PetCategory category = petCategoryMapper.selectById(dto.getCategoryId());
+        if (category == null) {
+            throw new BusinessException(ResultCodeEnum.CATEGORY_NOT_FOUND);
+        }
+
+        PetInfo pet = new PetInfo();
+        pet.setUserId(userId);
+        pet.setCategoryId(dto.getCategoryId());
+        pet.setName(dto.getName());
+        pet.setAge(dto.getAge());
+        pet.setGender(dto.getGender());
+        pet.setIsNeutered(dto.getIsNeutered());
+        pet.setIsVaccinated(dto.getIsVaccinated());
+        pet.setHealthCert(dto.getHealthCert());
+        pet.setPersonality(dto.getPersonality());
+        pet.setHabit(dto.getHabit());
+        pet.setReason(dto.getReason());
+        pet.setStatus("PENDING");
+        petInfoMapper.insert(pet);
+
+        // 保存图片
+        petImageService.saveImages(pet.getId(), dto.getImages());
+
+        return pet.getId();
+    }
+
+    @Override
+    @Transactional
+    public void update(Long userId, Long petId, PetUpdateDto dto) {
+        PetInfo pet = petInfoMapper.selectById(petId);
+        if (pet == null) {
+            throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
+        }
+        if (!pet.getUserId().equals(userId)) {
+            throw new BusinessException(ResultCodeEnum.ROLE_REQUIRED, "无权修改该宠物信息");
+        }
+
+        PetInfo update = new PetInfo();
+        update.setId(petId);
+        update.setCategoryId(dto.getCategoryId());
+        update.setName(dto.getName());
+        update.setAge(dto.getAge());
+        update.setGender(dto.getGender());
+        update.setIsNeutered(dto.getIsNeutered());
+        update.setIsVaccinated(dto.getIsVaccinated());
+        update.setHealthCert(dto.getHealthCert());
+        update.setPersonality(dto.getPersonality());
+        update.setHabit(dto.getHabit());
+        update.setReason(dto.getReason());
+        // 修改后状态重置为待审核
+        update.setStatus("PENDING");
+        petInfoMapper.updateById(update);
+
+        // 更新图片
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            petImageService.deleteByPetId(petId);
+            petImageService.saveImages(petId, dto.getImages());
+        }
+    }
+
+    @Override
+    public void offline(Long userId, Long petId) {
+        PetInfo pet = petInfoMapper.selectById(petId);
+        if (pet == null) {
+            throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
+        }
+        if (!pet.getUserId().equals(userId)) {
+            throw new BusinessException(ResultCodeEnum.ROLE_REQUIRED, "无权下架该宠物");
+        }
+        PetInfo update = new PetInfo();
+        update.setId(petId);
+        update.setStatus("OFFLINE");
+        petInfoMapper.updateById(update);
+    }
+
+    @Override
+    public List<PetListVo> getUserPets(Long userId) {
+        List<PetInfo> list = petInfoMapper.selectByUserId(userId);
+        return list.stream().map(this::convertToListVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PetListVo> getPendingPets() {
+        List<PetInfo> list = petInfoMapper.selectPendingList();
+        return list.stream().map(this::convertToListVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PetListVo> getReviewedByUser(Long reviewerId) {
+        List<PetInfo> list = petInfoMapper.selectReviewedByReviewer(reviewerId);
+        return list.stream().map(this::convertToListVo).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void adminUpdateStatus(Long petId, String status) {
+        PetInfo pet = petInfoMapper.selectById(petId);
+        if (pet == null) {
+            throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
+        }
+        PetInfo update = new PetInfo();
+        update.setId(petId);
+        update.setStatus(status);
+        petInfoMapper.updateById(update);
+    }
+
+    @Override
+    public PetDetailVo getPetDetailForAdmin(Long petId) {
+        return getPetDetail(petId);
+    }
+
+    // ========== 私有转换方法 ==========
+
+    private PetListVo convertToListVo(PetInfo pet) {
+        PetListVo vo = new PetListVo();
+        BeanUtils.copyProperties(pet, vo);
+
+        // 分类名称
+        PetCategory category = petCategoryMapper.selectById(pet.getCategoryId());
+        if (category != null) {
+            vo.setCategoryName(category.getName());
+        }
+
+        // 封面图（第1张）
+        List<PetImage> images = petImageMapper.selectByPetId(pet.getId());
+        if (!images.isEmpty()) {
+            vo.setCoverImage(images.get(0).getImageUrl());
+        }
+
+        return vo;
+    }
+
+    private PetDetailVo convertToDetailVo(PetInfo pet) {
+        PetDetailVo vo = new PetDetailVo();
+        BeanUtils.copyProperties(pet, vo);
+
+        // 分类名称
+        PetCategory category = petCategoryMapper.selectById(pet.getCategoryId());
+        if (category != null) {
+            vo.setCategoryName(category.getName());
+        }
+
+        // 图片列表
+        List<PetImage> images = petImageMapper.selectByPetId(pet.getId());
+        vo.setImages(images.stream().map(PetImage::getImageUrl).collect(Collectors.toList()));
+
+        // 收藏数
+        vo.setFavoriteCount(petFavoriteMapper.countByPetId(pet.getId()));
+
+        return vo;
+    }
+}

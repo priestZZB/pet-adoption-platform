@@ -1,6 +1,7 @@
 package com.pet.module.system.service;
 
 import com.pet.module.system.model.dto.*;
+import com.pet.module.system.model.entity.SysUser;
 import com.pet.module.system.model.vo.UserInfoVo;
 import com.pet.module.system.model.vo.UserListVo;
 import java.util.List;
@@ -26,4 +27,10 @@ public interface UserService {
     List<UserListVo> getUserList(String keyword, int page, int size);
 
     void toggleUserStatus(Long userId);
+
+    void volunteerApply(Long userId);
+
+    String getVolunteerStatus(Long userId);
+
+    List<SysUser> getVolunteerApplies();
 }

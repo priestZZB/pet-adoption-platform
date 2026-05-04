@@ -18,6 +18,7 @@ public class SysUser {
     private String idCard;
     private Integer isRealName;
     private Integer status;
+    private String volunteerStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -43,6 +44,8 @@ public class SysUser {
     public void setIsRealName(Integer isRealName) { this.isRealName = isRealName; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+    public String getVolunteerStatus() { return volunteerStatus; }
+    public void setVolunteerStatus(String volunteerStatus) { this.volunteerStatus = volunteerStatus; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

@@ -13,6 +13,7 @@ D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\dto\RealNameDto.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\dto\RegisterDto.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\dto\UserUpdateDto.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\dto\VolunteerApplyDto.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\entity\SysFeedback.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\entity\SysNotice.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-system\src\main\java\com\pet\module\system\model\entity\SysOperationLog.java

@@ -1,0 +1,63 @@
+package com.pet.module.pet.controller;
+
+import com.pet.common.result.Result;
+import com.pet.framework.annotation.RequireRole;
+import com.pet.module.pet.model.dto.PetPublishDto;
+import com.pet.module.pet.model.dto.PetUpdateDto;
+import com.pet.module.pet.model.vo.PetListVo;
+import com.pet.module.pet.service.PetService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/donate")
+@RequireRole("USER_ADOPTER")
+public class DonateController {
+
+    @Autowired
+    private PetService petService;
+
+    /**
+     * 发布送养宠物（含多图上传）
+     */
+    @PostMapping("/pets")
+    public Result<String> publish(HttpServletRequest request, @RequestBody PetPublishDto dto) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        Long petId = petService.publish(userId, dto);
+        return Result.success("发布成功，等待审核");
+    }
+
+    /**
+     * 编辑宠物信息
+     */
+    @PutMapping("/pets/{id}")
+    public Result<String> update(HttpServletRequest request,
+                                 @PathVariable Long id,
+                                 @RequestBody PetUpdateDto dto) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        petService.update(userId, id, dto);
+        return Result.success("修改成功");
+    }
+
+    /**
+     * 下架宠物
+     */
+    @PutMapping("/pets/{id}/offline")
+    public Result<String> offline(HttpServletRequest request, @PathVariable Long id) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        petService.offline(userId, id);
+        return Result.success("已下架");
+    }
+
+    /**
+     * 我发布的宠物列表
+     */
+    @GetMapping("/pets")
+    public Result<List<PetListVo>> myPets(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        return Result.success(petService.getUserPets(userId));
+    }
+}
