@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.pet.mapper.PetInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.pet.model.entity.PetInfo">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="is_neutered" property="isNeutered"/>
+        <result column="is_vaccinated" property="isVaccinated"/>
+        <result column="health_cert" property="healthCert"/>
+        <result column="personality" property="personality"/>
+        <result column="habit" property="habit"/>
+        <result column="reason" property="reason"/>
+        <result column="status" property="status"/>
+        <result column="review_remark" property="reviewRemark"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, user_id, category_id, name, age, gender, is_neutered, is_vaccinated,
+        health_cert, personality, habit, reason, status, review_remark, created_at, updated_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pet_info (user_id, category_id, name, age, gender, is_neutered, is_vaccinated,
+                              health_cert, personality, habit, reason, status)
+        VALUES (#{userId}, #{categoryId}, #{name}, #{age}, #{gender}, #{isNeutered}, #{isVaccinated},
+                #{healthCert}, #{personality}, #{habit}, #{reason}, #{status})
+    </insert>
+
+    <update id="updateById">
+        UPDATE pet_info
+        <set>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="isNeutered != null">is_neutered = #{isNeutered},</if>
+            <if test="isVaccinated != null">is_vaccinated = #{isVaccinated},</if>
+            <if test="healthCert != null">health_cert = #{healthCert},</if>
+            <if test="personality != null">personality = #{personality},</if>
+            <if test="habit != null">habit = #{habit},</if>
+            <if test="reason != null">reason = #{reason},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="reviewRemark != null">review_remark = #{reviewRemark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">DELETE FROM pet_info WHERE id = #{id}</delete>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_info WHERE id = #{id}
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_info
+        <where>
+            <if test="categoryId != null">AND category_id = #{categoryId}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%')
+                OR personality LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_info WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+    <select id="selectPendingList" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_info WHERE status = 'PENDING' ORDER BY created_at ASC
+    </select>
+
+    <select id="selectReviewedByReviewer" resultMap="BaseResultMap">
+        SELECT p.* FROM pet_info p
+                            INNER JOIN pet_review_record r ON p.id = r.pet_id
+        WHERE r.reviewer_id = #{reviewerId}
+        ORDER BY r.created_at DESC
+    </select>
+</mapper>

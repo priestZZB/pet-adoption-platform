@@ -57,7 +57,7 @@ spring:
 
 # ---- MyBatis 配置 ----
 mybatis:
-  # Mapper XML 文件路径（匹配所有子模块）
+  # mapper XML 文件路径（匹配所有子模块）
   mapper-locations: classpath*:com/pet/**/mapper/xml/*.xml
   # 实体类别名包
   type-aliases-package: com.pet.**.model.entity
@@ -78,8 +78,13 @@ logging:
 
 # ---- 项目自定义配置 ----
 pet:
+  ai:
+    api-key: "sk-9b69be49171e41bd96589f71b7f88521"
+    model: "deepseek-chat"
+    api-url: "https://api.deepseek.com/chat/completions"
   jwt:
     secret: "PetAdoptionPlatformSecretKey2024!@#$%^&*()"
     expiration: 86400000              # Token 有效期 24 小时（毫秒）
   upload:
     path: /data/pet-adoption/uploads                    # 文件上传存储路径
+

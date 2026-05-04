@@ -1,0 +1,7 @@
+com\pet\module\ai\mapper\AIConversationMapper.class
+com\pet\module\ai\service\impl\AIServiceImpl.class
+com\pet\module\ai\controller\AIController.class
+com\pet\module\ai\service\AIService.class
+com\pet\module\ai\model\dto\ChatDto.class
+com\pet\module\ai\model\vo\ChatVo.class
+com\pet\module\ai\model\entity\AIConversation.class

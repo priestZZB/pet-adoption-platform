@@ -1,0 +1,7 @@
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\controller\AIController.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\mapper\AIConversationMapper.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\model\dto\ChatDto.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\model\entity\AIConversation.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\model\vo\ChatVo.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\service\AIService.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-module-ai\src\main\java\com\pet\module\ai\service\impl\AIServiceImpl.java

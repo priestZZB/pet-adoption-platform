@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.ai.mapper.AIConversationMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.ai.model.entity.AIConversation">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="question" property="question"/>
+        <result column="answer" property="answer"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, user_id, question, answer, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_conversation (user_id, question, answer)
+        VALUES (#{userId}, #{question}, #{answer})
+    </insert>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM ai_conversation
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <delete id="deleteByUserId">
+        DELETE FROM ai_conversation WHERE user_id = #{userId}
+    </delete>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM ai_conversation
+        ORDER BY created_at DESC
+    </select>
+</mapper>

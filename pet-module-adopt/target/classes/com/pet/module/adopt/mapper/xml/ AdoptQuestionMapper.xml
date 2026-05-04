@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.adopt.mapper.AdoptQuestionMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.adopt.model.entity.AdoptQuestion">
+        <id column="id" property="id"/>
+        <result column="question" property="question"/>
+        <result column="option_a" property="optionA"/>
+        <result column="option_b" property="optionB"/>
+        <result column="option_c" property="optionC"/>
+        <result column="option_d" property="optionD"/>
+        <result column="correct_answer" property="correctAnswer"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, question, option_a, option_b, option_c, option_d, correct_answer, created_at
+    </sql>
+
+    <sql id="BaseColumnsWithoutAnswer">
+        id, question, option_a, option_b, option_c, option_d, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO adopt_question (question, option_a, option_b, option_c, option_d, correct_answer)
+        VALUES (#{question}, #{optionA}, #{optionB}, #{optionC}, #{optionD}, #{correctAnswer})
+    </insert>
+
+    <update id="updateById">
+        UPDATE adopt_question
+        <set>
+            <if test="question != null">question = #{question},</if>
+            <if test="optionA != null">option_a = #{optionA},</if>
+            <if test="optionB != null">option_b = #{optionB},</if>
+            <if test="optionC != null">option_c = #{optionC},</if>
+            <if test="optionD != null">option_d = #{optionD},</if>
+            <if test="correctAnswer != null">correct_answer = #{correctAnswer},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">DELETE FROM adopt_question WHERE id = #{id}</delete>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM adopt_question WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM adopt_question ORDER BY created_at DESC
+    </select>
+
+    <select id="selectRandom" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM adopt_question
+        ORDER BY RAND()
+        LIMIT 10
+    </select>
+</mapper>

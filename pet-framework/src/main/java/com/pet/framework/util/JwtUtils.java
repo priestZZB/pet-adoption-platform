@@ -15,7 +15,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret:pet-adoption-platform-default-jwt-secret-key-2026}")
+    @Value("${pet.jwt.secret:PetAdoptionPlatformSecretKey2024DefaultKeyThatIsLongEnoughForHS384!!}")
     private String secret;
 
     // Token 过期时间：7天

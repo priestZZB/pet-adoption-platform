@@ -16,6 +16,8 @@ import com.pet.module.pet.model.vo.PetDetailVo;
 import com.pet.module.pet.model.vo.PetListVo;
 import com.pet.module.pet.service.PetImageService;
 import com.pet.module.pet.service.PetService;
+import com.pet.module.system.mapper.UserMapper;
+import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,9 @@ public class PetServiceImpl implements PetService {
 
     @Autowired
     private PetImageService petImageService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public List<PetListVo> getPetList(Long categoryId, String keyword, String status, int page, int size) {
@@ -195,6 +200,13 @@ public class PetServiceImpl implements PetService {
             vo.setCoverImage(images.get(0).getImageUrl());
         }
 
+        // 送养人信息
+        SysUser user = userMapper.selectById(pet.getUserId());
+        if (user != null) {
+            vo.setUserNickname(user.getNickname());
+            vo.setUserAvatar(user.getAvatar());
+        }
+
         return vo;
     }
 
@@ -214,6 +226,14 @@ public class PetServiceImpl implements PetService {
 
         // 收藏数
         vo.setFavoriteCount(petFavoriteMapper.countByPetId(pet.getId()));
+
+        // 送养人信息
+        SysUser user = userMapper.selectById(pet.getUserId());
+        if (user != null) {
+            vo.setUserNickname(user.getNickname());
+            vo.setUserAvatar(user.getAvatar());
+            vo.setUserPhone(user.getPhone());
+        }
 
         return vo;
     }

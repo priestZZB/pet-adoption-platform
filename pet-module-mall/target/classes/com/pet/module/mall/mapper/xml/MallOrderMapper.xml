@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.mall.mapper.MallOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.mall.model.entity.MallOrder">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="user_id" property="userId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="status" property="status"/>
+        <result column="logistics_no" property="logisticsNo"/>
+        <result column="logistics_status" property="logisticsStatus"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="receiver_address" property="receiverAddress"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, order_no, user_id, total_amount, status, logistics_no, logistics_status,
+        receiver_name, receiver_phone, receiver_address, created_at, updated_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mall_order (order_no, user_id, total_amount, status,
+                                receiver_name, receiver_phone, receiver_address)
+        VALUES (#{orderNo}, #{userId}, #{totalAmount}, #{status},
+                #{receiverName}, #{receiverPhone}, #{receiverAddress})
+    </insert>
+
+    <update id="updateById">
+        UPDATE mall_order
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="logisticsNo != null">logistics_no = #{logisticsNo},</if>
+            <if test="logisticsStatus != null">logistics_status = #{logisticsStatus},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM mall_order WHERE id = #{id}
+    </select>
+
+    <select id="selectByOrderNo" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM mall_order WHERE order_no = #{orderNo}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM mall_order WHERE user_id = #{userId}
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM mall_order
+        <if test="status != null and status != ''">WHERE status = #{status}</if>
+        ORDER BY created_at DESC
+    </select>
+</mapper>
