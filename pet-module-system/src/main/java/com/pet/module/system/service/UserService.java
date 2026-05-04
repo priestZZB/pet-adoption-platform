@@ -1,0 +1,29 @@
+package com.pet.module.system.service;
+
+import com.pet.module.system.model.dto.*;
+import com.pet.module.system.model.vo.UserInfoVo;
+import com.pet.module.system.model.vo.UserListVo;
+import java.util.List;
+
+public interface UserService {
+
+    void register(RegisterDto dto);
+
+    String login(LoginDto dto);
+
+    UserInfoVo getUserInfo(Long userId);
+
+    void updateInfo(Long userId, UserUpdateDto dto);
+
+    void updateAvatar(Long userId, String avatarUrl);
+
+    void changePassword(Long userId, PasswordDto dto);
+
+    void resetPassword(PasswordDto dto);
+
+    void realNameAuth(Long userId, RealNameDto dto);
+
+    List<UserListVo> getUserList(String keyword, int page, int size);
+
+    void toggleUserStatus(Long userId);
+}

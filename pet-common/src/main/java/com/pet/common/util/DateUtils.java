@@ -1,4 +1,4 @@
-﻿package com.pet.common.util;
+package com.pet.common.util;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

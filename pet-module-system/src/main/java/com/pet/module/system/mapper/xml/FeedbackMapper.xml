@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.system.mapper.FeedbackMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.system.model.entity.SysFeedback">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="reply" property="reply"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, user_id, content, images, reply, status, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_feedback (user_id, content, images)
+        VALUES (#{userId}, #{content}, #{images})
+    </insert>
+
+    <update id="updateById">
+        UPDATE sys_feedback
+        <set>
+            <if test="reply != null">reply = #{reply},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_feedback WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_feedback WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_feedback ORDER BY created_at DESC
+    </select>
+
+    <select id="selectPending" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_feedback WHERE status = 0 ORDER BY created_at DESC
+    </select>
+</mapper>

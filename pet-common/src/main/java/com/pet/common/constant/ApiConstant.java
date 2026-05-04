@@ -1,4 +1,4 @@
-﻿package com.pet.common.constant;
+package com.pet.common.constant;
 
 /**
  * API 状态码常量

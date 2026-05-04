@@ -1,4 +1,4 @@
-﻿package com.pet.common.enums;
+package com.pet.common.enums;
 
 /**
  * 领养申请状态枚举

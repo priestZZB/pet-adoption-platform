@@ -1,4 +1,4 @@
-﻿package com.pet.common.util;
+package com.pet.common.util;
 
 import com.pet.common.exception.BusinessException;
 import com.pet.common.enums.ResultCodeEnum;

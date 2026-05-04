@@ -1,4 +1,4 @@
-﻿package com.pet.common.result;
+package com.pet.common.result;
 
 import com.pet.common.enums.ResultCodeEnum;
 

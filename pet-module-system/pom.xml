@@ -17,4 +17,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+
+    <dependencies>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-framework</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- BCrypt 密码加密 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+    </dependencies>
+
+
 </project>

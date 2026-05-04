@@ -1,4 +1,4 @@
-﻿package com.pet.common.enums;
+package com.pet.common.enums;
 
 import com.pet.common.constant.ApiConstant;
 

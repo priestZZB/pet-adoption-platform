@@ -19,6 +19,7 @@
 
     <dependencies>
         <!-- ========== 内部模块 ========== -->
+        <!-- 内部模块 -->
         <dependency>
             <groupId>top.priest</groupId>
             <artifactId>pet-common</artifactId>
@@ -27,6 +28,36 @@
         <dependency>
             <groupId>top.priest</groupId>
             <artifactId>pet-framework</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-system</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-pet</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-adopt</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-mall</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-volunteer</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-ai</artifactId>
             <version>1.0.0</version>
         </dependency>
 

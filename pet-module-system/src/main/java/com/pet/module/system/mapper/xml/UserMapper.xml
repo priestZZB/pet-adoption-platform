@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.system.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.system.model.entity.SysUser">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="nickname" property="nickname"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="avatar" property="avatar"/>
+        <result column="real_name" property="realName"/>
+        <result column="id_card" property="idCard"/>
+        <result column="is_real_name" property="isRealName"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, username, password, nickname, phone, email, avatar,
+        real_name, id_card, is_real_name, status, created_at, updated_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (username, password, nickname, phone)
+        VALUES (#{username}, #{password}, #{nickname}, #{phone})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_user WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_user WHERE username = #{username}
+    </select>
+
+    <update id="updateById">
+        UPDATE sys_user
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="realName != null">real_name = #{realName},</if>
+            <if test="idCard != null">id_card = #{idCard},</if>
+            <if test="isRealName != null">is_real_name = #{isRealName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="password != null">password = #{password},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (username LIKE CONCAT('%', #{keyword}, '%')
+                OR nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="countByUsername" resultType="int">
+        SELECT COUNT(*) FROM sys_user WHERE username = #{username}
+    </select>
+
+    <select id="countByPhone" resultType="int">
+        SELECT COUNT(*) FROM sys_user WHERE phone = #{phone}
+    </select>
+</mapper>

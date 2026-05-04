@@ -1,4 +1,4 @@
-﻿package com.pet.common.util;
+package com.pet.common.util;
 
 /**
  * 字符串工具类
