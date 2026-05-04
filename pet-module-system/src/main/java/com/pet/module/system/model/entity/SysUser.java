@@ -19,6 +19,7 @@ public class SysUser {
     private Integer isRealName;
     private Integer status;
     private String volunteerStatus;
+    private String donorStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -46,6 +47,8 @@ public class SysUser {
     public void setStatus(Integer status) { this.status = status; }
     public String getVolunteerStatus() { return volunteerStatus; }
     public void setVolunteerStatus(String volunteerStatus) { this.volunteerStatus = volunteerStatus; }
+    public String getDonorStatus() { return donorStatus; }
+    public void setDonorStatus(String donorStatus) { this.donorStatus = donorStatus; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

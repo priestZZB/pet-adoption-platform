@@ -6,6 +6,8 @@ import com.pet.module.pet.model.dto.PetPublishDto;
 import com.pet.module.pet.model.dto.PetUpdateDto;
 import com.pet.module.pet.model.vo.PetListVo;
 import com.pet.module.pet.service.PetService;
+import com.pet.module.system.mapper.UserMapper;
+import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +22,19 @@ public class DonateController {
     @Autowired
     private PetService petService;
 
+    @Autowired
+    private UserMapper userMapper;
+
     /**
      * 发布送养宠物（含多图上传）
      */
     @PostMapping("/pets")
     public Result<String> publish(HttpServletRequest request, @RequestBody PetPublishDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        SysUser user = userMapper.selectById(userId);
+        if (user == null || user.getIsRealName() != 1) {
+            throw new com.pet.common.exception.BusinessException(com.pet.common.enums.ResultCodeEnum.BAD_REQUEST, "请先完成实名认证");
+        }
         Long petId = petService.publish(userId, dto);
         return Result.success("发布成功，等待审核");
     }

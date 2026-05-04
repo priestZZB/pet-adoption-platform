@@ -116,4 +116,27 @@ public class AdminController {
                 request.getRemoteAddr());
         return Result.success("审核完成");
     }
+
+    /**
+     * 送养人申请列表
+     */
+    @GetMapping("/donor/applies")
+    public Result<List<SysUser>> donorApplies() {
+        return Result.success(userService.getDonorApplies());
+    }
+
+    /**
+     * 审核送养人申请（通过/驳回）
+     */
+    @PutMapping("/donor/apply/{id}")
+    public Result<String> reviewDonor(HttpServletRequest request,
+                                      @PathVariable Long id,
+                                      @RequestBody VolunteerApplyDto dto) {
+        Long adminId = Long.valueOf(request.getAttribute("userId").toString());
+        roleService.reviewDonorApply(id, dto.getAction(), dto.getRemark());
+        operationLogService.addLog(adminId, null,
+                "送养人管理", "审核送养人申请: userId=" + id + ", action=" + dto.getAction(),
+                request.getRemoteAddr());
+        return Result.success("审核完成");
+    }
 }

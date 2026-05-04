@@ -24,4 +24,6 @@ public interface UserMapper {
     int updateVolunteerStatus(@Param("userId") Long userId, @Param("volunteerStatus") String volunteerStatus);
 
     List<SysUser> selectVolunteerApplies();
+
+    List<SysUser> selectDonorApplies();
 }

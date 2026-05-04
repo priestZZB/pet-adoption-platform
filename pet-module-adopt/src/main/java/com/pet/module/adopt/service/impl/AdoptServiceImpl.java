@@ -50,6 +50,11 @@ public class AdoptServiceImpl implements AdoptService {
             throw new BusinessException(ResultCodeEnum.EXAM_NOT_PASS);
         }
 
+        SysUser applier = userMapper.selectById(userId);
+        if (applier == null || applier.getIsRealName() != 1) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "请先完成实名认证才能提交领养申请");
+        }
+
         PetInfo pet = petInfoMapper.selectById(dto.getPetId());
         if (pet == null) {
             throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);

@@ -33,4 +33,10 @@ public interface UserService {
     String getVolunteerStatus(Long userId);
 
     List<SysUser> getVolunteerApplies();
+
+    void donorApply(Long userId);
+
+    String getDonorStatus(Long userId);
+
+    List<SysUser> getDonorApplies();
 }

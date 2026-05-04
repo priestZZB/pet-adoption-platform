@@ -194,6 +194,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
         }
+        if (user.getIsRealName() != 1) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "请先完成实名认证才能申请志愿者");
+        }
         SysUser update = new SysUser();
         update.setId(userId);
         update.setVolunteerStatus("PENDING");
@@ -212,5 +215,35 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<SysUser> getVolunteerApplies() {
         return userMapper.selectVolunteerApplies();
+    }
+
+    @Override
+    @Transactional
+    public void donorApply(Long userId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+        if (user.getIsRealName() != 1) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "请先完成实名认证才能申请送养人");
+        }
+        SysUser update = new SysUser();
+        update.setId(userId);
+        update.setDonorStatus("PENDING");
+        userMapper.updateById(update);
+    }
+
+    @Override
+    public String getDonorStatus(Long userId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+        return user.getDonorStatus() != null ? user.getDonorStatus() : "NONE";
+    }
+
+    @Override
+    public List<SysUser> getDonorApplies() {
+        return userMapper.selectDonorApplies();
     }
 }

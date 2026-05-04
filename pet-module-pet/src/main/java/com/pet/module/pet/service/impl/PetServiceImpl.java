@@ -20,6 +20,9 @@ import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "pet")
 public class PetServiceImpl implements PetService {
 
     @Autowired
@@ -47,6 +51,7 @@ public class PetServiceImpl implements PetService {
     @Autowired
     private UserMapper userMapper;
 
+    @Cacheable(key = "'list:' + #categoryId + ':' + #keyword")
     @Override
     public List<PetListVo> getPetList(Long categoryId, String keyword, String status, int page, int size) {
         PageHelper.startPage(page, size);
@@ -55,6 +60,7 @@ public class PetServiceImpl implements PetService {
         return list.stream().map(this::convertToListVo).collect(Collectors.toList());
     }
 
+    @Cacheable(key = "'detail:' + #petId")
     @Override
     public PetDetailVo getPetDetail(Long petId) {
         PetInfo pet = petInfoMapper.selectById(petId);
@@ -64,6 +70,7 @@ public class PetServiceImpl implements PetService {
         return convertToDetailVo(pet);
     }
 
+    @CacheEvict(allEntries = true)
     @Override
     @Transactional
     public Long publish(Long userId, PetPublishDto dto) {
@@ -97,6 +104,7 @@ public class PetServiceImpl implements PetService {
         return pet.getId();
     }
 
+    @CacheEvict(allEntries = true)
     @Override
     @Transactional
     public void update(Long userId, Long petId, PetUpdateDto dto) {
@@ -131,6 +139,7 @@ public class PetServiceImpl implements PetService {
         }
     }
 
+    @CacheEvict(allEntries = true)
     @Override
     public void offline(Long userId, Long petId) {
         PetInfo pet = petInfoMapper.selectById(petId);
@@ -164,6 +173,7 @@ public class PetServiceImpl implements PetService {
         return list.stream().map(this::convertToListVo).collect(Collectors.toList());
     }
 
+    @CacheEvict(allEntries = true)
     @Override
     @Transactional
     public void adminUpdateStatus(Long petId, String status) {

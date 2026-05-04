@@ -16,13 +16,16 @@
         <result column="is_real_name" property="isRealName"/>
         <result column="status" property="status"/>
         <result column="volunteer_status" property="volunteerStatus"/>
+        <result column="donor_status" property="donorStatus"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
 
     <sql id="BaseColumns">
         id, username, password, nickname, phone, email, avatar,
-        real_name, id_card, is_real_name, status, volunteer_status, created_at, updated_at
+        id, username, password, nickname, phone, email, avatar,
+        real_name, id_card, is_real_name, status,
+        volunteer_status, donor_status, created_at, updated_at
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -51,6 +54,7 @@
             <if test="status != null">status = #{status},</if>
             <if test="password != null">password = #{password},</if>
             <if test="volunteerStatus != null">volunteer_status = #{volunteerStatus},</if>
+            <if test="donorStatus != null">donor_status = #{donorStatus},</if>
         </set>
         WHERE id = #{id}
     </update>
@@ -75,6 +79,13 @@
         SELECT <include refid="BaseColumns"/>
         FROM sys_user
         WHERE volunteer_status IS NOT NULL AND volunteer_status != 'NONE'
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="selectDonorApplies" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM sys_user
+        WHERE donor_status IS NOT NULL AND donor_status != 'NONE'
         ORDER BY updated_at DESC
     </select>
 

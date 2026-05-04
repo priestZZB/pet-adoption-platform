@@ -131,4 +131,26 @@ public class UserController {
         data.put("volunteerStatus", status);
         return Result.success(data);
     }
+
+    /**
+     * 申请成为送养人
+     */
+    @PostMapping("/donor/apply")
+    public Result<String> donorApply(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        userService.donorApply(userId);
+        return Result.success("申请成功，等待审核");
+    }
+
+    /**
+     * 查看送养人申请进度
+     */
+    @GetMapping("/donor/apply/status")
+    public Result<Map<String, String>> donorStatus(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        String status = userService.getDonorStatus(userId);
+        Map<String, String> data = new HashMap<>();
+        data.put("donorStatus", status);
+        return Result.success(data);
+    }
 }

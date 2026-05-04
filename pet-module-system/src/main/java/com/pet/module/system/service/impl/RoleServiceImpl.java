@@ -57,6 +57,32 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    public void reviewDonorApply(Long userId, String action, String remark) {
+        SysUser update = new SysUser();
+        update.setId(userId);
+        if ("APPROVED".equals(action)) {
+            update.setDonorStatus("APPROVED");
+            userMapper.updateById(update);
+
+            SysRole role = roleMapper.selectByCode("USER_ADOPTER");
+            if (role != null) {
+                List<Long> roleIds = userRoleMapper.selectRoleIdsByUserId(userId);
+                boolean hasRole = roleIds.contains(role.getId());
+                if (!hasRole) {
+                    SysUserRole ur = new SysUserRole();
+                    ur.setUserId(userId);
+                    ur.setRoleId(role.getId());
+                    userRoleMapper.insert(ur);
+                }
+            }
+        } else if ("REJECTED".equals(action)) {
+            update.setDonorStatus("REJECTED");
+            userMapper.updateById(update);
+        }
+    }
+
+    @Override
+    @Transactional
     public void reviewVolunteerApply(Long userId, String action, String remark) {
         SysUser update = new SysUser();
         update.setId(userId);

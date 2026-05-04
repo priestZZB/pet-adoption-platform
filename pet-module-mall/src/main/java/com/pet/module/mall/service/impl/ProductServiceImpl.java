@@ -12,6 +12,9 @@ import com.pet.module.mall.model.vo.ProductListVo;
 import com.pet.module.mall.service.ProductService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "product")
 public class ProductServiceImpl implements ProductService {
 
     @Autowired
@@ -27,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private MallCategoryMapper mallCategoryMapper;
 
+    @Cacheable(key = "'list:' + #categoryId")
     @Override
     public List<ProductListVo> getProductList(Long categoryId, int page, int size) {
         PageHelper.startPage(page, size);
@@ -34,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
         return list.stream().map(this::convertToListVo).collect(Collectors.toList());
     }
 
+    @Cacheable(key = "'detail:' + #id")
     @Override
     public ProductDetailVo getProductDetail(Long id) {
         MallProduct product = mallProductMapper.selectById(id);
@@ -43,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
         return convertToDetailVo(product);
     }
 
+    @CacheEvict(allEntries = true)
     @Override
     public Long add(Long categoryId, String name, String description, BigDecimal price, Integer stock, String image) {
         MallCategory category = mallCategoryMapper.selectById(categoryId);
@@ -61,6 +68,7 @@ public class ProductServiceImpl implements ProductService {
         return product.getId();
     }
 
+    @CacheEvict(allEntries = true)
     @Override
     public void update(Long id, Long categoryId, String name, String description, BigDecimal price, Integer stock, String image) {
         MallProduct product = mallProductMapper.selectById(id);
@@ -77,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
         update.setImage(image);
         mallProductMapper.updateById(update);
     }
-
+    @CacheEvict(allEntries = true)
     @Override
     public void toggleStatus(Long id) {
         MallProduct product = mallProductMapper.selectById(id);
