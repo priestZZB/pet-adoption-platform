@@ -1,0 +1,158 @@
+package com.pet.module.adopt.service.impl;
+
+import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
+import com.pet.module.adopt.mapper.AdoptApplicationMapper;
+import com.pet.module.adopt.mapper.AdoptExamRecordMapper;
+import com.pet.module.adopt.model.dto.AdoptApplyDto;
+import com.pet.module.adopt.model.entity.AdoptApplication;
+import com.pet.module.adopt.model.entity.AdoptExamRecord;
+import com.pet.module.adopt.model.vo.AdoptApplyVo;
+import com.pet.module.adopt.service.AdoptService;
+import com.pet.module.pet.mapper.PetImageMapper;
+import com.pet.module.pet.mapper.PetInfoMapper;
+import com.pet.module.pet.model.entity.PetImage;
+import com.pet.module.pet.model.entity.PetInfo;
+import com.pet.module.system.mapper.UserMapper;
+import com.pet.module.system.model.entity.SysUser;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class AdoptServiceImpl implements AdoptService {
+
+    @Autowired
+    private AdoptApplicationMapper adoptApplicationMapper;
+
+    @Autowired
+    private AdoptExamRecordMapper adoptExamRecordMapper;
+
+    @Autowired
+    private PetInfoMapper petInfoMapper;
+
+    @Autowired
+    private PetImageMapper petImageMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Override
+    @Transactional
+    public void apply(Long userId, AdoptApplyDto dto) {
+        // 检查最近一次考试是否满分
+        AdoptExamRecord latest = adoptExamRecordMapper.selectLatestByUserId(userId);
+        if (latest == null || latest.getIsPassed() != 1) {
+            throw new BusinessException(ResultCodeEnum.EXAM_NOT_PASS);
+        }
+
+        PetInfo pet = petInfoMapper.selectById(dto.getPetId());
+        if (pet == null) {
+            throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
+        }
+
+        AdoptApplication application = new AdoptApplication();
+        application.setUserId(userId);
+        application.setPetId(dto.getPetId());
+        application.setLivingEnv(dto.getLivingEnv());
+        application.setPetExp(dto.getPetExp());
+        application.setCommitment(dto.getCommitment());
+        application.setStatus("PENDING");
+        adoptApplicationMapper.insert(application);
+    }
+
+    @Override
+    public List<AdoptApplyVo> getMyApplications(Long userId) {
+        List<AdoptApplication> list = adoptApplicationMapper.selectByUserId(userId);
+        return list.stream().map(this::convertToVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public AdoptApplyVo getApplicationDetail(Long id) {
+        AdoptApplication app = adoptApplicationMapper.selectById(id);
+        if (app == null) {
+            throw new BusinessException(ResultCodeEnum.APPLICATION_NOT_FOUND);
+        }
+        return convertToVo(app);
+    }
+
+    @Override
+    public List<AdoptApplyVo> getAllApplications(String status) {
+        List<AdoptApplication> list = adoptApplicationMapper.selectAll(status);
+        return list.stream().map(this::convertToVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public AdoptApplyVo getAdminApplicationDetail(Long id) {
+        return getApplicationDetail(id);
+    }
+
+    @Override
+    @Transactional
+    public void adminReview(Long id, String action) {
+        AdoptApplication app = adoptApplicationMapper.selectById(id);
+        if (app == null) {
+            throw new BusinessException(ResultCodeEnum.APPLICATION_NOT_FOUND);
+        }
+        AdoptApplication update = new AdoptApplication();
+        update.setId(id);
+        update.setStatus("APPROVED".equals(action) ? "APPROVED" : "REJECTED");
+        adoptApplicationMapper.updateById(update);
+
+        // 如果通过，更新宠物状态为已领养
+        if ("APPROVED".equals(action)) {
+            PetInfo petUpdate = new PetInfo();
+            petUpdate.setId(app.getPetId());
+            petUpdate.setStatus("ADOPTED");
+            petInfoMapper.updateById(petUpdate);
+        }
+    }
+
+    @Override
+    public List<AdoptApplyVo> getPetApplications(Long petId) {
+        List<AdoptApplication> list = adoptApplicationMapper.selectByPetId(petId);
+        return list.stream().map(this::convertToVo).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void donorReview(Long id, String action) {
+        AdoptApplication app = adoptApplicationMapper.selectById(id);
+        if (app == null) {
+            throw new BusinessException(ResultCodeEnum.APPLICATION_NOT_FOUND);
+        }
+        AdoptApplication update = new AdoptApplication();
+        update.setId(id);
+        update.setStatus("APPROVED".equals(action) ? "APPROVED" : "REJECTED");
+        adoptApplicationMapper.updateById(update);
+    }
+
+    private AdoptApplyVo convertToVo(AdoptApplication app) {
+        AdoptApplyVo vo = new AdoptApplyVo();
+        BeanUtils.copyProperties(app, vo);
+
+        // 用户信息
+        SysUser user = userMapper.selectById(app.getUserId());
+        if (user != null) {
+            vo.setUserNickname(user.getNickname());
+            vo.setUserAvatar(user.getAvatar());
+            vo.setUserPhone(user.getPhone());
+        }
+
+        // 宠物信息
+        PetInfo pet = petInfoMapper.selectById(app.getPetId());
+        if (pet != null) {
+            vo.setPetName(pet.getName());
+            List<PetImage> images = petImageMapper.selectByPetId(pet.getId());
+            if (!images.isEmpty()) {
+                vo.setPetCoverImage(images.get(0).getImageUrl());
+            }
+        }
+
+        return vo;
+    }
+}
