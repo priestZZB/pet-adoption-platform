@@ -38,14 +38,23 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 1. 取 Token
+        // 1. 没有 Token 的请求直接放行（有 @RequireRole 的方法在后面拦截）
         String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
+            // 检查方法/类上是否有 @RequireRole，有则要求登录
+            HandlerMethod hm = (HandlerMethod) handler;
+            RequireRole requireRole = hm.getMethodAnnotation(RequireRole.class);
+            if (requireRole == null) {
+                requireRole = hm.getBeanType().getAnnotation(RequireRole.class);
+            }
+            if (requireRole != null) {
+                throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
+            }
+            return true;
         }
         String token = authHeader.substring(BEARER_PREFIX.length());
 
-        // 2. 解析 JWT（交给 JwtUtils）
+        // 2. 解析 JWT
         Claims claims;
         try {
             claims = jwtUtils.parseToken(token);
@@ -70,8 +79,6 @@ public class AuthInterceptor implements HandlerInterceptor {
             boolean matched = Arrays.stream(requireRole.value())
                     .anyMatch(r -> r.equals(role));
             if (!matched) {
-                log.warn("权限不足: userId={}, role={}, required={}",
-                        claims.getSubject(), role, Arrays.toString(requireRole.value()));
                 throw new UnauthorizedException(ResultCodeEnum.ROLE_REQUIRED);
             }
         }
