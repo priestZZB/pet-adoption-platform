@@ -17,4 +17,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+
+    <dependencies>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-framework</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+
 </project>

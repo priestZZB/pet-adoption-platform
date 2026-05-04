@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.volunteer.mapper.VisitRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.volunteer.model.entity.VisitRecord">
+        <id column="id" property="id"/>
+        <result column="volunteer_id" property="volunteerId"/>
+        <result column="pet_id" property="petId"/>
+        <result column="visit_date" property="visitDate"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, volunteer_id, pet_id, visit_date, content, images, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO volunteer_visit_record (volunteer_id, pet_id, visit_date, content, images)
+        VALUES (#{volunteerId}, #{petId}, #{visitDate}, #{content}, #{images})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM volunteer_visit_record WHERE id = #{id}
+    </select>
+
+    <select id="selectByVolunteerId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM volunteer_visit_record
+        WHERE volunteer_id = #{volunteerId}
+        ORDER BY created_at DESC
+    </select>
+</mapper>
