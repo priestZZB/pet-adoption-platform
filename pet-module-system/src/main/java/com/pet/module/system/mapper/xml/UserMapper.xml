@@ -23,9 +23,8 @@
 
     <sql id="BaseColumns">
         id, username, password, nickname, phone, email, avatar,
-        id, username, password, nickname, phone, email, avatar,
-        real_name, id_card, is_real_name, status,
-        volunteer_status, donor_status, created_at, updated_at
+    real_name, id_card, is_real_name, status,
+    volunteer_status, donor_status, created_at, updated_at
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
