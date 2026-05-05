@@ -4,12 +4,15 @@ import com.pet.common.result.Result;
 import com.pet.module.adopt.model.dto.AdoptApplyDto;
 import com.pet.module.adopt.model.vo.AdoptApplyVo;
 import com.pet.module.adopt.service.AdoptService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Api(tags = "领养申请")
 @RestController
 @RequestMapping("/api/adopt/applications")
 public class AdoptController {
@@ -20,6 +23,7 @@ public class AdoptController {
     /**
      * 提交领养申请（需考试满分）
      */
+    @ApiOperation("提交领养申请")
     @PostMapping
     public Result<String> apply(HttpServletRequest request, @RequestBody AdoptApplyDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -30,6 +34,7 @@ public class AdoptController {
     /**
      * 我的领养申请列表
      */
+    @ApiOperation("我的领养申请列表")
     @GetMapping
     public Result<List<AdoptApplyVo>> myApplications(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -39,6 +44,7 @@ public class AdoptController {
     /**
      * 领养申请详情
      */
+    @ApiOperation("领养申请详情")
     @GetMapping("/{id}")
     public Result<AdoptApplyVo> detail(HttpServletRequest request, @PathVariable Long id) {
         return Result.success(adoptService.getApplicationDetail(id));

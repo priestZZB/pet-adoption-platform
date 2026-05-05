@@ -11,12 +11,15 @@ import com.pet.module.system.service.OperationLogService;
 import com.pet.module.system.service.RoleService;
 import com.pet.module.system.service.UserService;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Api(tags = "管理员-系统管理")
 @RestController
 @RequestMapping("/api/admin")
 @RequireRole("ADMIN")
@@ -34,6 +37,7 @@ public class AdminController {
     /**
      * 用户列表（分页 + 关键词搜索）
      */
+    @ApiOperation("用户列表（分页+搜索）")
     @GetMapping("/users")
     public Result<PageInfo<UserListVo>> userList(
             @RequestParam(defaultValue = "1") int page,
@@ -46,6 +50,7 @@ public class AdminController {
     /**
      * 禁用/启用用户
      */
+    @ApiOperation("禁用/启用用户")
     @PutMapping("/user/{id}/status")
     public Result<String> toggleStatus(HttpServletRequest request, @PathVariable Long id) {
         userService.toggleUserStatus(id);
@@ -61,6 +66,7 @@ public class AdminController {
     /**
      * 角色列表
      */
+    @ApiOperation("角色列表")
     @GetMapping("/roles")
     public Result<List<SysRole>> roles() {
         return Result.success(roleService.getAllRoles());
@@ -69,6 +75,7 @@ public class AdminController {
     /**
      * 修改用户角色
      */
+    @ApiOperation("修改用户角色")
     @PutMapping("/user/{id}/role")
     public Result<String> assignRole(HttpServletRequest request,
                                      @PathVariable Long id,
@@ -85,6 +92,7 @@ public class AdminController {
     /**
      * 操作日志列表
      */
+    @ApiOperation("操作日志列表")
     @GetMapping("/logs")
     public Result<PageInfo<SysOperationLog>> logs(
             @RequestParam(defaultValue = "1") int page,
@@ -97,6 +105,7 @@ public class AdminController {
     /**
      * 志愿者申请列表
      */
+    @ApiOperation("志愿者申请列表")
     @GetMapping("/volunteer/applies")
     public Result<List<SysUser>> volunteerApplies() {
         return Result.success(userService.getVolunteerApplies());
@@ -105,6 +114,7 @@ public class AdminController {
     /**
      * 审核志愿者申请（通过/驳回）
      */
+    @ApiOperation("审核志愿者申请")
     @PutMapping("/volunteer/apply/{id}")
     public Result<String> reviewVolunteer(HttpServletRequest request,
                                           @PathVariable Long id,
@@ -120,6 +130,7 @@ public class AdminController {
     /**
      * 送养人申请列表
      */
+    @ApiOperation("送养人申请列表")
     @GetMapping("/donor/applies")
     public Result<List<SysUser>> donorApplies() {
         return Result.success(userService.getDonorApplies());
@@ -128,6 +139,7 @@ public class AdminController {
     /**
      * 审核送养人申请（通过/驳回）
      */
+    @ApiOperation("审核送养人申请")
     @PutMapping("/donor/apply/{id}")
     public Result<String> reviewDonor(HttpServletRequest request,
                                       @PathVariable Long id,

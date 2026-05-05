@@ -5,6 +5,8 @@ import com.pet.common.util.FileUtils;
 import com.pet.module.system.model.dto.*;
 import com.pet.module.system.model.vo.UserInfoVo;
 import com.pet.module.system.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+@Api(tags = "用户管理")
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -23,6 +26,7 @@ public class UserController {
     /**
      * 用户注册
      */
+    @ApiOperation("用户注册")
     @PostMapping("/register")
     public Result<String> register(@RequestBody RegisterDto dto) {
         userService.register(dto);
@@ -32,6 +36,7 @@ public class UserController {
     /**
      * 用户登录（用户名+密码）
      */
+    @ApiOperation("用户登录（用户名+密码）")
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody LoginDto dto) {
         String token = userService.login(dto);
@@ -43,6 +48,7 @@ public class UserController {
     /**
      * 手机号登录（手机号+短信验证码）
      */
+    @ApiOperation("手机号+短信验证码登录")
     @PostMapping("/login/phone")
     public Result<Map<String, Object>> phoneLogin(@RequestBody PhoneLoginDto dto) {
         String token = userService.phoneLogin(dto);
@@ -54,6 +60,7 @@ public class UserController {
     /**
      * 退出登录
      */
+    @ApiOperation("退出登录")
     @PostMapping("/logout")
     public Result<String> logout() {
         return Result.success("退出成功");
@@ -62,6 +69,7 @@ public class UserController {
     /**
      * 获取当前用户信息
      */
+    @ApiOperation("获取当前用户信息")
     @GetMapping("/info")
     public Result<UserInfoVo> info(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -71,6 +79,7 @@ public class UserController {
     /**
      * 修改个人信息
      */
+    @ApiOperation("修改个人信息")
     @PutMapping("/info")
     public Result<String> updateInfo(HttpServletRequest request, @RequestBody UserUpdateDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -81,6 +90,7 @@ public class UserController {
     /**
      * 上传/修改头像
      */
+    @ApiOperation("上传/修改头像")
     @PostMapping("/avatar")
     public Result<Map<String, String>> avatar(HttpServletRequest request,
                                               @RequestParam("file") MultipartFile file) {
@@ -95,6 +105,7 @@ public class UserController {
     /**
      * 修改密码
      */
+    @ApiOperation("修改密码")
     @PutMapping("/password")
     public Result<String> changePassword(HttpServletRequest request, @RequestBody PasswordDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -105,6 +116,7 @@ public class UserController {
     /**
      * 找回密码
      */
+    @ApiOperation("找回密码")
     @PostMapping("/password/reset")
     public Result<String> resetPassword(@RequestBody PasswordDto dto) {
         userService.resetPassword(dto);
@@ -114,6 +126,7 @@ public class UserController {
     /**
      * 实名认证
      */
+    @ApiOperation("实名认证")
     @PostMapping("/real-name")
     public Result<String> realName(HttpServletRequest request, @RequestBody RealNameDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -124,6 +137,7 @@ public class UserController {
     /**
      * 申请成为志愿者
      */
+    @ApiOperation("申请成为志愿者")
     @PostMapping("/volunteer/apply")
     public Result<String> volunteerApply(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -134,6 +148,7 @@ public class UserController {
     /**
      * 查看志愿者申请进度
      */
+    @ApiOperation("查看志愿者申请进度")
     @GetMapping("/volunteer/apply/status")
     public Result<Map<String, String>> volunteerStatus(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -146,6 +161,7 @@ public class UserController {
     /**
      * 申请成为送养人
      */
+    @ApiOperation("申请成为送养人")
     @PostMapping("/donor/apply")
     public Result<String> donorApply(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -156,6 +172,7 @@ public class UserController {
     /**
      * 查看送养人申请进度
      */
+    @ApiOperation("查看送养人申请进度")
     @GetMapping("/donor/apply/status")
     public Result<Map<String, String>> donorStatus(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());

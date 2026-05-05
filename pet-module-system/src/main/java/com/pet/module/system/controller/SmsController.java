@@ -2,6 +2,8 @@ package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
 import com.pet.module.system.service.SmsService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +13,7 @@ import java.util.Map;
 /**
  * 短信验证码控制器
  */
+@Api(tags = "短信验证码")
 @RestController
 @RequestMapping("/api/sms")
 public class SmsController {
@@ -24,6 +27,7 @@ public class SmsController {
      * @param dto { phone: "138xxxx" }
      * @return 验证码（调试时返回，测试用）
      */
+    @ApiOperation("发送短信验证码")
     @PostMapping("/code")
     public Result<Map<String, String>> sendCode(@RequestBody SmsCodeDto dto) {
         if (dto.getPhone() == null || dto.getPhone().trim().isEmpty()) {

@@ -1,5 +1,7 @@
 package com.pet.module.adopt.service.impl;
 
+import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
 import com.pet.module.adopt.mapper.AdoptExamRecordMapper;
 import com.pet.module.adopt.mapper.AdoptQuestionMapper;
 import com.pet.module.adopt.model.dto.ExamSubmitDto;
@@ -28,6 +30,9 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public List<QuestionVo> startExam() {
         List<AdoptQuestion> questions = adoptQuestionMapper.selectRandom();
+        if (questions == null || questions.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.QUESTION_NOT_FOUND, "题库为空，请联系管理员添加试题");
+        }
         return questions.stream().map(q -> {
             QuestionVo vo = new QuestionVo();
             BeanUtils.copyProperties(q, vo);
@@ -44,12 +49,22 @@ public class ExamServiceImpl implements ExamService {
                 .map(ExamSubmitDto.AnswerItem::getQuestionId)
                 .collect(Collectors.toList());
 
+        if (dto.getAnswers() == null || dto.getAnswers().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "请先答题再提交");
+        }
+
         int score = 0;
         int total = dto.getAnswers().size();
 
         for (ExamSubmitDto.AnswerItem item : dto.getAnswers()) {
+            if (item.getQuestionId() == null || item.getAnswer() == null) {
+                throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "答题参数不完整");
+            }
             AdoptQuestion q = adoptQuestionMapper.selectById(item.getQuestionId());
-            if (q != null && q.getCorrectAnswer().equals(item.getAnswer())) {
+            if (q == null) {
+                throw new BusinessException(ResultCodeEnum.QUESTION_NOT_FOUND, "试题不存在: " + item.getQuestionId());
+            }
+            if (q.getCorrectAnswer().equals(item.getAnswer())) {
                 score++;
             }
         }

@@ -4,12 +4,15 @@ import com.pet.common.result.Result;
 import com.pet.module.mall.model.dto.CartAddDto;
 import com.pet.module.mall.model.vo.CartVo;
 import com.pet.module.mall.service.CartService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Api(tags = "商城-购物车")
 @RestController
 @RequestMapping("/api/mall/cart")
 public class CartController {
@@ -20,6 +23,7 @@ public class CartController {
     /**
      * 加入购物车
      */
+    @ApiOperation("加入购物车")
     @PostMapping
     public Result<String> add(HttpServletRequest request, @RequestBody CartAddDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -30,6 +34,7 @@ public class CartController {
     /**
      * 购物车列表
      */
+    @ApiOperation("购物车列表")
     @GetMapping
     public Result<List<CartVo>> list(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -39,6 +44,7 @@ public class CartController {
     /**
      * 修改商品数量
      */
+    @ApiOperation("修改商品数量")
     @PutMapping("/{id}")
     public Result<String> update(HttpServletRequest request,
                                  @PathVariable Long id,
@@ -51,6 +57,7 @@ public class CartController {
     /**
      * 删除购物车商品
      */
+    @ApiOperation("删除购物车商品")
     @DeleteMapping("/{id}")
     public Result<String> remove(HttpServletRequest request, @PathVariable Long id) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -61,6 +68,7 @@ public class CartController {
     /**
      * 清空购物车
      */
+    @ApiOperation("清空购物车")
     @DeleteMapping
     public Result<String> clear(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());

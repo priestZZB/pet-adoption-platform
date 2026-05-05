@@ -21,8 +21,8 @@ public enum ResultCodeEnum {
     FILE_EMPTY(4007, "上传文件为空"),
     FILE_TYPE_ERROR(4008, "文件类型不支持"),
     FILE_SIZE_EXCEED(4009, "文件大小超出限制"),
-    EXAM_NOT_PASS(4010, "领养考试未通过"),
-    PET_IMAGE_MIN(4011, "宠物图片至少上传3张"),
+    PET_IMAGE_MIN(4010, "宠物图片至少上传3张"),
+    EXAM_NOT_PASS(4020, "领养考试未通过"),
 
     // 401 系列 — 认证
     TOKEN_INVALID(4011, "Token无效"),

@@ -10,12 +10,15 @@ import com.pet.module.pet.service.PetCategoryService;
 import com.pet.module.pet.service.PetReviewService;
 import com.pet.module.pet.service.PetService;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Api(tags = "管理员-宠物管理")
 @RestController
 @RequestMapping("/api/admin")
 @RequireRole("ADMIN")
@@ -33,6 +36,7 @@ public class AdminPetController {
     /**
      * 新增宠物分类
      */
+    @ApiOperation("新增宠物分类")
     @PostMapping("/pet/categories")
     public Result<String> addCategory(@RequestParam String name,
                                       @RequestParam(defaultValue = "0") Integer sortOrder) {
@@ -43,6 +47,7 @@ public class AdminPetController {
     /**
      * 编辑宠物分类
      */
+    @ApiOperation("编辑宠物分类")
     @PutMapping("/pet/categories/{id}")
     public Result<String> updateCategory(@PathVariable Long id,
                                          @RequestParam String name,
@@ -54,6 +59,7 @@ public class AdminPetController {
     /**
      * 删除宠物分类
      */
+    @ApiOperation("删除宠物分类")
     @DeleteMapping("/pet/categories/{id}")
     public Result<String> deleteCategory(@PathVariable Long id) {
         petCategoryService.delete(id);
@@ -63,6 +69,7 @@ public class AdminPetController {
     /**
      * 所有宠物列表（管理员）
      */
+    @ApiOperation("所有宠物列表（管理员）")
     @GetMapping("/pets")
     public Result<PageInfo<PetListVo>> allPets(
             @RequestParam(required = false) Long categoryId,
@@ -77,6 +84,7 @@ public class AdminPetController {
     /**
      * 上架/下架/删除宠物
      */
+    @ApiOperation("上架/下架/删除宠物")
     @PutMapping("/pets/{id}/status")
     public Result<String> updateStatus(@PathVariable Long id, @RequestParam String status) {
         petService.adminUpdateStatus(id, status);
@@ -86,6 +94,7 @@ public class AdminPetController {
     /**
      * 终审（通过/打回）
      */
+    @ApiOperation("终审（通过/打回）")
     @PostMapping("/pets/{id}/final-review")
     public Result<String> finalReview(HttpServletRequest request,
                                       @PathVariable Long id,

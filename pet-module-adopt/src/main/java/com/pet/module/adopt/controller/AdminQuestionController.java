@@ -6,11 +6,14 @@ import com.pet.module.adopt.model.entity.AdoptQuestion;
 import com.pet.module.adopt.service.AdoptService;
 import com.pet.module.adopt.service.QuestionService;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Api(tags = "管理员-领养管理")
 @RestController
 @RequestMapping("/api/admin/adopt")
 @RequireRole("ADMIN")
@@ -25,6 +28,7 @@ public class AdminQuestionController {
     /**
      * 试题列表（分页）
      */
+    @ApiOperation("试题列表（分页）")
     @GetMapping("/questions")
     public Result<PageInfo<AdoptQuestion>> questions(
             @RequestParam(defaultValue = "1") int page,
@@ -36,6 +40,7 @@ public class AdminQuestionController {
     /**
      * 新增试题
      */
+    @ApiOperation("新增试题")
     @PostMapping("/questions")
     public Result<String> add(@RequestParam String question,
                               @RequestParam String optionA,
@@ -50,6 +55,7 @@ public class AdminQuestionController {
     /**
      * 编辑试题
      */
+    @ApiOperation("编辑试题")
     @PutMapping("/questions/{id}")
     public Result<String> update(@PathVariable Long id,
                                  @RequestParam String question,
@@ -65,6 +71,7 @@ public class AdminQuestionController {
     /**
      * 删除试题
      */
+    @ApiOperation("删除试题")
     @DeleteMapping("/questions/{id}")
     public Result<String> delete(@PathVariable Long id) {
         questionService.delete(id);
@@ -74,6 +81,7 @@ public class AdminQuestionController {
     /**
      * 所有领养申请列表
      */
+    @ApiOperation("所有领养申请列表（管理员）")
     @GetMapping("/applications")
     public Result<List<com.pet.module.adopt.model.vo.AdoptApplyVo>> applications(
             @RequestParam(required = false) String status) {
@@ -83,6 +91,7 @@ public class AdminQuestionController {
     /**
      * 申请详情
      */
+    @ApiOperation("申请详情（管理员）")
     @GetMapping("/applications/{id}")
     public Result<com.pet.module.adopt.model.vo.AdoptApplyVo> applicationDetail(@PathVariable Long id) {
         return Result.success(adoptService.getAdminApplicationDetail(id));
@@ -91,6 +100,7 @@ public class AdminQuestionController {
     /**
      * 干预审核（通过/拒绝）
      */
+    @ApiOperation("干预审核（管理员）")
     @PutMapping("/applications/{id}")
     public Result<String> review(@PathVariable Long id, @RequestParam String action) {
         adoptService.adminReview(id, action);

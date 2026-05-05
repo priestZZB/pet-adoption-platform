@@ -8,12 +8,15 @@ import com.pet.module.pet.model.vo.PetListVo;
 import com.pet.module.pet.service.PetService;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Api(tags = "送养人-宠物管理")
 @RestController
 @RequestMapping("/api/donate")
 @RequireRole("USER_ADOPTER")
@@ -28,6 +31,7 @@ public class DonateController {
     /**
      * 发布送养宠物（含多图上传）
      */
+    @ApiOperation("发布送养宠物")
     @PostMapping("/pets")
     public Result<String> publish(HttpServletRequest request, @RequestBody PetPublishDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -42,6 +46,7 @@ public class DonateController {
     /**
      * 编辑宠物信息
      */
+    @ApiOperation("编辑宠物信息")
     @PutMapping("/pets/{id}")
     public Result<String> update(HttpServletRequest request,
                                  @PathVariable Long id,
@@ -54,6 +59,7 @@ public class DonateController {
     /**
      * 下架宠物
      */
+    @ApiOperation("下架宠物")
     @PutMapping("/pets/{id}/offline")
     public Result<String> offline(HttpServletRequest request, @PathVariable Long id) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
@@ -64,6 +70,7 @@ public class DonateController {
     /**
      * 我发布的宠物列表
      */
+    @ApiOperation("我发布的宠物列表")
     @GetMapping("/pets")
     public Result<List<PetListVo>> myPets(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());

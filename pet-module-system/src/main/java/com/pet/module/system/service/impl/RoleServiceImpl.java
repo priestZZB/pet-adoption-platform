@@ -1,5 +1,7 @@
 package com.pet.module.system.service.impl;
 
+import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
 import com.pet.module.system.mapper.RoleMapper;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.mapper.UserRoleMapper;
@@ -48,6 +50,14 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void assignRole(Long userId, Long roleId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+        SysRole role = roleMapper.selectById(roleId);
+        if (role == null) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "角色不存在");
+        }
         userRoleMapper.deleteByUserId(userId);
         SysUserRole ur = new SysUserRole();
         ur.setUserId(userId);
@@ -58,6 +68,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void reviewDonorApply(Long userId, String action, String remark) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
         SysUser update = new SysUser();
         update.setId(userId);
         if ("APPROVED".equals(action)) {
@@ -84,6 +98,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void reviewVolunteerApply(Long userId, String action, String remark) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
         SysUser update = new SysUser();
         update.setId(userId);
         if ("APPROVED".equals(action)) {
