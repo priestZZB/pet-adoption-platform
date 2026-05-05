@@ -12,6 +12,8 @@ public interface UserService {
 
     String login(LoginDto dto);
 
+    String phoneLogin(PhoneLoginDto dto);
+
     UserInfoVo getUserInfo(Long userId);
 
     void updateInfo(Long userId, UserUpdateDto dto);

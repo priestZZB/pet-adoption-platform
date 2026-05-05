@@ -88,3 +88,15 @@ pet:
   upload:
     path: /data/pet-adoption/uploads                    # 文件上传存储路径
 
+  # ---- 第三方服务配置 ----
+  third-party:
+    appcode: "57ae43ff92f44edda9500eebcdc7b5d3"
+    # ① 人脸比对（公安实名认证）
+    face:
+      url: "https://selfiev2.market.alicloudapi.com/face/verify_selfie_idnumber"
+    # ③ 三网106短信
+    sms:
+      url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
+      template-id: "908e94ccf08b4476ba6c876d13f084ad"
+      sign-id: "2e65b1bb3d054466b82f0c9d125465e2"
+

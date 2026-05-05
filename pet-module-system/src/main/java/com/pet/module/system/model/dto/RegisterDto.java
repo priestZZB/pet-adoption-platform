@@ -9,6 +9,8 @@ public class RegisterDto {
     private String password;
     private String nickname;
     private String phone;
+    /** 短信验证码 */
+    private String smsCode;
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
@@ -18,4 +20,6 @@ public class RegisterDto {
     public void setNickname(String nickname) { this.nickname = nickname; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+    public String getSmsCode() { return smsCode; }
+    public void setSmsCode(String smsCode) { this.smsCode = smsCode; }
 }

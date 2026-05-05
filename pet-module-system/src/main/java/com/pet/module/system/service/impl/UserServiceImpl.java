@@ -13,6 +13,8 @@ import com.pet.module.system.model.entity.SysUser;
 import com.pet.module.system.model.entity.SysUserRole;
 import com.pet.module.system.model.vo.UserInfoVo;
 import com.pet.module.system.model.vo.UserListVo;
+import com.pet.module.system.service.RealNameService;
+import com.pet.module.system.service.SmsService;
 import com.pet.module.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private RealNameService realNameService;
+
+    @Autowired
+    private SmsService smsService;
+
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override
@@ -45,6 +53,14 @@ public class UserServiceImpl implements UserService {
     public void register(RegisterDto dto) {
         if (userMapper.countByUsername(dto.getUsername()) > 0) {
             throw new BusinessException(ResultCodeEnum.USERNAME_EXISTS);
+        }
+
+        // 短信验证码校验（必传）
+        if (dto.getSmsCode() == null || dto.getSmsCode().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请先获取短信验证码");
+        }
+        if (!smsService.verifyCode(dto.getPhone(), dto.getSmsCode())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
         }
 
         SysUser user = new SysUser();
@@ -75,6 +91,35 @@ public class UserServiceImpl implements UserService {
         }
         if (!encoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BusinessException(ResultCodeEnum.PASSWORD_INCORRECT);
+        }
+
+        List<String> roles = userRoleMapper.selectRoleCodesByUserId(user.getId());
+        String role = roles.isEmpty() ? "USER" : roles.get(0);
+
+        return jwtUtils.generateToken(String.valueOf(user.getId()), role);
+    }
+
+    @Override
+    public String phoneLogin(PhoneLoginDto dto) {
+        if (dto.getPhone() == null || dto.getPhone().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "手机号不能为空");
+        }
+        if (dto.getSmsCode() == null || dto.getSmsCode().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请先获取短信验证码");
+        }
+
+        // 校验短信验证码
+        if (!smsService.verifyCode(dto.getPhone(), dto.getSmsCode())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
+        }
+
+        // 根据手机号查找用户
+        SysUser user = userMapper.selectByPhone(dto.getPhone());
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "该手机号未注册");
+        }
+        if (user.getStatus() == 0) {
+            throw new BusinessException(ResultCodeEnum.USER_DISABLED);
         }
 
         List<String> roles = userRoleMapper.selectRoleCodesByUserId(user.getId());
@@ -129,6 +174,20 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.OLD_PASSWORD_ERROR);
         }
 
+        // 短信验证码校验（修改密码必传）
+        if (dto.getPhone() == null || dto.getPhone().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请提供手机号");
+        }
+        if (!user.getPhone().equals(dto.getPhone())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "手机号与当前账号不匹配");
+        }
+        if (dto.getSmsCode() == null || dto.getSmsCode().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请先获取短信验证码");
+        }
+        if (!smsService.verifyCode(dto.getPhone(), dto.getSmsCode())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
+        }
+
         SysUser update = new SysUser();
         update.setId(userId);
         update.setPassword(encoder.encode(dto.getNewPassword()));
@@ -145,6 +204,14 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID);
         }
 
+        // 短信验证码校验（找回密码必传）
+        if (dto.getSmsCode() == null || dto.getSmsCode().isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请先获取短信验证码");
+        }
+        if (!smsService.verifyCode(dto.getPhone(), dto.getSmsCode())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
+        }
+
         SysUser update = new SysUser();
         update.setId(user.getId());
         update.setPassword(encoder.encode(dto.getNewPassword()));
@@ -153,6 +220,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void realNameAuth(Long userId, RealNameDto dto) {
+        // 调用第三方人脸比对（自动识别图片类型）
+        boolean verified;
+        String image = dto.getImage();
+        String imageUrl = dto.getImageUrl();
+
+        // 自动检测：如果 image 字段传了http链接，自动当URL处理
+        if (image != null && !image.isEmpty() && image.startsWith("http")) {
+            imageUrl = image;
+            image = null;
+        }
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            verified = realNameService.verifyWithImageUrl(dto.getRealName(), dto.getIdCard(), imageUrl);
+        } else if (image != null && !image.isEmpty()) {
+            verified = realNameService.verifyWithImage(dto.getRealName(), dto.getIdCard(), image);
+        } else {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请上传人脸图片");
+        }
+        if (!verified) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "人脸比对未通过，请确认姓名、身份证号与本人一致");
+        }
+
         SysUser update = new SysUser();
         update.setId(userId);
         update.setRealName(dto.getRealName());

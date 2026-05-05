@@ -30,11 +30,22 @@ public class UserController {
     }
 
     /**
-     * 用户登录
+     * 用户登录（用户名+密码）
      */
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody LoginDto dto) {
         String token = userService.login(dto);
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", token);
+        return Result.success("登录成功", data);
+    }
+
+    /**
+     * 手机号登录（手机号+短信验证码）
+     */
+    @PostMapping("/login/phone")
+    public Result<Map<String, Object>> phoneLogin(@RequestBody PhoneLoginDto dto) {
+        String token = userService.phoneLogin(dto);
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         return Result.success("登录成功", data);

@@ -2,6 +2,7 @@ com\pet\module\system\model\vo\UserInfoVo.class
 com\pet\module\system\model\vo\UserListVo.class
 com\pet\module\system\mapper\OperationLogMapper.class
 com\pet\module\system\service\NoticeService.class
+com\pet\module\system\controller\SmsController.class
 com\pet\module\system\service\FeedbackService.class
 com\pet\module\system\service\impl\OperationLogServiceImpl.class
 com\pet\module\system\model\vo\NoticeVo.class
@@ -14,11 +15,14 @@ com\pet\module\system\mapper\UserRoleMapper.class
 com\pet\module\system\controller\UserController.class
 com\pet\module\system\service\UserService.class
 com\pet\module\system\controller\AdminController.class
+com\pet\module\system\service\RealNameService.class
 com\pet\module\system\service\OperationLogService.class
+com\pet\module\system\service\SmsService.class
 com\pet\module\system\controller\FeedbackController.class
 com\pet\module\system\model\entity\SysNotice.class
 com\pet\module\system\service\impl\FeedbackServiceImpl.class
 com\pet\module\system\model\dto\RegisterDto.class
+com\pet\module\system\service\impl\SmsServiceImpl.class
 com\pet\module\system\mapper\FeedbackMapper.class
 com\pet\module\system\mapper\RoleMapper.class
 com\pet\module\system\model\entity\SysFeedback.class
@@ -32,4 +36,7 @@ com\pet\module\system\model\dto\RealNameDto.class
 com\pet\module\system\mapper\NoticeMapper.class
 com\pet\module\system\model\entity\SysUser.class
 com\pet\module\system\model\dto\PasswordDto.class
+com\pet\module\system\model\dto\PhoneLoginDto.class
+com\pet\module\system\service\impl\RealNameServiceImpl.class
+com\pet\module\system\controller\SmsController$SmsCodeDto.class
 com\pet\module\system\mapper\UserMapper.class

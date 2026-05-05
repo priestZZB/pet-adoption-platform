@@ -13,6 +13,8 @@ public interface UserMapper {
 
     SysUser selectByUsername(String username);
 
+    SysUser selectByPhone(String phone);
+
     int updateById(SysUser user);
 
     List<SysUser> selectPage(@Param("keyword") String keyword);
