@@ -2,6 +2,7 @@ package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
 import com.pet.common.util.FileUtils;
+import com.pet.framework.annotation.Log;
 import com.pet.module.system.model.dto.*;
 import com.pet.module.system.model.vo.UserInfoVo;
 import com.pet.module.system.service.UserService;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+@Log("用户管理")
 @Api(tags = "用户管理")
 @RestController
 @RequestMapping("/api/user")

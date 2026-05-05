@@ -1,6 +1,7 @@
 package com.pet.module.adopt.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.module.adopt.model.dto.ExamSubmitDto;
 import com.pet.module.adopt.model.vo.ExamResultVo;
 import com.pet.module.adopt.model.vo.QuestionVo;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("领养考试")
 @Api(tags = "领养考试")
 @RestController
 @RequestMapping("/api/adopt/exam")

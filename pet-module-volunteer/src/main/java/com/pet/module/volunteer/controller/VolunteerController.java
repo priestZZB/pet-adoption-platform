@@ -1,6 +1,7 @@
 package com.pet.module.volunteer.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.volunteer.model.dto.VisitDto;
 import com.pet.module.volunteer.model.vo.VisitVo;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("志愿者管理")
 @Api(tags = "志愿者-走访记录")
 @RestController
 @RequestMapping("/api/volunteer")

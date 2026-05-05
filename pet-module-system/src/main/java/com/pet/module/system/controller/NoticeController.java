@@ -1,6 +1,7 @@
 package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.system.model.entity.SysNotice;
 import com.pet.module.system.model.vo.NoticeVo;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Log("公告管理")
 @Api(tags = "公告管理")
 @RestController
 @RequestMapping

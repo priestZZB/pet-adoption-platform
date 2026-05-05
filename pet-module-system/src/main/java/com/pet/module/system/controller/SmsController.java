@@ -1,6 +1,7 @@
 package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.module.system.service.SmsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,6 +14,7 @@ import java.util.Map;
 /**
  * 短信验证码控制器
  */
+@Log("短信验证码")
 @Api(tags = "短信验证码")
 @RestController
 @RequestMapping("/api/sms")

@@ -1,6 +1,7 @@
 package com.pet.module.mall.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.mall.model.dto.ShipDto;
 import com.pet.module.mall.model.vo.OrderVo;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Log("商城管理")
 @Api(tags = "管理员-商城管理")
 @RestController
 @RequestMapping("/api/admin/mall")

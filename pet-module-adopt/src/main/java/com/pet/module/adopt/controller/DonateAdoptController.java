@@ -1,6 +1,7 @@
 package com.pet.module.adopt.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.adopt.model.vo.AdoptApplyVo;
 import com.pet.module.adopt.service.AdoptService;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Log("领养审核")
 @Api(tags = "送养人-领养审核")
 @RestController
 @RequestMapping("/api/donate")

@@ -2,6 +2,7 @@ package com.pet.gateway.controller;
 
 import com.pet.common.result.Result;
 import com.pet.common.util.FileUtils;
+import com.pet.framework.annotation.Log;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.Map;
 /**
  * 文件上传控制器
  */
+@Log("文件上传")
 @Api(tags = "文件上传")
 @RestController
 @RequestMapping("/api/file")

@@ -1,6 +1,7 @@
 package com.pet.module.mall.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.module.mall.model.dto.CartAddDto;
 import com.pet.module.mall.model.vo.CartVo;
 import com.pet.module.mall.service.CartService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("购物车")
 @Api(tags = "商城-购物车")
 @RestController
 @RequestMapping("/api/mall/cart")

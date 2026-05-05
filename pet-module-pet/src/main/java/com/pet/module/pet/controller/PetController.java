@@ -1,6 +1,7 @@
 package com.pet.module.pet.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.module.pet.model.vo.PetCategoryVo;
 import com.pet.module.pet.model.vo.PetDetailVo;
 import com.pet.module.pet.model.vo.PetListVo;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("宠物浏览")
 @Api(tags = "宠物浏览")
 @RestController
 @RequestMapping("/api")

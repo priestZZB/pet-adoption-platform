@@ -1,6 +1,7 @@
 package com.pet.module.adopt.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.module.adopt.model.dto.AdoptApplyDto;
 import com.pet.module.adopt.model.vo.AdoptApplyVo;
 import com.pet.module.adopt.service.AdoptService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("领养申请")
 @Api(tags = "领养申请")
 @RestController
 @RequestMapping("/api/adopt/applications")

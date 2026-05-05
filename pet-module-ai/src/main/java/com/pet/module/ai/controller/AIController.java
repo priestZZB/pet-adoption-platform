@@ -1,6 +1,7 @@
 package com.pet.module.ai.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.ai.model.dto.ChatDto;
 import com.pet.module.ai.model.entity.AIConversation;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("AI咨询")
 @Api(tags = "AI咨询")
 @RestController
 @RequestMapping("/api/ai")

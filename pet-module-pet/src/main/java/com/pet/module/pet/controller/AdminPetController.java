@@ -1,6 +1,7 @@
 package com.pet.module.pet.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.pet.model.dto.PetReviewDto;
 import com.pet.module.pet.model.vo.PetCategoryVo;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("宠物管理")
 @Api(tags = "管理员-宠物管理")
 @RestController
 @RequestMapping("/api/admin")

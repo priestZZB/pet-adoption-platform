@@ -1,6 +1,7 @@
 package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.system.model.entity.SysFeedback;
 import com.pet.module.system.service.FeedbackService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("意见反馈")
 @Api(tags = "意见反馈")
 @RestController
 @RequestMapping

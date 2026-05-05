@@ -1,6 +1,7 @@
 package com.pet.module.pet.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.pet.model.dto.PetPublishDto;
 import com.pet.module.pet.model.dto.PetUpdateDto;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("送养人管理")
 @Api(tags = "送养人-宠物管理")
 @RestController
 @RequestMapping("/api/donate")

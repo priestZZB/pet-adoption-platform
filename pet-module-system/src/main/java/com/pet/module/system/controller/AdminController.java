@@ -1,6 +1,7 @@
 package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
+import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.system.model.dto.VolunteerApplyDto;
 import com.pet.module.system.model.entity.SysOperationLog;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Log("系统管理")
 @Api(tags = "管理员-系统管理")
 @RestController
 @RequestMapping("/api/admin")
