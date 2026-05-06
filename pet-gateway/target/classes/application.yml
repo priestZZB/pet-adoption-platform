@@ -94,7 +94,13 @@ pet:
     # ① 人脸比对（公安实名认证）
     face:
       url: "https://selfiev2.market.alicloudapi.com/face/verify_selfie_idnumber"
-    # ③ 三网106短信
+    # ③ 行为验证码（滑块验证码）
+    captcha:
+      app-id: "193347059"
+      app-secret: "vzvaQXQjhqgQ7pDXb80NTadLU"
+      verify-url: "https://lhxwyzmjk.market.alicloudapi.com/captcha/verification_code"
+
+    # ④ 三网106短信
     sms:
       url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
       template-id: "908e94ccf08b4476ba6c876d13f084ad"

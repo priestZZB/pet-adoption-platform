@@ -13,6 +13,7 @@ import com.pet.module.system.model.entity.SysUser;
 import com.pet.module.system.model.entity.SysUserRole;
 import com.pet.module.system.model.vo.UserInfoVo;
 import com.pet.module.system.model.vo.UserListVo;
+import com.pet.module.system.service.CaptchaService;
 import com.pet.module.system.service.RealNameService;
 import com.pet.module.system.service.SmsService;
 import com.pet.module.system.service.UserService;
@@ -46,6 +47,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private SmsService smsService;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override
@@ -53,6 +57,11 @@ public class UserServiceImpl implements UserService {
     public void register(RegisterDto dto) {
         if (userMapper.countByUsername(dto.getUsername()) > 0) {
             throw new BusinessException(ResultCodeEnum.USERNAME_EXISTS);
+        }
+
+        // 行为验证码校验（防机器注册）
+        if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
         }
 
         // 短信验证码校验（必传）
@@ -82,6 +91,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String login(LoginDto dto) {
+        // 行为验证码校验（防暴力破解）
+        if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
+        }
+
         SysUser user = userMapper.selectByUsername(dto.getUsername());
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
@@ -101,6 +115,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String phoneLogin(PhoneLoginDto dto) {
+        // 行为验证码校验（防短信轰炸关联攻击）
+        if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
+        }
+
         if (dto.getPhone() == null || dto.getPhone().isEmpty()) {
             throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "手机号不能为空");
         }
@@ -166,6 +185,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void changePassword(Long userId, PasswordDto dto) {
+        // 行为验证码校验（防密码暴力修改）
+        if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
+        }
+
         SysUser user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
@@ -196,6 +220,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void resetPassword(PasswordDto dto) {
+        // 行为验证码校验（防找回密码滥用）
+        if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
+        }
+
         SysUser user = userMapper.selectByUsername(dto.getUsername());
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
