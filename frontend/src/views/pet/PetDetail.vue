@@ -1,0 +1,372 @@
+﻿<template>
+  <div class="detail-page">
+    <div v-if="loading" class="loading-center">
+      <el-icon class="is-loading" :size="32"><Loading /></el-icon>
+    </div>
+
+    <template v-else-if="pet">
+      <div class="detail-layout">
+        <!-- 左侧：图片轮播 -->
+        <div class="detail-left">
+          <el-carousel height="400px" :interval="4000" arrow="always">
+            <el-carousel-item v-for="(img, idx) in pet.images" :key="idx">
+              <el-image
+                :src="img"
+                fit="contain"
+                style="width:100%;height:100%"
+              >
+                <template #error>
+                  <div class="img-placeholder">图片加载失败</div>
+                </template>
+              </el-image>
+            </el-carousel-item>
+          </el-carousel>
+
+          <!-- 缩略图列表 -->
+          <div class="thumbnail-list">
+            <div
+              v-for="(img, idx) in pet.images"
+              :key="idx"
+              class="thumbnail-item"
+              :class="{ active: idx === activeIdx }"
+            >
+              <el-image
+                :src="img"
+                fit="cover"
+                style="width:60px;height:60px;border-radius:4px;cursor:pointer"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：信息 -->
+        <div class="detail-right">
+          <!-- 基本信息 -->
+          <div class="info-header">
+            <h2 class="pet-name">{{ pet.name }}</h2>
+            <el-tag
+              :type="PET_STATUS[pet.status]?.type || 'info'"
+            >
+              {{ PET_STATUS[pet.status]?.label || pet.status }}
+            </el-tag>
+          </div>
+
+          <el-divider />
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">分类</span>
+              <span class="value">{{ pet.categoryName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">年龄</span>
+              <span class="value">{{ pet.age }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">性别</span>
+              <span class="value">{{ GENDER_MAP[pet.gender] || pet.gender }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">绝育</span>
+              <span class="value">
+                <el-icon v-if="pet.isNeutered === 1" color="#67C23A"><CircleCheckFilled /></el-icon>
+                <el-icon v-else color="#909399"><RemoveFilled /></el-icon>
+                {{ pet.isNeutered === 1 ? '已绝育' : '未绝育' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="label">疫苗</span>
+              <span class="value">
+                <el-icon v-if="pet.isVaccinated === 1" color="#67C23A"><CircleCheckFilled /></el-icon>
+                <el-icon v-else color="#909399"><RemoveFilled /></el-icon>
+                {{ pet.isVaccinated === 1 ? '已接种' : '未接种' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="label">收藏</span>
+              <span class="value">{{ pet.favoriteCount }} 人收藏</span>
+            </div>
+          </div>
+
+          <el-divider />
+
+          <!-- 健康证明 -->
+          <div class="section">
+            <h4>健康证明</h4>
+            <el-image
+              v-if="pet.healthCert"
+              :src="pet.healthCert"
+              fit="contain"
+              style="max-width:200px;max-height:150px;border-radius:6px;cursor:pointer"
+              :preview-src-list="[pet.healthCert]"
+              preview-teleported
+            />
+            <span v-else class="na-text">暂无</span>
+          </div>
+
+          <el-divider />
+
+          <!-- 性格 / 习惯 / 送养原因 -->
+          <div class="section">
+            <h4>性格描述</h4>
+            <p>{{ pet.personality }}</p>
+          </div>
+          <div v-if="pet.habit" class="section">
+            <h4>生活习惯</h4>
+            <p>{{ pet.habit }}</p>
+          </div>
+          <div class="section">
+            <h4>送养原因</h4>
+            <p>{{ pet.reason }}</p>
+          </div>
+
+          <el-divider />
+
+          <!-- 送养人信息 -->
+          <div class="donor-info">
+            <h4>送养人</h4>
+            <div class="donor-card">
+              <el-avatar :size="40" :src="pet.userAvatar">
+                {{ pet.userNickname?.[0] || '?' }}
+              </el-avatar>
+              <div class="donor-text">
+                <span class="donor-name">{{ pet.userNickname }}</span>
+                <span class="donor-phone">{{ pet.userPhone }}</span>
+              </div>
+            </div>
+          </div>
+
+          <el-divider />
+
+          <!-- 操作按钮 -->
+          <div class="action-bar">
+            <el-button
+              :type="isFav ? 'danger' : 'default'"
+              :icon="Star"
+              @click="toggleFavorite"
+            >
+              {{ isFav ? '取消收藏' : '收藏' }}
+            </el-button>
+            <el-button
+              type="primary"
+              :icon="Check"
+              :disabled="pet.status !== 'APPROVED'"
+              @click="handleAdopt"
+            >
+              申请领养
+            </el-button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template v-else>
+      <div class="empty-tip">
+        <el-empty description="宠物信息不存在" />
+      </div>
+    </template>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { Loading, CircleCheckFilled, RemoveFilled, Star, Check } from '@element-plus/icons-vue'
+import { getPetDetail, favorite, unfavorite } from '@/api/pet'
+import { GENDER_MAP, PET_STATUS } from '@/utils/constants'
+import { useUserStore } from '@/stores/user'
+
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+
+const pet = ref(null)
+const loading = ref(true)
+const isFav = ref(false)
+const activeIdx = ref(0)
+
+async function loadDetail() {
+  loading.value = true
+  try {
+    pet.value = await getPetDetail(route.params.id)
+  } catch {
+    pet.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+async function toggleFavorite() {
+  if (!userStore.isLogin) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  try {
+    if (isFav.value) {
+      await unfavorite(pet.value.id)
+      isFav.value = false
+      pet.value.favoriteCount--
+      ElMessage.success('已取消收藏')
+    } else {
+      await favorite(pet.value.id)
+      isFav.value = true
+      pet.value.favoriteCount++
+      ElMessage.success('收藏成功')
+    }
+  } catch {
+    // 请求拦截器统一处理
+  }
+}
+
+function handleAdopt() {
+  if (!userStore.isLogin) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  if (!pet.value || pet.value.status !== 'APPROVED') {
+    ElMessage.warning('该宠物当前不可申请领养')
+    return
+  }
+  router.push('/adopt/apply/' + pet.value.id)
+}
+
+onMounted(loadDetail)
+</script>
+
+<style scoped>
+.detail-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+.empty-tip {
+  padding: 60px 0;
+}
+
+.detail-layout {
+  display: flex;
+  gap: 32px;
+}
+
+/* 左侧图片区 */
+.detail-left {
+  flex: 1;
+  min-width: 0;
+}
+.thumbnail-list {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.thumbnail-item {
+  border: 2px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.thumbnail-item.active {
+  border-color: #409EFF;
+}
+
+/* 右侧信息区 */
+.detail-right {
+  width: 440px;
+  flex-shrink: 0;
+}
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pet-name {
+  margin: 0;
+  font-size: 24px;
+  color: #303133;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.info-item .label {
+  font-size: 12px;
+  color: #909399;
+}
+.info-item .value {
+  font-size: 14px;
+  color: #303133;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.section h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #606266;
+}
+.section p {
+  margin: 0;
+  font-size: 14px;
+  color: #303133;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.na-text {
+  font-size: 14px;
+  color: #909399;
+}
+
+/* 送养人信息 */
+.donor-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.donor-text {
+  display: flex;
+  flex-direction: column;
+}
+.donor-name {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+}
+.donor-phone {
+  font-size: 12px;
+  color: #909399;
+}
+
+/* 操作按钮 */
+.action-bar {
+  display: flex;
+  gap: 12px;
+}
+.action-bar .el-button {
+  flex: 1;
+}
+
+/* 图片占位 */
+.img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 14px;
+}
+</style>
