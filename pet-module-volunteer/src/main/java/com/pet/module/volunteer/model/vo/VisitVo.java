@@ -1,5 +1,6 @@
 package com.pet.module.volunteer.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * 走访记录返回
  */
-public class VisitVo {
+public class VisitVo implements Serializable {
 
     private Long id;
     private Long petId;

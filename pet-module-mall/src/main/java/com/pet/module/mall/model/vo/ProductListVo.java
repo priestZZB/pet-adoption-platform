@@ -1,11 +1,12 @@
 package com.pet.module.mall.model.vo;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  * 商品列表返回
  */
-public class ProductListVo {
+public class ProductListVo implements Serializable {
 
     private Long id;
     private String name;

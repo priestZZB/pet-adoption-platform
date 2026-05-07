@@ -1,11 +1,12 @@
 package com.pet.module.pet.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 宠物列表返回
  */
-public class PetListVo {
+public class PetListVo implements Serializable {
 
     private Long id;
     private Long userId;

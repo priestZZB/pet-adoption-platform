@@ -1,12 +1,13 @@
 package com.pet.module.mall.model.vo;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * 商品详情返回
  */
-public class ProductDetailVo {
+public class ProductDetailVo implements Serializable {
 
     private Long id;
     private String name;

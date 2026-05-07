@@ -1,11 +1,12 @@
 package com.pet.module.ai.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * AI对话返回
  */
-public class ChatVo {
+public class ChatVo implements Serializable {
 
     private Long id;
     private String question;

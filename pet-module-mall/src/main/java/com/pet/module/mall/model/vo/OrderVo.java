@@ -1,5 +1,6 @@
 package com.pet.module.mall.model.vo;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * 订单返回
  */
-public class OrderVo {
+public class OrderVo implements Serializable {
 
     private Long id;
     private String orderNo;

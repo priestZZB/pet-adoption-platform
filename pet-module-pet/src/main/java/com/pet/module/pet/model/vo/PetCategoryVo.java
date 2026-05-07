@@ -1,9 +1,11 @@
 package com.pet.module.pet.model.vo;
 
+import java.io.Serializable;
+
 /**
  * 宠物分类返回
  */
-public class PetCategoryVo {
+public class PetCategoryVo implements Serializable {
 
     private Long id;
     private String name;

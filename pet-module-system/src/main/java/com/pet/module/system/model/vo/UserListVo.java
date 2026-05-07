@@ -1,12 +1,13 @@
 package com.pet.module.system.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * 用户列表返回（管理员用）
  */
-public class UserListVo {
+public class UserListVo implements Serializable {
 
     private Long id;
     private String username;

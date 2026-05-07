@@ -1,11 +1,12 @@
 package com.pet.module.adopt.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 答题结果返回（分数+是否通过）
  */
-public class ExamResultVo {
+public class ExamResultVo implements Serializable {
 
     private Integer score;
     private Integer totalQuestions;

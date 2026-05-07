@@ -1,12 +1,13 @@
 package com.pet.module.pet.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * 宠物详情返回（含多图+送养人信息）
  */
-public class PetDetailVo {
+public class PetDetailVo implements Serializable {
 
     private Long id;
     private Long userId;

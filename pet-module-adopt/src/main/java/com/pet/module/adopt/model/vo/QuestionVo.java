@@ -1,9 +1,11 @@
 package com.pet.module.adopt.model.vo;
 
+import java.io.Serializable;
+
 /**
  * 题目返回（不含答案）
  */
-public class QuestionVo {
+public class QuestionVo implements Serializable {
 
     private Long id;
     private String question;

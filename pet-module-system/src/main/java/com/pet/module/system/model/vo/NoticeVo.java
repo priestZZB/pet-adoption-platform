@@ -1,11 +1,12 @@
 package com.pet.module.system.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 公告返回
  */
-public class NoticeVo {
+public class NoticeVo implements Serializable {
 
     private Long id;
     private String title;

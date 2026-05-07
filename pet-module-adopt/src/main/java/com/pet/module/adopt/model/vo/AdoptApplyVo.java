@@ -1,11 +1,12 @@
 package com.pet.module.adopt.model.vo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 领养申请返回
  */
-public class AdoptApplyVo {
+public class AdoptApplyVo implements Serializable {
 
     private Long id;
     private Long userId;
