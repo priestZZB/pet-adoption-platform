@@ -9,6 +9,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * JWT 认证拦截器
@@ -26,6 +28,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -68,16 +73,19 @@ public class AuthInterceptor implements HandlerInterceptor {
         request.setAttribute("userId", claims.getSubject());
         request.setAttribute("role", claims.get("role", String.class));
 
-        // 4. 校验 @RequireRole 权限
+        // 4. 校验 @RequireRole 权限（从数据库查询最新角色，而非依赖JWT里可能过期的缓存）
         HandlerMethod hm = (HandlerMethod) handler;
-        RequireRole requireRole = hm.getMethodAnnotation(RequireRole.class);
-        if (requireRole == null) {
-            requireRole = hm.getBeanType().getAnnotation(RequireRole.class);
-        }
-        if (requireRole != null) {
-            String role = claims.get("role", String.class);
-            boolean matched = Arrays.stream(requireRole.value())
-                    .anyMatch(r -> r.equals(role));
+        RequireRole methodRole = hm.getMethodAnnotation(RequireRole.class);
+        RequireRole classRole = hm.getBeanType().getAnnotation(RequireRole.class);
+        RequireRole requiredRole = (methodRole != null) ? methodRole : classRole;
+        if (requiredRole != null) {
+            Long userId = Long.valueOf(claims.getSubject());
+            List<String> dbRoles = jdbcTemplate.queryForList(
+                    "SELECT r.role_code FROM sys_user_role ur JOIN sys_role r ON ur.role_id = r.id WHERE ur.user_id = ?",
+                    String.class, userId);
+            String[] requiredValues = requiredRole.value();
+            boolean matched = dbRoles.stream().anyMatch(
+                    r -> Arrays.stream(requiredValues).anyMatch(req -> req.equals(r)));
             if (!matched) {
                 throw new UnauthorizedException(ResultCodeEnum.ROLE_REQUIRED);
             }

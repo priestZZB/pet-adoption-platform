@@ -27,12 +27,23 @@ public class FeedbackController {
      */
     @ApiOperation("提交意见反馈")
     @PostMapping("/api/feedback")
-    public Result<String> submit(HttpServletRequest request,
-                                 @RequestParam String content,
-                                 @RequestParam(required = false) String images) {
+    public Result<String> submit(HttpServletRequest request, @RequestBody FeedbackSubmitDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
-        feedbackService.submit(userId, content, images);
+        feedbackService.submit(userId, dto.getContent(), dto.getImages());
         return Result.success("提交成功");
+    }
+
+    /**
+     * 提交意见反馈请求参数
+     */
+    public static class FeedbackSubmitDto {
+        private String content;
+        private String images;
+
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+        public String getImages() { return images; }
+        public void setImages(String images) { this.images = images; }
     }
 
     /**

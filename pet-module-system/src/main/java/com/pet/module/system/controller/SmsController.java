@@ -2,6 +2,7 @@ package com.pet.module.system.controller;
 
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
+import com.pet.module.system.service.CaptchaService;
 import com.pet.module.system.service.SmsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,10 +24,13 @@ public class SmsController {
     @Autowired
     private SmsService smsService;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     /**
      * 发送短信验证码
      *
-     * @param dto { phone: "138xxxx" }
+     * @param dto { phone, ticket, randstr, captchaSign }
      * @return 验证码（调试时返回，测试用）
      */
     @ApiOperation("发送短信验证码")
@@ -35,6 +39,15 @@ public class SmsController {
         if (dto.getPhone() == null || dto.getPhone().trim().isEmpty()) {
             return Result.error(400, "手机号不能为空");
         }
+
+        // 行为验证码校验（防短信轰炸）
+        if (dto.getTicket() == null || dto.getTicket().isEmpty()) {
+            return Result.error(400, "请先完成滑块验证");
+        }
+        if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
+            return Result.error(400, "滑块验证码验证失败，请重试");
+        }
+
         String code = smsService.sendCode(dto.getPhone());
         Map<String, String> data = new HashMap<>();
         data.put("phone", dto.getPhone());
@@ -48,8 +61,20 @@ public class SmsController {
      */
     public static class SmsCodeDto {
         private String phone;
+        /** 行为验证码票据 */
+        private String ticket;
+        /** 行为验证码随机字符串 */
+        private String randstr;
+        /** 行为验证码鉴权签名 */
+        private String captchaSign;
 
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getTicket() { return ticket; }
+        public void setTicket(String ticket) { this.ticket = ticket; }
+        public String getRandstr() { return randstr; }
+        public void setRandstr(String randstr) { this.randstr = randstr; }
+        public String getCaptchaSign() { return captchaSign; }
+        public void setCaptchaSign(String captchaSign) { this.captchaSign = captchaSign; }
     }
 }

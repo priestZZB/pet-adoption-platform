@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="realname-page">
     <h3 class="page-title">实名认证</h3>
 
@@ -35,23 +35,36 @@
           <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" />
         </el-form-item>
 
-        <el-form-item label="人脸图片">
-          <div class="face-upload">
-            <el-upload
-              ref="uploadRef"
-              :show-file-list="false"
-              :before-upload="handleFaceUpload"
-              accept="image/*"
-            >
-              <div v-if="!facePreview" class="upload-placeholder">
-                <el-icon :size="32"><Plus /></el-icon>
-                <span>点击上传人脸照片</span>
+        <el-form-item label="人脸拍照">
+          <div class="camera-area">
+            <!-- 未拍照：显示摄像头预览 -->
+            <template v-if="!capturedImage">
+              <div class="camera-view">
+                <video ref="videoRef" autoplay playsinline class="video-preview" />
+                <div v-if="!cameraReady" class="camera-loading">
+                  <el-icon class="is-loading" :size="32"><Loading /></el-icon>
+                  <p>正在打开摄像头…</p>
+                </div>
               </div>
-              <el-image v-else :src="facePreview" fit="cover" class="face-preview" />
-            </el-upload>
-            <p class="face-tip">
-              请上传本人正面近照，用于公安人脸比对认证
-            </p>
+              <el-button
+                type="primary"
+                :disabled="!cameraReady"
+                :icon="Camera"
+                @click="handleCapture"
+              >
+                拍照
+              </el-button>
+            </template>
+
+            <!-- 已拍照：显示照片预览 -->
+            <template v-else>
+              <el-image :src="capturedImage" fit="cover" class="captured-preview" />
+              <div class="camera-actions">
+                <el-button @click="handleRetake">重新拍摄</el-button>
+              </div>
+            </template>
+
+            <p class="face-tip">请确保面部清晰、光线充足，仅支持PC浏览器拍照</p>
           </div>
         </el-form-item>
 
@@ -59,6 +72,7 @@
           <el-button
             type="primary"
             :loading="submitting"
+            :disabled="!capturedImage"
             @click="handleSubmit"
           >
             提交认证
@@ -66,22 +80,32 @@
         </el-form-item>
       </el-form>
     </el-card>
+
+    <!-- 隐藏的 canvas 用于截帧 -->
+    <canvas ref="canvasRef" style="display:none" />
+
+    <!-- 隐藏的滑块验证码组件 -->
+    <CaptchaSlider ref="captchaRef" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { CircleCheck, Plus } from '@element-plus/icons-vue'
+import { CircleCheck, Camera, Loading } from '@element-plus/icons-vue'
 import { realNameAuth } from '@/api/user'
-import { uploadFile } from '@/api/file'
 import { useUserStore } from '@/stores/user'
+import CaptchaSlider from '@/components/CaptchaSlider.vue'
 
 const userStore = useUserStore()
 const formRef = ref(null)
+const captchaRef = ref(null)
+const videoRef = ref(null)
+const canvasRef = ref(null)
 const submitting = ref(false)
-const facePreview = ref('')
-const faceImage = ref('')
+const cameraReady = ref(false)
+const capturedImage = ref('')
+let mediaStream = null
 
 const form = reactive({
   realName: '',
@@ -108,45 +132,95 @@ function maskIdCard(id) {
   return id.substring(0, 4) + '**********' + id.substring(14)
 }
 
-// 人脸图片上传 → 拿到URL
-async function handleFaceUpload(file) {
-  facePreview.value = URL.createObjectURL(file)
+// 打开摄像头
+async function startCamera() {
   try {
-    const res = await uploadFile(file, 'common')
-    faceImage.value = res.url
-  } catch {
-    facePreview.value = ''
-    ElMessage.error('图片上传失败')
+    cameraReady.value = false
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        facingMode: 'user'
+      },
+      audio: false
+    })
+    if (videoRef.value) {
+      videoRef.value.srcObject = mediaStream
+      await videoRef.value.play()
+    }
+    cameraReady.value = true
+  } catch (err) {
+    ElMessage.error('无法打开摄像头，请确保已授予摄像头权限')
+    console.error('摄像头启动失败:', err)
   }
-  return false
 }
 
+// 关闭摄像头
+function stopCamera() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop())
+    mediaStream = null
+  }
+  cameraReady.value = false
+}
+
+// 拍照：从视频流截帧到 canvas → base64
+function handleCapture() {
+  const video = videoRef.value
+  const canvas = canvasRef.value
+  if (!video || !canvas) return
+
+  const ctx = canvas.getContext('2d')
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+  // 转 base64（JPEG 格式，0.8 质量，去掉 data:image/...;base64, 前缀）
+  const fullBase64 = canvas.toDataURL('image/jpeg', 0.8)
+  capturedImage.value = fullBase64.replace(/^data:image\/[a-z]+;base64,/, '')
+
+  // 关闭摄像头（省资源）
+  stopCamera()
+}
+
+// 重新拍摄
+function handleRetake() {
+  capturedImage.value = ''
+  startCamera()
+}
+
+// 提交实名认证
 async function handleSubmit() {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
 
-  if (!faceImage.value) {
-    ElMessage.warning('请上传人脸照片')
-    return
-  }
-
-  submitting.value = true
   try {
+    const captchaData = await captchaRef.value.showCaptcha()
+
+    submitting.value = true
     await realNameAuth({
       realName: form.realName,
       idCard: form.idCard,
       phone: form.phone,
-      imageUrl: faceImage.value
+      image: capturedImage.value,   // base64 字符串
+      ...captchaData
     })
     ElMessage.success('实名认证成功')
-    // 刷新用户信息
     await userStore.fetchUserInfo()
-  } catch {
-    // 请求拦截器统一处理
+  } catch (err) {
+    // 用户取消验证时不提示，其他错误由拦截器统一处理
   } finally {
     submitting.value = false
   }
 }
+
+onMounted(() => {
+  startCamera()
+})
+
+onUnmounted(() => {
+  stopCamera()
+})
 </script>
 
 <style scoped>
@@ -178,34 +252,46 @@ async function handleSubmit() {
   line-height: 1.8;
 }
 
-.face-upload {
+.camera-area {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
 }
-.upload-placeholder {
-  width: 200px;
-  height: 200px;
-  border: 1px dashed #dcdfe6;
+.camera-view {
+  position: relative;
+  width: 320px;
+  height: 240px;
+  background: #f5f7fa;
   border-radius: 8px;
+  overflow: hidden;
+}
+.video-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.camera-loading {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   color: #909399;
-  cursor: pointer;
-  transition: border-color 0.2s;
+  font-size: 14px;
+  gap: 8px;
 }
-.upload-placeholder:hover {
-  border-color: #409EFF;
-  color: #409EFF;
-}
-.face-preview {
-  width: 200px;
-  height: 200px;
+.captured-preview {
+  width: 320px;
+  height: 240px;
   border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #dcdfe6;
+}
+.camera-actions {
+  display: flex;
+  gap: 8px;
 }
 .face-tip {
   margin: 0;

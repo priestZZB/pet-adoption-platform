@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getToken } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
@@ -73,19 +73,19 @@ const routes = [
 const router = createRouter({ history: createWebHistory(), routes })
 
 // 路由守卫：未登录 → 跳登录 | 无权限 → 跳403
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const token = getToken()
   if (to.meta.requiresAuth && !token) {
-    return next('/login')
+    return '/login'
   }
   if (to.meta.role) {
     const userStore = useUserStore()
     if (!userStore.hasRole(to.meta.role)) {
       ElMessage.error('权限不足')
-      return next('/')
+      return '/'
     }
   }
-  next()
+  // 直接放行
 })
 
 export default router

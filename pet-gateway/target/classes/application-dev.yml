@@ -23,6 +23,19 @@ logging:
     com.pet: debug                    # 开发环境输出 debug 日志
     org.springframework: info
 
+# 上传目录（Windows开发路径）
+pet:
+  upload:
+    path: D:/data/pet-adoption/uploads
+
+# 开发环境关闭滑块验证码（演示时改为 true）
+  captcha:
+    enabled: false
+
+# 开发环境：模拟短信验证码，控制台输出，不实际发送（演示时改为 false）
+  sms:
+    mock: true
+
 mybatis:
   configuration:
     # 开发环境打印 SQL

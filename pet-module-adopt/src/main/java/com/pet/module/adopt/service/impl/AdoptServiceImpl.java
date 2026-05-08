@@ -59,6 +59,15 @@ public class AdoptServiceImpl implements AdoptService {
         if (pet == null) {
             throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
         }
+        // 已领养的宠物不可申请
+        if ("ADOPTED".equals(pet.getStatus())) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "该宠物已被领养");
+        }
+
+        // 同一用户不可对同一宠物重复提交申请
+        if (adoptApplicationMapper.countActiveByUserAndPet(userId, dto.getPetId()) > 0) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "您已提交过该宠物的领养申请，请勿重复提交");
+        }
 
         AdoptApplication application = new AdoptApplication();
         application.setUserId(userId);
@@ -134,6 +143,14 @@ public class AdoptServiceImpl implements AdoptService {
         update.setId(id);
         update.setStatus("APPROVED".equals(action) ? "APPROVED" : "REJECTED");
         adoptApplicationMapper.updateById(update);
+
+        // 如果送养人通过审核，同步更新宠物状态为已领养
+        if ("APPROVED".equals(action)) {
+            PetInfo petUpdate = new PetInfo();
+            petUpdate.setId(app.getPetId());
+            petUpdate.setStatus("ADOPTED");
+            petInfoMapper.updateById(petUpdate);
+        }
     }
 
     private AdoptApplyVo convertToVo(AdoptApplication app) {

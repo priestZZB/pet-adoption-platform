@@ -1,3 +1,4 @@
+com\pet\framework\config\UploadConfig.class
 com\pet\framework\config\MyBatisConfig.class
 com\pet\framework\config\WebMvcConfig.class
 com\pet\framework\annotation\RequireRole.class

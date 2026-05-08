@@ -4,6 +4,7 @@ D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\config\MyBatisConfig.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\config\RedisConfig.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\config\SwaggerConfig.java
+D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\config\UploadConfig.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\config\WebMvcConfig.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\handler\GlobalExceptionHandler.java
 D:\Dev\workspace\project\springboot\pet-adoption-platform\pet-framework\src\main\java\com\pet\framework\interceptor\AuthInterceptor.java

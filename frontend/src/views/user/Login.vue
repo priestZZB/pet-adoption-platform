@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="login-page">
     <div class="login-card">
       <h2 class="login-title">宠物领养救助平台</h2>
@@ -31,7 +31,6 @@
                 show-password
               />
             </el-form-item>
-            <CaptchaSlider @verified="onCaptchaVerified" />
             <el-form-item>
               <el-button
                 type="primary"
@@ -77,13 +76,12 @@
                 <el-button
                   :disabled="smsCountdown > 0 || !validPhone"
                   :loading="smsSending"
-                  @click="handleSendSms(phoneForm.phone)"
+                  @click="handleSendSms"
                 >
                   {{ smsCountdown > 0 ? `${smsCountdown}s` : '获取验证码' }}
                 </el-button>
               </div>
             </el-form-item>
-            <CaptchaSlider @verified="onCaptchaVerified" />
             <el-form-item>
               <el-button
                 type="primary"
@@ -101,6 +99,9 @@
           </div>
         </el-tab-pane>
       </el-tabs>
+
+      <!-- 隐藏的滑块验证码组件 -->
+      <CaptchaSlider ref="captchaRef" />
     </div>
   </div>
 </template>
@@ -121,6 +122,7 @@ const userStore = useUserStore()
 const activeTab = ref('username')
 const formRef = ref(null)
 const phoneFormRef = ref(null)
+const captchaRef = ref(null)
 const submitting = ref(false)
 const smsSending = ref(false)
 const smsCountdown = ref(0)
@@ -136,13 +138,6 @@ const form = reactive({
 const phoneForm = reactive({
   phone: '',
   smsCode: ''
-})
-
-// 滑块验证码数据
-const captchaData = reactive({
-  ticket: '',
-  randstr: '',
-  captchaSign: ''
 })
 
 // 表单验证规则
@@ -168,30 +163,34 @@ const phoneRules = {
   ]
 }
 
-// 判断手机号是否有效
 const validPhone = computed(() => /^1[3-9]\d{9}$/.test(phoneForm.phone))
 
-// 滑块验证码回调
-function onCaptchaVerified(data) {
-  Object.assign(captchaData, data)
-}
-
-// 发送短信验证码
-async function handleSendSms(phone) {
+// 发送短信验证码（先弹滑块验证，通过后发短信）
+async function handleSendSms() {
   if (smsSending.value || smsCountdown.value > 0) return
-  smsSending.value = true
+  if (!validPhone.value) {
+    ElMessage.warning('请先输入正确的手机号')
+    return
+  }
+
   try {
-    await sendSmsCode(phone)
+    // 自动弹出滑块验证
+    const captchaData = await captchaRef.value.showCaptcha()
+    // 滑块通过 → 发短信
+    smsSending.value = true
+    await sendSmsCode({
+      phone: phoneForm.phone,
+      ...captchaData
+    })
     ElMessage.success('验证码已发送')
     startSmsCountdown()
-  } catch {
-    // 错误由请求拦截器统一处理
+  } catch (err) {
+    // 用户取消验证时不提示，其他错误由拦截器统一处理
   } finally {
     smsSending.value = false
   }
 }
 
-// 60s倒计时
 function startSmsCountdown() {
   smsCountdown.value = 60
   smsTimer = setInterval(() => {
@@ -203,61 +202,48 @@ function startSmsCountdown() {
   }, 1000)
 }
 
-// 用户名+密码登录
+// 用户名+密码登录（先弹滑块验证，通过后提交）
 async function handleLogin() {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
 
-  if (!captchaData.ticket) {
-    ElMessage.warning('请先完成滑块验证')
-    return
-  }
-
-  submitting.value = true
   try {
+    const captchaData = await captchaRef.value.showCaptcha()
+
+    submitting.value = true
     const res = await login({
       username: form.username,
       password: form.password,
-      ticket: captchaData.ticket,
-      randstr: captchaData.randstr,
-      captchaSign: captchaData.captchaSign
+      ...captchaData
     })
     userStore.setToken(res.token)
     await userStore.fetchUserInfo()
     ElMessage.success('登录成功')
     router.push('/')
-  } catch {
-    // 错误由请求拦截器统一处理
+  } catch (err) {
+    // 用户取消验证时不提示，其他错误由拦截器统一处理
   } finally {
     submitting.value = false
   }
 }
 
-// 手机号登录
+// 手机号登录（发短信时已验证过滑块，此处直接提交）
 async function handlePhoneLogin() {
   const valid = await phoneFormRef.value.validate().catch(() => false)
   if (!valid) return
-
-  if (!captchaData.ticket) {
-    ElMessage.warning('请先完成滑块验证')
-    return
-  }
 
   submitting.value = true
   try {
     const res = await phoneLogin({
       phone: phoneForm.phone,
-      smsCode: phoneForm.smsCode,
-      ticket: captchaData.ticket,
-      randstr: captchaData.randstr,
-      captchaSign: captchaData.captchaSign
+      smsCode: phoneForm.smsCode
     })
     userStore.setToken(res.token)
     await userStore.fetchUserInfo()
     ElMessage.success('登录成功')
     router.push('/')
-  } catch {
-    // 错误由请求拦截器统一处理
+  } catch (err) {
+    // 用户取消验证时不提示，其他错误由拦截器统一处理
   } finally {
     submitting.value = false
   }
@@ -278,6 +264,7 @@ async function handlePhoneLogin() {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  position: relative;
 }
 .login-title {
   text-align: center;

@@ -40,6 +40,10 @@ public class SmsServiceImpl implements SmsService {
     @Value("${pet.third-party.sms.sign-id}")
     private String signId;
 
+    /** 开发模式：不调用真实短信API，控制台输出验证码 */
+    @Value("${pet.sms.mock:true}")
+    private boolean smsMock;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -50,51 +54,60 @@ public class SmsServiceImpl implements SmsService {
         // 1. 生成6位随机验证码
         String code = RandomUtil.randomNumbers(CODE_LENGTH);
 
-        // 2. 调用第三方短信API发送
-        try {
-            String param = "**code**:" + code + ",**minute**:" + CODE_EXPIRE_MINUTES;
-            String url = UriComponentsBuilder.fromHttpUrl(smsUrl)
-                    .queryParam("mobile", phone)
-                    .queryParam("templateId", templateId)
-                    .queryParam("smsSignId", signId)
-                    .queryParam("param", param)
-                    .build()
-                    .toUriString();
+        // 2. 开发模式：跳过真实短信发送，控制台输出验证码
+        if (smsMock) {
+            log.info("========== 📱 短信验证码（模拟）==========");
+            log.info("手机号: {}", phone);
+            log.info("验证码: {}", code);
+            log.info("有效期: {}分钟", CODE_EXPIRE_MINUTES);
+            log.info("========================================");
+            // 控制台额外输出，方便一眼看到
+            System.out.println("\n========== 📱 短信验证码（模拟）==========");
+            System.out.println("手机号: " + phone);
+            System.out.println("验证码: " + code);
+            System.out.println("========================================\n");
+        } else {
+            // 生产模式：调用第三方短信API发送
+            try {
+                String param = "**code**:" + code + ",**minute**:" + CODE_EXPIRE_MINUTES;
+                String url = UriComponentsBuilder.fromHttpUrl(smsUrl)
+                        .queryParam("mobile", phone)
+                        .queryParam("templateId", templateId)
+                        .queryParam("smsSignId", signId)
+                        .queryParam("param", param)
+                        .build()
+                        .toUriString();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "APPCODE " + appcode);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "APPCODE " + appcode);
 
-            HttpEntity<String> request = new HttpEntity<>(headers);
-            String response = restTemplate.postForObject(url, request, String.class);
+                HttpEntity<String> request = new HttpEntity<>(headers);
+                String response = restTemplate.postForObject(url, request, String.class);
 
-            log.info("短信发送响应: phone={}, response={}", phone, response);
+                log.info("短信发送响应: phone={}, response={}", phone, response);
 
-            // 检查API返回结果
-            if (response != null && !response.isEmpty()) {
-                // 成功格式: {"code":"0","msg":"成功"}
-                // 失败格式: {"code":"1204","msg":"签名未报备"}
-                if (response.contains("\"code\":\"0\"")) {
-                    log.info("短信发送成功: phone={}", phone);
-                } else {
-                    // 有错误码就打印出来
-                    log.warn("短信API返回非成功状态: {}", response);
+                if (response != null && !response.isEmpty()) {
+                    if (response.contains("\"code\":\"0\"")) {
+                        log.info("短信发送成功: phone={}", phone);
+                    } else {
+                        log.warn("短信API返回非成功状态: {}", response);
+                    }
                 }
-            }
 
-        } catch (org.springframework.web.client.HttpClientErrorException e) {
-            // 403: 余额用完 / 密钥错误
-            String errorBody = e.getResponseBodyAsString();
-            log.error("短信API调用失败: status={}, body={}", e.getStatusCode(), errorBody);
-            if (e.getStatusCode().value() == 403) {
-                if (errorBody != null && errorBody.contains("Quota Exhausted")) {
-                    throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信余额不足，请联系管理员");
+            } catch (org.springframework.web.client.HttpClientErrorException e) {
+                String errorBody = e.getResponseBodyAsString();
+                log.error("短信API调用失败: status={}, body={}", e.getStatusCode(), errorBody);
+                if (e.getStatusCode().value() == 403) {
+                    if (errorBody != null && errorBody.contains("Quota Exhausted")) {
+                        throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信余额不足，请联系管理员");
+                    }
+                    throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信服务认证失败");
                 }
-                throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信服务认证失败");
+                throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信发送失败");
+            } catch (Exception e) {
+                log.error("短信发送异常 phone={}", phone, e);
+                throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信发送失败，请稍后再试");
             }
-            throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信发送失败");
-        } catch (Exception e) {
-            log.error("短信发送异常 phone={}", phone, e);
-            throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "短信发送失败，请稍后再试");
         }
 
         // 3. 验证码存入 Redis，5分钟有效
@@ -105,8 +118,7 @@ public class SmsServiceImpl implements SmsService {
                 TimeUnit.MINUTES
         );
 
-        // 返回验证码（调试用，生产环境可去掉）
-        log.info("短信验证码已发送: phone={}, code={}", phone, code);
+        log.info("短信验证码已存入Redis: phone={}, code={}", phone, code);
         return code;
     }
 

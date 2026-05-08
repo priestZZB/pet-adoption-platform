@@ -1,11 +1,12 @@
 // 统一管理后端所有状态枚举，供页面组件使用
 
 export const PET_STATUS = {
-  PENDING:  { label: '待审核', type: 'warning' },
-  APPROVED: { label: '已通过', type: 'success' },
-  REJECTED: { label: '已打回', type: 'danger' },
-  ADOPTED:  { label: '已领养', type: 'info' },
-  OFFLINE:  { label: '已下架', type: 'info' }
+  PENDING:    { label: '待审核', type: 'warning' },
+  FIRST_PASS: { label: '待终审', type: 'primary' },
+  APPROVED:   { label: '已通过', type: 'success' },
+  REJECTED:   { label: '已打回', type: 'danger' },
+  ADOPTED:    { label: '已领养', type: 'info' },
+  OFFLINE:    { label: '已下架', type: 'info' }
 }
 
 export const ORDER_STATUS = {

@@ -6,6 +6,7 @@ package com.pet.common.enums;
 public enum PetStatusEnum {
 
     PENDING("PENDING", "待审核"),
+    FIRST_PASS("FIRST_PASS", "初审通过"),
     APPROVED("APPROVED", "审核通过"),
     REJECTED("REJECTED", "已打回"),
     ADOPTED("ADOPTED", "已领养"),

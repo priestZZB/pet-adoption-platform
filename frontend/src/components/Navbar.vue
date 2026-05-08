@@ -1,70 +1,167 @@
 <template>
-  <el-menu mode="horizontal" :router="true" class="navbar">
-    <!-- 左上：Logo + 平台名称 -->
-    <div class="navbar-brand">
-      <el-icon :size="24" style="vertical-align:middle;margin-right:6px">
-        <StarFilled style="color:#409EFF" />
-      </el-icon>
-      <span style="font-size:18px;font-weight:bold;color:#303133">宠物领养救助平台</span>
+  <div class="navbar-wrapper">
+    <el-menu mode="horizontal" :router="true" class="navbar">
+      <div class="navbar-brand">
+        <el-icon :size="24" style="vertical-align:middle;margin-right:6px">
+          <StarFilled style="color:#409EFF" />
+        </el-icon>
+        <span style="font-size:18px;font-weight:bold;color:#303133">宠物领养救助平台</span>
+      </div>
+      <el-menu-item index="/">首页</el-menu-item>
+      <el-menu-item index="/mall">商城</el-menu-item>
+      <el-menu-item index="/notices">公告</el-menu-item>
+    </el-menu>
+
+    <div class="user-section">
+      <template v-if="userStore.isLogin">
+        <div class="user-dropdown" ref="dropdownRef">
+          <span class="user-trigger" @click="toggleDropdown">
+            <el-avatar :size="28" :src="userStore.userInfo?.avatar" style="margin-right:6px">
+              {{ userStore.userInfo?.nickname?.[0] || "U" }}
+            </el-avatar>
+            {{ userStore.userInfo?.nickname || "用户" }}
+          </span>
+          <transition name="dropdown-fade">
+            <div v-if="dropdownOpen" class="dropdown-menu">
+              <div class="dropdown-item" @click.stop="goPage('/user/profile')">个人中心</div>
+              <div class="dropdown-item" @click.stop="goPage('/user/password')">修改密码</div>
+              <div class="dropdown-item" v-if="userStore.isDonor" @click.stop="goPage('/donate/pets')">我的发布</div>
+              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/pending')">待审核</div>
+              <div class="dropdown-item" v-if="userStore.isAdmin" @click.stop="goPage('/admin')">后台管理</div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item dropdown-item-danger" @click.stop="handleLogout">退出登录</div>
+            </div>
+          </transition>
+        </div>
+      </template>
+      <template v-else>
+        <el-button type="primary" size="small" @click="router.push('/login')">登录</el-button>
+        <el-button size="small" @click="router.push('/register')" style="margin-left:8px">注册</el-button>
+      </template>
     </div>
-
-    <!-- 中间导航菜单 -->
-    <el-menu-item index="/">首页</el-menu-item>
-    <el-menu-item index="/">宠物</el-menu-item>
-    <el-menu-item index="/mall">商城</el-menu-item>
-    <el-menu-item index="/notices">公告</el-menu-item>
-
-    <div style="flex:1" />
-
-    <!-- 右侧：登录/注册 或 用户下拉 -->
-    <template v-if="userStore.isLogin">
-      <el-sub-menu>
-        <template #title>
-          <el-avatar :size="28" :src="userStore.userInfo?.avatar" style="margin-right:6px">
-            {{ userStore.userInfo?.nickname?.[0] || 'U' }}
-          </el-avatar>
-          {{ userStore.userInfo?.nickname || '用户' }}
-        </template>
-        <el-menu-item index="/user/profile">个人中心</el-menu-item>
-        <el-menu-item index="/user/password">修改密码</el-menu-item>
-        <el-menu-item v-if="userStore.isDonor" index="/donate/pets">我的发布</el-menu-item>
-        <el-menu-item v-if="userStore.isVolunteer" index="/volunteer/pending">待审核</el-menu-item>
-        <el-menu-item v-if="userStore.isAdmin" index="/admin">后台管理</el-menu-item>
-        <el-menu-item @click="handleLogout">退出</el-menu-item>
-      </el-sub-menu>
-    </template>
-    <template v-else>
-      <el-menu-item index="/login">登录</el-menu-item>
-      <el-menu-item index="/register">注册</el-menu-item>
-    </template>
-  </el-menu>
+  </div>
 </template>
 
 <script setup>
-import { useUserStore } from '@/stores/user'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted } from "vue"
+import { useUserStore } from "@/stores/user"
+import { useRouter } from "vue-router"
 
 const userStore = useUserStore()
 const router = useRouter()
+const dropdownOpen = ref(false)
+const dropdownRef = ref(null)
+
+function toggleDropdown() {
+  dropdownOpen.value = !dropdownOpen.value
+}
+
+function goPage(path) {
+  dropdownOpen.value = false
+  router.push(path)
+}
 
 function handleLogout() {
+  dropdownOpen.value = false
   userStore.logout()
-  router.push('/')
+  router.push("/")
 }
+
+function handleClickOutside(e) {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside)
+})
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside)
+})
 </script>
 
 <style scoped>
-.navbar {
-  padding: 0 20px;
+.navbar-wrapper {
   display: flex;
   align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #e4e7ed;
+}
+.navbar {
+  flex: 1;
+  border-bottom: none !important;
 }
 .navbar-brand {
+  display: inline-flex;
+  align-items: center;
   margin-right: 30px;
+  padding: 0 20px;
+  cursor: default;
+  height: 60px;
+}
+.user-section {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  cursor: default;
+  padding-right: 20px;
+}
+.user-trigger {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #303133;
+  outline: none;
+  font-size: 14px;
+}
+.user-trigger:hover {
+  color: #409EFF;
+}
+.user-dropdown {
+  position: relative;
+}
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 6px 0;
+  z-index: 9999;
+}
+.dropdown-item {
+  padding: 10px 18px;
+  font-size: 14px;
+  color: #303133;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.dropdown-item:hover {
+  background: #f5f7fa;
+  color: #409EFF;
+}
+.dropdown-item-danger {
+  color: #f56c6c;
+}
+.dropdown-item-danger:hover {
+  background: #fef0f0;
+  color: #f56c6c;
+}
+.dropdown-divider {
+  height: 1px;
+  background: #e4e7ed;
+  margin: 4px 0;
+}
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: opacity 0.15s, transform 0.15s;
+}
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>
-
-

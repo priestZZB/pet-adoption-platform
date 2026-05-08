@@ -51,4 +51,9 @@
         </where>
         ORDER BY created_at DESC
     </select>
+
+    <select id="countActiveByUserAndPet" resultType="int">
+        SELECT COUNT(*) FROM adopt_application
+        WHERE user_id = #{userId} AND pet_id = #{petId} AND status != 'REJECTED'
+    </select>
 </mapper>

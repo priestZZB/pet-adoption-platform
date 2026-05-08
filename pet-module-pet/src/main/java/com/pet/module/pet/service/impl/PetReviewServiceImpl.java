@@ -9,6 +9,7 @@ import com.pet.module.pet.model.entity.PetInfo;
 import com.pet.module.pet.model.entity.PetReviewRecord;
 import com.pet.module.pet.service.PetReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class PetReviewServiceImpl implements PetReviewService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "pet", allEntries = true)
     public void firstReview(Long reviewerId, Long petId, PetReviewDto dto) {
         PetInfo pet = petInfoMapper.selectById(petId);
         if (pet == null) {
@@ -36,7 +38,7 @@ public class PetReviewServiceImpl implements PetReviewService {
         PetInfo update = new PetInfo();
         update.setId(petId);
         if ("APPROVED".equals(dto.getAction())) {
-            update.setStatus("APPROVED");
+            update.setStatus("FIRST_PASS");  // 初审通过 → 待终审
         } else if ("REJECTED".equals(dto.getAction())) {
             update.setStatus("REJECTED");
             update.setReviewRemark(dto.getRemark());
@@ -57,19 +59,20 @@ public class PetReviewServiceImpl implements PetReviewService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "pet", allEntries = true)
     public void finalReview(Long adminId, Long petId, PetReviewDto dto) {
         PetInfo pet = petInfoMapper.selectById(petId);
         if (pet == null) {
             throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
         }
-        if (!"APPROVED".equals(pet.getStatus())) {
+        if (!"FIRST_PASS".equals(pet.getStatus())) {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "该宠物尚未通过初审或非待终审状态");
         }
 
         PetInfo update = new PetInfo();
         update.setId(petId);
         if ("APPROVED".equals(dto.getAction())) {
-            update.setStatus("APPROVED");
+            update.setStatus("APPROVED");  // 终审通过 → 完全通过可展示
         } else if ("REJECTED".equals(dto.getAction())) {
             update.setStatus("REJECTED");
             update.setReviewRemark(dto.getRemark());

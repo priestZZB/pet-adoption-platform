@@ -33,6 +33,7 @@ com\pet\module\system\service\SmsService.class
 com\pet\module\system\controller\FeedbackController.class
 com\pet\module\system\model\entity\SysNotice.class
 com\pet\module\system\service\CaptchaService.class
+com\pet\module\system\controller\FeedbackController$FeedbackSubmitDto.class
 com\pet\module\system\model\entity\SysFeedback.class
 com\pet\module\system\model\entity\SysOperationLog.class
 com\pet\module\system\model\dto\LoginDto.class

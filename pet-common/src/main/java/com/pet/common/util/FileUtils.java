@@ -15,8 +15,15 @@ import java.util.UUID;
  */
 public class FileUtils {
 
-    /** 上传根目录（开发 & 云服务器统一） */
-    public static final String UPLOAD_DIR = "/data/pet-adoption/uploads";
+    /** 上传根目录，由 Spring 配置注入（开发/生产环境不同） */
+    public static String UPLOAD_DIR = "/data/pet-adoption/uploads";
+
+    /**
+     * 允许外部设置上传路径（由 Spring 启动时注入）
+     */
+    public static void setUploadDir(String dir) {
+        UPLOAD_DIR = dir;
+    }
     /** 最大文件大小 10MB */
     private static final long MAX_SIZE = 10 * 1024 * 1024L;
     /** 允许的图片扩展名 */
@@ -32,6 +39,12 @@ public class FileUtils {
         if (file == null || file.isEmpty()) {
             throw new BusinessException(ResultCodeEnum.FILE_EMPTY);
         }
+        // 确保上传根目录存在
+        File rootDir = new File(UPLOAD_DIR);
+        if (!rootDir.exists()) {
+            rootDir.mkdirs();
+        }
+
         if (file.getSize() > MAX_SIZE) {
             throw new BusinessException(ResultCodeEnum.FILE_SIZE_EXCEED);
         }

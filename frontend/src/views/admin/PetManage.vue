@@ -4,8 +4,9 @@
 
     <el-card>
       <div class="toolbar">
-        <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width:130px">
+        <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width:130px" @change="handleSearch">
           <el-option label="待初审" value="PENDING" />
+          <el-option label="待终审" value="FIRST_PASS" />
           <el-option label="已通过" value="APPROVED" />
           <el-option label="已打回" value="REJECTED" />
           <el-option label="已领养" value="ADOPTED" />
@@ -36,8 +37,8 @@
         <el-table-column prop="createdAt" label="发布时间" width="160" />
         <el-table-column label="操作" width="240">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'APPROVED'" type="success" size="small" @click="handleFinal(row, 'APPROVED')">终审通过</el-button>
-            <el-button v-if="row.status === 'APPROVED'" type="danger" size="small" @click="handleFinal(row, 'REJECTED')">终审打回</el-button>
+            <el-button v-if="row.status === 'FIRST_PASS'" type="success" size="small" @click="handleFinal(row, 'APPROVED')">终审通过</el-button>
+            <el-button v-if="row.status === 'FIRST_PASS'" type="danger" size="small" @click="handleFinal(row, 'REJECTED')">终审打回</el-button>
             <el-button size="small" @click="handleStatus(row, row.status === 'OFFLINE' ? 'APPROVED' : 'OFFLINE')">
               {{ row.status === 'OFFLINE' ? '上架' : '下架' }}
             </el-button>

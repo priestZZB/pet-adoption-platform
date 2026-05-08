@@ -51,11 +51,12 @@ public class PetServiceImpl implements PetService {
     @Autowired
     private UserMapper userMapper;
 
-    @Cacheable(key = "'list:' + #categoryId + ':' + #keyword")
+    @Cacheable(key = "'list:' + #categoryId + ':' + #keyword + ':' + #status")
     @Override
     public List<PetListVo> getPetList(Long categoryId, String keyword, String status, int page, int size) {
         PageHelper.startPage(page, size);
-        String queryStatus = (status != null && !status.isEmpty()) ? status : "APPROVED";
+        // status 为 null 时不筛选（管理员可见全部），由调用方自行传入
+        String queryStatus = (status != null && !status.isEmpty()) ? status : null;
         List<PetInfo> list = petInfoMapper.selectPage(categoryId, keyword, queryStatus);
         return list.stream().map(this::convertToListVo).collect(Collectors.toList());
     }

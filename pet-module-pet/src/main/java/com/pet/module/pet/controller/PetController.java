@@ -52,7 +52,9 @@ public class PetController {
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        List<PetListVo> list = petService.getPetList(categoryId, keyword, status, page, size);
+        // 公开列表默认只展示终审通过的宠物
+        String queryStatus = (status != null && !status.isEmpty()) ? status : "APPROVED";
+        List<PetListVo> list = petService.getPetList(categoryId, keyword, queryStatus, page, size);
         return Result.success(new PageInfo<>(list));
     }
 

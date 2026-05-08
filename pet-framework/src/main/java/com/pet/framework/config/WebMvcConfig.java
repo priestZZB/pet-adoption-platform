@@ -2,6 +2,7 @@ package com.pet.framework.config;
 
 import com.pet.framework.interceptor.AuthInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -13,14 +14,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private AuthInterceptor authInterceptor;
 
+    @Value("${pet.upload.path}")
+    private String uploadPath;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 把 /uploads/** 映射到物理目录（开发 & 云服务器统一路径）
+        // 把 /uploads/** 映射到配置的物理目录
+        String location = "file:" + uploadPath + "/";
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:/data/pet-adoption/uploads/");
+                .addResourceLocations(location);
     }
 
-        @Override
+    @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
@@ -33,5 +38,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/uploads/**"
                 );
     }
-
 }

@@ -30,10 +30,19 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Value("${pet.third-party.captcha.verify-url}")
     private String verifyUrl;
 
+    @Value("${pet.captcha.enabled:true}")
+    private boolean captchaEnabled;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public boolean verify(String ticket, String randstr, String captchaSign, String sourceIp) {
+        // 开发模式跳过验证码校验（演示时再开启）
+        if (!captchaEnabled) {
+            log.info("行为验证码已禁用（开发模式），跳过验证");
+            return true;
+        }
+
         // 参数基础校验
         if (ticket == null || ticket.isEmpty()) {
             log.warn("行为验证码验证失败: ticket为空");

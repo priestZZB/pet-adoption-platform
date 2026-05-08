@@ -82,7 +82,7 @@ import {
   Star, Tickets, Select, ChatLineSquare
 } from '@element-plus/icons-vue'
 import { uploadFile } from '@/api/file'
-import { updateAvatar } from '@/api/user'
+import { uploadAvatar } from '@/api/user'
 import { ROLE_MAP } from '@/utils/constants'
 import { useUserStore } from '@/stores/user'
 
@@ -90,9 +90,8 @@ const userStore = useUserStore()
 
 async function handleAvatarUpload(file) {
   try {
-    const res = await uploadFile(file, 'avatar')
-    await updateAvatar(res.url)
-    userStore.userInfo.avatar = res.url
+    await uploadAvatar(file)
+    await userStore.fetchUserInfo()
     ElMessage.success('头像已更新')
   } catch {
     // 请求拦截器统一处理
