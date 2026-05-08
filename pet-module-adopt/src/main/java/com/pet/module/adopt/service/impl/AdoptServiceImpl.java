@@ -17,6 +17,7 @@ import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +65,11 @@ public class AdoptServiceImpl implements AdoptService {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "该宠物已被领养");
         }
 
+        // 不能领养自己发布的宠物
+        if (pet.getUserId().equals(userId)) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "您不能领养自己发布的宠物");
+        }
+
         // 同一用户不可对同一宠物重复提交申请
         if (adoptApplicationMapper.countActiveByUserAndPet(userId, dto.getPetId()) > 0) {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "您已提交过该宠物的领养申请，请勿重复提交");
@@ -106,6 +112,7 @@ public class AdoptServiceImpl implements AdoptService {
     }
 
     @Override
+    @CacheEvict(cacheNames = "pet", allEntries = true)
     @Transactional
     public void adminReview(Long id, String action) {
         AdoptApplication app = adoptApplicationMapper.selectById(id);
@@ -133,6 +140,7 @@ public class AdoptServiceImpl implements AdoptService {
     }
 
     @Override
+    @CacheEvict(cacheNames = "pet", allEntries = true)
     @Transactional
     public void donorReview(Long id, String action) {
         AdoptApplication app = adoptApplicationMapper.selectById(id);

@@ -29,6 +29,7 @@ public class PetDetailVo implements Serializable {
     private String reviewRemark;
     private List<String> images;
     private Integer favoriteCount;
+    private Boolean isFavorited;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -72,6 +73,8 @@ public class PetDetailVo implements Serializable {
     public void setImages(List<String> images) { this.images = images; }
     public Integer getFavoriteCount() { return favoriteCount; }
     public void setFavoriteCount(Integer favoriteCount) { this.favoriteCount = favoriteCount; }
+    public Boolean getIsFavorited() { return isFavorited; }
+    public void setIsFavorited(Boolean isFavorited) { this.isFavorited = isFavorited; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

@@ -171,9 +171,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, CircleCheckFilled, RemoveFilled, Star, Check } from '@element-plus/icons-vue'
 import { getPetDetail, favorite, unfavorite } from '@/api/pet'
+import { getExamHistory } from '@/api/adopt'
 import { GENDER_MAP, PET_STATUS } from '@/utils/constants'
 import { useUserStore } from '@/stores/user'
 
@@ -190,6 +191,7 @@ async function loadDetail() {
   loading.value = true
   try {
     pet.value = await getPetDetail(route.params.id)
+    isFav.value = pet.value.isFavorited === true
   } catch {
     pet.value = null
   } finally {
@@ -207,12 +209,16 @@ async function toggleFavorite() {
     if (isFav.value) {
       await unfavorite(pet.value.id)
       isFav.value = false
-      pet.value.favoriteCount--
+      // 重新获取最新收藏数
+      const updated = await getPetDetail(pet.value.id)
+      pet.value.favoriteCount = updated.favoriteCount
       ElMessage.success('已取消收藏')
     } else {
       await favorite(pet.value.id)
       isFav.value = true
-      pet.value.favoriteCount++
+      // 重新获取最新收藏数
+      const updated = await getPetDetail(pet.value.id)
+      pet.value.favoriteCount = updated.favoriteCount
       ElMessage.success('收藏成功')
     }
   } catch {
@@ -220,7 +226,7 @@ async function toggleFavorite() {
   }
 }
 
-function handleAdopt() {
+async function handleAdopt() {
   if (!userStore.isLogin) {
     ElMessage.warning('请先登录')
     router.push('/login')
@@ -230,6 +236,47 @@ function handleAdopt() {
     ElMessage.warning('该宠物当前不可申请领养')
     return
   }
+
+  // 不能领养自己发布的宠物
+  if (pet.value.userId && userStore.userInfo?.id && pet.value.userId === userStore.userInfo.id) {
+    ElMessage.warning('您不能领养自己发布的宠物')
+    return
+  }
+
+  // 刷新用户信息，检查实名认证状态
+  if (userStore.userInfo) {
+    await userStore.fetchUserInfo()
+  }
+  if (userStore.userInfo?.isRealName !== 1) {
+    ElMessageBox.confirm(
+      '领养前需要先完成实名认证，是否前往认证？',
+      '实名认证',
+      { confirmButtonText: '去认证', cancelButtonText: '取消', type: 'warning' }
+    ).then(() => {
+      router.push('/user/real-name')
+    }).catch(() => {})
+    return
+  }
+
+  // 检查最近一次考试是否满分（与后端逻辑一致：只查最新一次）
+  try {
+    const history = await getExamHistory()
+    const latest = Array.isArray(history) && history.length > 0 ? history[0] : null
+    const passed = latest && latest.isPassed === 1
+    if (!passed) {
+      ElMessageBox.confirm(
+        '申请领养前需要通过领养考试（满分100分），是否前往考试？',
+        '领养考试',
+        { confirmButtonText: '去考试', cancelButtonText: '取消', type: 'warning' }
+      ).then(() => {
+        router.push('/adopt/exam')
+      }).catch(() => {})
+      return
+    }
+  } catch {
+    // 查询失败时放行，后端会二次校验
+  }
+
   router.push('/adopt/apply/' + pet.value.id)
 }
 

@@ -1,6 +1,11 @@
 ﻿<template>
   <div class="pending-page">
-    <h3 class="page-title">待审核宠物</h3>
+    <el-tabs v-model="activeTab" @tab-change="onTabChange" class="page-tabs">
+      <el-tab-pane label="待审核" name="pending" />
+      <el-tab-pane label="审核历史" name="reviewed" />
+      <el-tab-pane label="去走访" name="add" />
+      <el-tab-pane label="走访记录" name="visits" />
+    </el-tabs>
 
     <div v-if="loading" class="loading-center">
       <el-icon class="is-loading" :size="32"><Loading /></el-icon>
@@ -87,11 +92,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import request from '@/api/request'
 import { GENDER_MAP } from '@/utils/constants'
 
+const router = useRouter()
+const activeTab = ref('pending')
 const list = ref([])
 const loading = ref(true)
 const reviewVisible = ref(false)
@@ -133,6 +141,12 @@ async function confirmReview() {
   } finally {
     reviewing.value = false
   }
+}
+
+function onTabChange(tab) {
+  if (tab === 'reviewed') router.push('/volunteer/reviewed')
+  else if (tab === 'add') router.push('/volunteer/visits/add')
+  else if (tab === 'visits') router.push('/volunteer/visits')
 }
 
 onMounted(loadList)

@@ -59,12 +59,21 @@ public class PetController {
     }
 
     /**
-     * 宠物详情（公开）
+     * 宠物详情（公开，登录后可查当前用户收藏状态）
      */
     @ApiOperation("宠物详情")
     @GetMapping("/pets/{id}")
-    public Result<PetDetailVo> detail(@PathVariable Long id) {
-        return Result.success(petService.getPetDetail(id));
+    public Result<PetDetailVo> detail(HttpServletRequest request, @PathVariable Long id) {
+        Long userId = null;
+        try {
+            Object attr = request.getAttribute("userId");
+            if (attr != null) {
+                userId = Long.valueOf(attr.toString());
+            }
+        } catch (Exception e) {
+            // 未登录时忽略，userId 保持 null
+        }
+        return Result.success(petService.getPetDetail(id, userId));
     }
 
     /**

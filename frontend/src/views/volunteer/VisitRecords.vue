@@ -1,65 +1,11 @@
-﻿<template>
+<template>
   <div class="visits-page">
-    <h3 class="page-title">走访记录</h3>
-
-    <!-- 新增走访记录 -->
-    <el-card class="submit-card">
-      <template #header><span>新增走访记录</span></template>
-
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-        size="large"
-      >
-        <el-form-item label="关联宠物">
-          <el-input
-            v-model="form.petId"
-            placeholder="关联宠物ID（选填）"
-          />
-        </el-form-item>
-
-        <el-form-item label="走访日期" prop="visitDate">
-          <el-date-picker
-            v-model="form.visitDate"
-            type="date"
-            placeholder="选择走访日期"
-            value-format="YYYY-MM-DD"
-            style="width:100%"
-          />
-        </el-form-item>
-
-        <el-form-item label="走访内容" prop="content">
-          <el-input
-            v-model="form.content"
-            type="textarea"
-            :rows="4"
-            placeholder="请描述走访情况"
-            maxlength="500"
-            show-word-limit
-          />
-        </el-form-item>
-
-        <el-form-item label="图片">
-          <el-upload
-            :file-list="imageFileList"
-            :before-upload="handleImageUpload"
-            list-type="picture-card"
-            accept="image/*"
-            multiple
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" :loading="submitting" @click="handleSubmit">
-            提交记录
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <el-tabs v-model="activeTab" @tab-change="onTabChange" class="page-tabs">
+      <el-tab-pane label="待审核" name="pending" />
+      <el-tab-pane label="审核历史" name="reviewed" />
+      <el-tab-pane label="去走访" name="add" />
+      <el-tab-pane label="走访记录" name="visits" />
+    </el-tabs>
 
     <!-- 走访记录列表 -->
     <el-card class="list-card">
@@ -83,6 +29,7 @@
           >
             <div class="visit-header">
               <span class="visit-date">{{ item.visitDate }}</span>
+              <span class="visit-pet" v-if="item.petId">宠物 #{{ item.petId }}</span>
               <span class="visit-time">{{ item.createdAt }}</span>
             </div>
             <p class="visit-content">{{ item.content }}</p>
@@ -145,75 +92,21 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus, Loading } from '@element-plus/icons-vue'
-import { submitVisit, getMyVisits, getVisitDetail } from '@/api/volunteer'
-import { uploadFiles } from '@/api/file'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Loading } from '@element-plus/icons-vue'
+import { getMyVisits, getVisitDetail } from '@/api/volunteer'
 import Pagination from '@/components/Pagination.vue'
 
-const formRef = ref(null)
-const submitting = ref(false)
+const router = useRouter()
+const activeTab = ref('visits')
 const listLoading = ref(true)
-const imageFileList = ref([])
-const imageUrlList = ref([])
 const visitList = ref([])
 const total = ref(0)
 const page = ref(1)
 const size = ref(10)
 const detailVisible = ref(false)
 const currentVisit = ref(null)
-
-const form = reactive({
-  petId: '',
-  visitDate: '',
-  content: ''
-})
-
-const rules = {
-  visitDate: [{ required: true, message: '请选择走访日期', trigger: 'change' }],
-  content: [{ required: true, message: '请输入走访内容', trigger: 'blur' }]
-}
-
-async function handleImageUpload(file) {
-  try {
-    const res = await uploadFiles([file], 'volunteer')
-    imageUrlList.value = imageUrlList.value.concat(res.urls || [])
-  } catch {
-    ElMessage.error('图片上传失败')
-  }
-  return false
-}
-
-async function handleSubmit() {
-  const valid = await formRef.value.validate().catch(() => false)
-  if (!valid) return
-
-  submitting.value = true
-  try {
-    const data = {
-      petId: form.petId ? parseInt(form.petId) : null,
-      visitDate: form.visitDate,
-      content: form.content
-    }
-    if (imageUrlList.value.length > 0) {
-      data.images = imageUrlList.value
-    }
-    await submitVisit(data)
-    ElMessage.success('走访记录已提交')
-    form.petId = ''
-    form.visitDate = ''
-    form.content = ''
-    imageUrlList.value = []
-    imageFileList.value = []
-    page.value = 1
-    loadList()
-  } catch {
-    // 请求拦截器统一处理
-  } finally {
-    submitting.value = false
-  }
-}
 
 async function loadList() {
   listLoading.value = true
@@ -244,6 +137,12 @@ async function showDetail(item) {
   }
 }
 
+function onTabChange(tab) {
+  if (tab === 'pending') router.push('/volunteer/pending')
+  else if (tab === 'reviewed') router.push('/volunteer/reviewed')
+  else if (tab === 'add') router.push('/volunteer/visits/add')
+}
+
 onMounted(loadList)
 </script>
 
@@ -253,12 +152,6 @@ onMounted(loadList)
   margin: 0 auto;
   padding: 24px 0 40px;
 }
-.page-title {
-  font-size: 20px;
-  color: #303133;
-  margin: 0 0 20px;
-}
-.submit-card { margin-bottom: 20px; }
 .loading-center {
   display: flex;
   justify-content: center;
@@ -288,6 +181,10 @@ onMounted(loadList)
   font-size: 14px;
   color: #303133;
   font-weight: 500;
+}
+.visit-pet {
+  font-size: 12px;
+  color: #909399;
 }
 .visit-time { font-size: 12px; color: #909399; }
 .visit-content {

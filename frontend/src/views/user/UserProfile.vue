@@ -32,12 +32,37 @@
           </p>
         </div>
       </div>
+
+      <!-- 详细信息 -->
+      <el-divider />
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">手机号</span>
+          <span class="detail-value">{{ userStore.userInfo?.phone || '未设置' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">邮箱</span>
+          <span class="detail-value">{{ userStore.userInfo?.email || '未设置' }}</span>
+        </div>
+        <div class="detail-item" v-if="userStore.userInfo?.isRealName === 1">
+          <span class="detail-label">真实姓名</span>
+          <span class="detail-value">{{ userStore.userInfo?.realName }}</span>
+        </div>
+        <div class="detail-item" v-if="userStore.userInfo?.isRealName === 1">
+          <span class="detail-label">身份证号</span>
+          <span class="detail-value">{{ userStore.userInfo?.idCard }}</span>
+        </div>
+      </div>
     </el-card>
 
     <!-- 功能入口 -->
     <el-card class="menu-card">
       <template #header><span>功能入口</span></template>
       <div class="menu-grid">
+        <div class="menu-item" @click="$router.push('/user/profile/edit')">
+          <el-icon :size="24" color="#409EFF"><Edit /></el-icon>
+          <span>编辑资料</span>
+        </div>
         <div class="menu-item" @click="$router.push('/user/real-name')">
           <el-icon :size="24" color="#409EFF"><Postcard /></el-icon>
           <span>实名认证</span>
@@ -78,7 +103,7 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import {
-  CircleCheck, Postcard, Lock, User, UserFilled,
+  CircleCheck, Edit, Postcard, Lock, User, UserFilled,
   Star, Tickets, Select, ChatLineSquare
 } from '@element-plus/icons-vue'
 import { uploadFile } from '@/api/file'
@@ -147,6 +172,26 @@ async function handleAvatarUpload(file) {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 0 4px;
+}
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-label {
+  font-size: 12px;
+  color: #909399;
+}
+.detail-value {
+  font-size: 14px;
+  color: #303133;
 }
 
 .menu-grid {

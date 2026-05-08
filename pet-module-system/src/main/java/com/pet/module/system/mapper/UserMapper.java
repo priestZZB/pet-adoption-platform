@@ -23,6 +23,10 @@ public interface UserMapper {
 
     int countByPhone(String phone);
 
+    int countByIdCard(String idCard);
+
+    SysUser selectByIdCard(String idCard);
+
     int updateVolunteerStatus(@Param("userId") Long userId, @Param("volunteerStatus") String volunteerStatus);
 
     List<SysUser> selectVolunteerApplies();

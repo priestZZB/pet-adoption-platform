@@ -11,14 +11,6 @@
         size="large"
         @keyup.enter="handleRegister"
       >
-        <el-form-item prop="username">
-          <el-input
-            v-model="form.username"
-            placeholder="用户名（2-20个字符）"
-            :prefix-icon="User"
-          />
-        </el-form-item>
-
         <el-form-item prop="password">
           <el-input
             v-model="form.password"
@@ -98,7 +90,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, Lock, Iphone } from '@element-plus/icons-vue'
 import { register } from '@/api/user'
 import { sendSmsCode } from '@/api/sms'
@@ -113,7 +105,6 @@ const smsCountdown = ref(0)
 let smsTimer = null
 
 const form = reactive({
-  username: '',
   password: '',
   confirmPassword: '',
   nickname: '',
@@ -131,10 +122,6 @@ const validateConfirm = (rule, value, callback) => {
 }
 
 const rules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 2, max: 20, message: '用户名2-20个字符', trigger: 'blur' }
-  ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码6-20个字符', trigger: 'blur' }
@@ -199,17 +186,37 @@ async function handleRegister() {
 
   submitting.value = true
   try {
-    await register({
-      username: form.username,
+    const result = await register({
       password: form.password,
-      nickname: form.nickname || form.username,
+      nickname: form.nickname || '用户',
       phone: form.phone,
       smsCode: form.smsCode
     })
-    ElMessage.success('注册成功，请登录')
-    router.push('/login')
+    const username = result?.username || '—'
+    ElMessageBox.alert(
+      `注册成功！<br>您的用户名为：<b>${username}</b><br>请使用用户名和密码登录。`,
+      '注册成功',
+      {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: '去登录',
+        type: 'success'
+      }
+    ).then(() => {
+      router.push('/login')
+    })
   } catch (err) {
-    // 用户取消验证时不提示，其他错误由拦截器统一处理
+    // 处理手机号已注册的情况
+    if (err?.message?.includes('手机号已被绑定')) {
+      ElMessageBox.confirm(
+        '该手机号已注册，是否直接登录？',
+        '手机号已存在',
+        { confirmButtonText: '去登录', cancelButtonText: '取消', type: 'info' }
+      ).then(() => {
+        router.push('/login')
+      }).catch(() => {})
+      return
+    }
+    // 其他错误由请求拦截器统一处理
   } finally {
     submitting.value = false
   }

@@ -93,14 +93,16 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { getPetDetail } from '@/api/pet'
-import { submitApplication } from '@/api/adopt'
+import { getExamHistory, submitApplication } from '@/api/adopt'
 import { GENDER_MAP } from '@/utils/constants'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref(null)
 const submitting = ref(false)
 const loading = ref(true)
@@ -149,7 +151,51 @@ async function handleSubmit() {
   }
 }
 
-onMounted(loadPet)
+onMounted(async () => {
+  // 检查是否登录
+  if (!userStore.isLogin) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
+  // 检查实名认证
+  await userStore.fetchUserInfo()
+  if (userStore.userInfo?.isRealName !== 1) {
+    ElMessageBox.confirm(
+      '领养前需要先完成实名认证，是否前往认证？',
+      '实名认证',
+      { confirmButtonText: '去认证', cancelButtonText: '取消', type: 'warning' }
+    ).then(() => {
+      router.push('/user/real-name')
+    }).catch(() => {
+      router.back()
+    })
+    return
+  }
+
+  // 检查最近一次考试是否满分
+  try {
+    const history = await getExamHistory()
+    const passed = Array.isArray(history) && history.some(h => h.isPassed === 1)
+    if (!passed) {
+      ElMessageBox.confirm(
+        '申请领养前需要通过领养考试（满分100分），是否前往考试？',
+        '领养考试',
+        { confirmButtonText: '去考试', cancelButtonText: '取消', type: 'warning' }
+      ).then(() => {
+        router.push('/adopt/exam')
+      }).catch(() => {
+        router.back()
+      })
+      return
+    }
+  } catch {
+    // 查询失败时放行，后端会二次校验
+  }
+
+  loadPet()
+})
 </script>
 
 <style scoped>

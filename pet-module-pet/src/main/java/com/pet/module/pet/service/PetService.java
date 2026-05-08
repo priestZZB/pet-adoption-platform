@@ -10,7 +10,7 @@ public interface PetService {
 
     List<PetListVo> getPetList(Long categoryId, String keyword, String status, int page, int size);
 
-    PetDetailVo getPetDetail(Long petId);
+    PetDetailVo getPetDetail(Long petId, Long userId);
 
     Long publish(Long userId, PetPublishDto dto);
 
@@ -27,4 +27,6 @@ public interface PetService {
     void adminUpdateStatus(Long petId, String status);
 
     PetDetailVo getPetDetailForAdmin(Long petId);
+
+    List<com.pet.module.pet.model.vo.PetSelectVo> getSelectablePets();
 }

@@ -23,4 +23,6 @@ public interface PetInfoMapper {
     List<PetInfo> selectPendingList();
 
     List<PetInfo> selectReviewedByReviewer(Long reviewerId);
+
+    List<PetInfo> selectByStatusList(@Param("statusList") List<String> statusList);
 }

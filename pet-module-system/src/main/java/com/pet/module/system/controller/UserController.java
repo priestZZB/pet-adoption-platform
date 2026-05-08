@@ -30,9 +30,11 @@ public class UserController {
      */
     @ApiOperation("用户注册")
     @PostMapping("/register")
-    public Result<String> register(@RequestBody RegisterDto dto) {
-        userService.register(dto);
-        return Result.success("注册成功");
+    public Result<Map<String, String>> register(@RequestBody RegisterDto dto) {
+        String username = userService.register(dto);
+        Map<String, String> data = new HashMap<>();
+        data.put("username", username);
+        return Result.success("注册成功", data);
     }
 
     /**

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface UserService {
 
-    void register(RegisterDto dto);
+    String register(RegisterDto dto);
 
     String login(LoginDto dto);
 

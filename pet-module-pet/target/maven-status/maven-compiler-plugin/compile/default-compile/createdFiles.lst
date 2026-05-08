@@ -1,5 +1,6 @@
 com\pet\module\pet\controller\AdminPetController.class
 com\pet\module\pet\mapper\PetFavoriteMapper.class
+com\pet\module\pet\model\vo\PetSelectVo.class
 com\pet\module\pet\model\dto\PetQueryDto.class
 com\pet\module\pet\mapper\PetInfoMapper.class
 com\pet\module\pet\model\dto\PetPublishDto.class

@@ -1,5 +1,6 @@
 package com.pet.module.system.service.impl;
 
+import cn.hutool.core.util.RandomUtil;
 import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
 import com.pet.common.exception.BusinessException;
@@ -54,9 +55,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void register(RegisterDto dto) {
-        if (userMapper.countByUsername(dto.getUsername()) > 0) {
-            throw new BusinessException(ResultCodeEnum.USERNAME_EXISTS);
+    public String register(RegisterDto dto) {
+        // 检查手机号是否已注册
+        if (userMapper.countByPhone(dto.getPhone()) > 0) {
+            throw new BusinessException(ResultCodeEnum.PHONE_EXISTS);
         }
 
         // 发短信时已验证过滑块，此处不再重复验证
@@ -68,10 +70,16 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
         }
 
+        // 自动生成7位数字用户名，确保唯一
+        String username;
+        do {
+            username = RandomUtil.randomNumbers(7);
+        } while (userMapper.countByUsername(username) > 0);
+
         SysUser user = new SysUser();
-        user.setUsername(dto.getUsername());
+        user.setUsername(username);
         user.setPassword(encoder.encode(dto.getPassword()));
-        user.setNickname(dto.getNickname());
+        user.setNickname(dto.getNickname() != null && !dto.getNickname().isEmpty() ? dto.getNickname() : username);
         user.setPhone(dto.getPhone());
         userMapper.insert(user);
 
@@ -83,6 +91,8 @@ public class UserServiceImpl implements UserService {
             ur.setRoleId(role.getId());
             userRoleMapper.insert(ur);
         }
+
+        return username;
     }
 
     @Override
@@ -186,6 +196,11 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.OLD_PASSWORD_ERROR);
         }
 
+        // 检查新旧密码是否相同
+        if (dto.getOldPassword().equals(dto.getNewPassword())) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "新密码不能与旧密码相同");
+        }
+
         // 短信验证码校验（修改密码必传）
         if (dto.getPhone() == null || dto.getPhone().isEmpty()) {
             throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请提供手机号");
@@ -232,10 +247,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void realNameAuth(Long userId, RealNameDto dto) {
         // 行为验证码校验（防恶意批量实名认证）
         if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
+        }
+
+        // 检查身份证号是否已被其他账号绑定
+        SysUser existingUser = userMapper.selectByIdCard(dto.getIdCard());
+        if (existingUser != null && !existingUser.getId().equals(userId)) {
+            // 对已绑定账号的用户名做加密处理（只显示前2位+***+后2位）
+            String boundUsername = maskUsername(existingUser.getUsername());
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST,
+                    "该身份证已被账号「" + boundUsername + "」绑定");
         }
 
         // 调用第三方人脸比对（自动识别图片类型）
@@ -267,6 +292,16 @@ public class UserServiceImpl implements UserService {
         update.setPhone(dto.getPhone());
         update.setIsRealName(1);
         userMapper.updateById(update);
+    }
+
+    /**
+     * 对用户名做脱敏处理：显示前2位+***+后2位
+     */
+    private String maskUsername(String username) {
+        if (username == null || username.length() <= 4) {
+            return username;
+        }
+        return username.substring(0, 2) + "***" + username.substring(username.length() - 2);
     }
 
     @Override

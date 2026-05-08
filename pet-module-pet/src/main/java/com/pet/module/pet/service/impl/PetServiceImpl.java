@@ -10,10 +10,12 @@ import com.pet.module.pet.mapper.PetInfoMapper;
 import com.pet.module.pet.model.dto.PetPublishDto;
 import com.pet.module.pet.model.dto.PetUpdateDto;
 import com.pet.module.pet.model.entity.PetCategory;
+import com.pet.module.pet.model.entity.PetFavorite;
 import com.pet.module.pet.model.entity.PetImage;
 import com.pet.module.pet.model.entity.PetInfo;
 import com.pet.module.pet.model.vo.PetDetailVo;
 import com.pet.module.pet.model.vo.PetListVo;
+import com.pet.module.pet.model.vo.PetSelectVo;
 import com.pet.module.pet.service.PetImageService;
 import com.pet.module.pet.service.PetService;
 import com.pet.module.system.mapper.UserMapper;
@@ -26,6 +28,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,14 +64,14 @@ public class PetServiceImpl implements PetService {
         return list.stream().map(this::convertToListVo).collect(Collectors.toList());
     }
 
-    @Cacheable(key = "'detail:' + #petId")
+    @Cacheable(key = "'detail:' + #petId + ':' + (#userId != null ? #userId : 0)")
     @Override
-    public PetDetailVo getPetDetail(Long petId) {
+    public PetDetailVo getPetDetail(Long petId, Long userId) {
         PetInfo pet = petInfoMapper.selectById(petId);
         if (pet == null) {
             throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
         }
-        return convertToDetailVo(pet);
+        return convertToDetailVo(pet, userId);
     }
 
     @CacheEvict(allEntries = true)
@@ -189,8 +192,21 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    public List<PetSelectVo> getSelectablePets() {
+        List<String> statuses = Arrays.asList("PENDING", "FIRST_PASS", "APPROVED", "ADOPTED");
+        List<PetInfo> list = petInfoMapper.selectByStatusList(statuses);
+        return list.stream().map(p -> {
+            PetSelectVo vo = new PetSelectVo();
+            vo.setId(p.getId());
+            vo.setName(p.getName());
+            vo.setStatus(p.getStatus());
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public PetDetailVo getPetDetailForAdmin(Long petId) {
-        return getPetDetail(petId);
+        return getPetDetail(petId, null);
     }
 
     // ========== 私有转换方法 ==========
@@ -221,7 +237,7 @@ public class PetServiceImpl implements PetService {
         return vo;
     }
 
-    private PetDetailVo convertToDetailVo(PetInfo pet) {
+    private PetDetailVo convertToDetailVo(PetInfo pet, Long userId) {
         PetDetailVo vo = new PetDetailVo();
         BeanUtils.copyProperties(pet, vo);
 
@@ -237,6 +253,14 @@ public class PetServiceImpl implements PetService {
 
         // 收藏数
         vo.setFavoriteCount(petFavoriteMapper.countByPetId(pet.getId()));
+
+        // 当前用户是否已收藏（仅当登录时查询）
+        if (userId != null) {
+            PetFavorite existing = petFavoriteMapper.selectByUserAndPet(userId, pet.getId());
+            vo.setIsFavorited(existing != null);
+        } else {
+            vo.setIsFavorited(false);
+        }
 
         // 送养人信息
         SysUser user = userMapper.selectById(pet.getUserId());

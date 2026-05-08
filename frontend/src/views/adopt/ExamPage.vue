@@ -92,9 +92,14 @@
         <p class="result-label">
           {{ result.isPassed ? '满分通过，现在可以提交领养申请了' : '未达到满分（100分），请重新考试' }}
         </p>
-        <el-button v-if="!result.isPassed" type="primary" @click="startExam">
-          重新考试
-        </el-button>
+        <div class="result-actions">
+          <el-button v-if="!result.isPassed" type="primary" @click="startExam">
+            重新考试
+          </el-button>
+          <el-button v-if="result.isPassed" type="primary" size="large" @click="goAdopt">
+            去领养
+          </el-button>
+        </div>
 
         <el-divider />
 
@@ -125,10 +130,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Reading } from '@element-plus/icons-vue'
 import { startExam as apiStartExam, submitExam, getExamHistory } from '@/api/adopt'
 
+const router = useRouter()
 const phase = ref('intro')
 const questions = ref([])
 const answers = ref({})
@@ -173,6 +180,10 @@ async function submitExamAction() {
   } catch {
     // 请求拦截器统一处理
   }
+}
+
+function goAdopt() {
+  router.push('/')
 }
 
 // 防止和全局 submitExam 重名
@@ -244,9 +255,17 @@ const submitExamFn = submitExamAction
   width: 100%;
 }
 .q-option {
-  width: 100%;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  display: flex;
+  align-items: center;
   padding: 12px 16px;
   font-size: 15px;
+  box-sizing: border-box;
+}
+.q-option :deep(.el-radio__label) {
+  flex: 1;
 }
 
 /* 导航 */
@@ -278,6 +297,11 @@ const submitExamFn = submitExamAction
   font-size: 14px;
   color: #909399;
   margin: 0;
+}
+.result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
 .history-list {

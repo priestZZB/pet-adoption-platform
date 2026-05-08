@@ -26,7 +26,15 @@
         </el-form-item>
 
         <el-form-item label="年龄" prop="age">
-          <el-input v-model="form.age" placeholder="如：2岁 / 3个月" maxlength="20" />
+          <el-select v-model="form.age" placeholder="请选择年龄" style="width:200px">
+            <el-option
+              v-for="n in 100"
+              :key="n"
+              :label="n + '岁'"
+              :value="n + '岁'"
+            />
+            <el-option label="100岁以上请联系管理员" value="100+" disabled />
+          </el-select>
         </el-form-item>
 
         <el-form-item label="性别" prop="gender">

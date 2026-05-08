@@ -12,6 +12,7 @@ import com.pet.module.pet.model.vo.PetListVo;
 import com.pet.module.pet.service.PetFavoriteService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
     private PetImageMapper petImageMapper;
 
     @Override
+    @CacheEvict(cacheNames = "pet", allEntries = true)
     @Transactional
     public void favorite(Long userId, Long petId) {
         PetInfo pet = petInfoMapper.selectById(petId);
@@ -48,6 +50,7 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
     }
 
     @Override
+    @CacheEvict(cacheNames = "pet", allEntries = true)
     @Transactional
     public void unfavorite(Long userId, Long petId) {
         petFavoriteMapper.deleteByUserAndPet(userId, petId);

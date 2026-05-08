@@ -99,4 +99,12 @@
     <select id="countByPhone" resultType="int">
         SELECT COUNT(*) FROM sys_user WHERE phone = #{phone}
     </select>
+
+    <select id="countByIdCard" resultType="int">
+        SELECT COUNT(*) FROM sys_user WHERE id_card = #{idCard}
+    </select>
+
+    <select id="selectByIdCard" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM sys_user WHERE id_card = #{idCard} LIMIT 1
+    </select>
 </mapper>

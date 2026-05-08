@@ -25,8 +25,12 @@
             <div v-if="dropdownOpen" class="dropdown-menu">
               <div class="dropdown-item" @click.stop="goPage('/user/profile')">个人中心</div>
               <div class="dropdown-item" @click.stop="goPage('/user/password')">修改密码</div>
+              <div class="dropdown-item" @click.stop="goPage('/adopt/exam')">领养考试</div>
               <div class="dropdown-item" v-if="userStore.isDonor" @click.stop="goPage('/donate/pets')">我的发布</div>
-              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/pending')">待审核</div>
+              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/pending')">待审核宠物</div>
+              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/reviewed')">审核历史</div>
+              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/visits/add')">去走访</div>
+              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/visits')">走访记录</div>
               <div class="dropdown-item" v-if="userStore.isAdmin" @click.stop="goPage('/admin')">后台管理</div>
               <div class="dropdown-divider"></div>
               <div class="dropdown-item dropdown-item-danger" @click.stop="handleLogout">退出登录</div>

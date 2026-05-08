@@ -86,4 +86,13 @@
         WHERE r.reviewer_id = #{reviewerId}
         ORDER BY r.created_at DESC
     </select>
+
+    <select id="selectByStatusList" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_info
+        WHERE status IN
+        <foreach collection="statusList" item="s" open="(" separator="," close=")">
+            #{s}
+        </foreach>
+        ORDER BY created_at DESC
+    </select>
 </mapper>

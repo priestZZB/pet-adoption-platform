@@ -22,6 +22,7 @@ const routes = [
       { path: 'notices/:id', component: () => import('@/views/notice/NoticeDetail.vue') },
       { path: 'ai',         component: () => import('@/views/ai/AIChat.vue'), meta: { requiresAuth: true } },
       { path: 'user/profile',     component: () => import('@/views/user/UserProfile.vue'), meta: { requiresAuth: true } },
+      { path: 'user/profile/edit', component: () => import('@/views/user/EditProfile.vue'), meta: { requiresAuth: true } },
       { path: 'user/password',    component: () => import('@/views/user/ChangePassword.vue'), meta: { requiresAuth: true } },
       { path: 'user/real-name',   component: () => import('@/views/user/RealName.vue'), meta: { requiresAuth: true } },
       { path: 'user/favorites',   component: () => import('@/views/pet/PetFavorites.vue'), meta: { requiresAuth: true } },
@@ -41,6 +42,7 @@ const routes = [
       { path: 'donate/pets/:id/applications', component: () => import('@/views/donate/DonateApplications.vue'), meta: { requiresAuth: true, role: 'USER_ADOPTER' } },
       { path: 'volunteer/pending',  component: () => import('@/views/volunteer/PendingReviews.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
       { path: 'volunteer/reviewed', component: () => import('@/views/volunteer/ReviewedHistory.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
+      { path: 'volunteer/visits/add', component: () => import('@/views/volunteer/AddVisit.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
       { path: 'volunteer/visits',   component: () => import('@/views/volunteer/VisitRecords.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
     ]
   },

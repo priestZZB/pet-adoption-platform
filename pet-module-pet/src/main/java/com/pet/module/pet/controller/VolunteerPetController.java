@@ -5,6 +5,7 @@ import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.pet.model.dto.PetReviewDto;
 import com.pet.module.pet.model.vo.PetListVo;
+import com.pet.module.pet.model.vo.PetSelectVo;
 import com.pet.module.pet.service.PetReviewService;
 import com.pet.module.pet.service.PetService;
 import io.swagger.annotations.Api;
@@ -45,6 +46,15 @@ public class VolunteerPetController {
     public Result<List<PetListVo>> reviewed(HttpServletRequest request) {
         Long reviewerId = Long.valueOf(request.getAttribute("userId").toString());
         return Result.success(petService.getReviewedByUser(reviewerId));
+    }
+
+    /**
+     * 可选宠物列表（用于走访记录关联）
+     */
+    @ApiOperation("可选宠物列表（走访记录用）")
+    @GetMapping("/pets/selectable")
+    public Result<List<PetSelectVo>> selectable() {
+        return Result.success(petService.getSelectablePets());
     }
 
     /**

@@ -1,6 +1,11 @@
 ﻿<template>
   <div class="history-page">
-    <h3 class="page-title">审核历史</h3>
+    <el-tabs v-model="activeTab" @tab-change="onTabChange" class="page-tabs">
+      <el-tab-pane label="待审核" name="pending" />
+      <el-tab-pane label="审核历史" name="reviewed" />
+      <el-tab-pane label="去走访" name="add" />
+      <el-tab-pane label="走访记录" name="visits" />
+    </el-tabs>
 
     <div v-if="loading" class="loading-center">
       <el-icon class="is-loading" :size="32"><Loading /></el-icon>
@@ -54,10 +59,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Loading } from '@element-plus/icons-vue'
 import request from '@/api/request'
 import { PET_STATUS, GENDER_MAP } from '@/utils/constants'
 
+const router = useRouter()
+const activeTab = ref('reviewed')
 const list = ref([])
 const loading = ref(true)
 
@@ -70,6 +78,12 @@ async function loadList() {
   } finally {
     loading.value = false
   }
+}
+
+function onTabChange(tab) {
+  if (tab === 'pending') router.push('/volunteer/pending')
+  else if (tab === 'add') router.push('/volunteer/visits/add')
+  else if (tab === 'visits') router.push('/volunteer/visits')
 }
 
 onMounted(loadList)

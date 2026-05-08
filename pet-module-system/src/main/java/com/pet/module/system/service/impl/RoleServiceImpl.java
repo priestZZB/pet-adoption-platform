@@ -63,6 +63,20 @@ public class RoleServiceImpl implements RoleService {
         ur.setUserId(userId);
         ur.setRoleId(roleId);
         userRoleMapper.insert(ur);
+
+        // 同步更新状态字段，保持两套体系一致
+        SysUser update = new SysUser();
+        update.setId(userId);
+        if ("USER_ADOPTER".equals(role.getRoleCode())) {
+            update.setDonorStatus("APPROVED");
+        } else if ("VOLUNTEER".equals(role.getRoleCode())) {
+            update.setVolunteerStatus("APPROVED");
+        } else if ("USER".equals(role.getRoleCode())) {
+            // 改为普通用户时，重置申请状态（撤销已通过的身份申请）
+            update.setDonorStatus("NONE");
+            update.setVolunteerStatus("NONE");
+        }
+        userMapper.updateById(update);
     }
 
     @Override
