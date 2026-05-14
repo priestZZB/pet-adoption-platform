@@ -134,7 +134,7 @@ const query = reactive({
 })
 
 // 欢迎页（固定写死，放在轮播图最前面，使用本地图片）
-const WELCOME_IMAGE = '/uploads/banner/welcome.jpg'
+const WELCOME_IMAGE = '/images/welcome.jpg'
 const welcomeBanner = {
   imageUrl: WELCOME_IMAGE
 }

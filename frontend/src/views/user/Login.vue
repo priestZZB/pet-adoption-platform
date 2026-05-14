@@ -2,7 +2,7 @@
   <div class="login-page">
     <div class="login-card">
       <div class="login-logo">
-        <el-image src="/logo.jpg" fit="contain" style="width:60px;height:60px;border-radius:12px;margin-bottom:8px" />
+        <el-image src="/images/logo.jpg" fit="contain" style="width:60px;height:60px;border-radius:12px;margin-bottom:8px" />
       </div>
       <h2 class="login-title">毛球寻觅</h2>
 

@@ -2,7 +2,7 @@
   <div class="navbar-wrapper">
     <el-menu mode="horizontal" :default-active="activeMenu" class="navbar">
       <div class="navbar-brand">
-        <el-image src="/logo.jpg" fit="contain" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;border-radius:6px" />
+        <el-image src="/images/logo.jpg" fit="contain" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;border-radius:6px" />
         <span style="font-size:18px;font-weight:bold;color:#303133">毛球寻觅</span>
       </div>
       <el-menu-item index="/" @click="router.push('/')">
