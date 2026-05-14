@@ -1,45 +1,46 @@
-﻿<template>
+<template>
   <div class="donate-list-page">
     <div class="page-header">
       <h3 class="page-title">我发布的宠物</h3>
-      <el-button type="primary" @click="$router.push('/donate/publish')">
-        发布新宠物
-      </el-button>
+      <el-button type="primary" @click="$router.push('/donate/publish')">发布新宠物</el-button>
     </div>
+
+    <!-- 状态筛选 -->
+    <el-tabs v-model="statusFilter" @tab-change="loadList">
+      <el-tab-pane label="全部" name="" />
+      <el-tab-pane label="待审核" name="PENDING" />
+      <el-tab-pane label="待领养" name="APPROVED" />
+      <el-tab-pane label="已打回" name="REJECTED" />
+      <el-tab-pane label="已下架" name="OFFLINE" />
+      <el-tab-pane label="已被领养" name="ADOPTED" />
+    </el-tabs>
 
     <div v-if="loading" class="loading-center">
       <el-icon class="is-loading" :size="32"><Loading /></el-icon>
     </div>
 
     <template v-else>
-      <div v-if="list.length === 0" class="empty-tip">
-        <el-empty description="还没有发布过宠物">
-          <el-button type="primary" @click="$router.push('/donate/publish')">
-            去发布
-          </el-button>
+      <div v-if="filteredList.length === 0" class="empty-tip">
+        <el-empty :description="statusFilter ? '暂无该状态的宠物' : '还没有发布过宠物'">
+          <el-button v-if="!statusFilter" type="primary" @click="$router.push('/donate/publish')">去发布</el-button>
         </el-empty>
       </div>
 
       <div v-else class="pet-list">
-        <el-card v-for="pet in list" :key="pet.id" class="pet-card">
+        <el-card v-for="pet in filteredList" :key="pet.id" class="pet-card">
           <div class="pet-content">
             <el-image
               :src="pet.coverImage"
               fit="cover"
               style="width:100px;height:100px;border-radius:8px;flex-shrink:0"
             >
-              <template #error>
-                <div class="img-placeholder" />
-              </template>
+              <template #error><div class="img-placeholder" /></template>
             </el-image>
 
             <div class="pet-info">
               <div class="pet-header">
                 <h4>{{ pet.name }}</h4>
-                <el-tag
-                  :type="PET_STATUS[pet.status]?.type || 'info'"
-                  size="small"
-                >
+                <el-tag :type="PET_STATUS[pet.status]?.type || 'info'" size="small">
                   {{ PET_STATUS[pet.status]?.label || pet.status }}
                 </el-tag>
               </div>
@@ -49,36 +50,86 @@
             </div>
 
             <div class="pet-actions">
-              <el-button
-                size="small"
-                @click="$router.push('/donate/pets/' + pet.id + '/applications')"
-              >
-                查看申请
-              </el-button>
-              <el-button
-                size="small"
-                :disabled="pet.status === 'OFFLINE'"
-                @click="handleOffline(pet.id)"
-              >
-                下架
-              </el-button>
+              <el-button size="small" @click="$router.push('/donate/pets/' + pet.id + '/applications')">查看申请</el-button>
+
+              <el-button v-if="pet.status === 'ADOPTED'" size="small" disabled type="info">已被领养</el-button>
+
+              <el-button v-else-if="pet.status === 'OFFLINE'" size="small" type="primary" @click="openEdit(pet.id)">重新上架</el-button>
+
+              <el-button v-else size="small" @click="handleOffline(pet.id)">下架</el-button>
             </div>
           </div>
         </el-card>
       </div>
     </template>
+
+    <!-- 重新上架编辑弹窗 -->
+    <el-dialog v-model="editVisible" title="重新上架" width="600px">
+      <el-form :model="editForm" label-width="100px" size="large">
+        <el-form-item label="宠物分类" required>
+          <el-select v-model="editForm.categoryId" style="width:200px">
+            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="宠物名称" required>
+          <el-input v-model="editForm.name" maxlength="50" />
+        </el-form-item>
+        <el-form-item label="年龄" required>
+          <el-select v-model="editForm.age" style="width:200px">
+            <el-option v-for="n in 100" :key="n" :label="n + '岁'" :value="n + '岁'" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="性别" required>
+          <el-radio-group v-model="editForm.gender">
+            <el-radio value="male">男生</el-radio>
+            <el-radio value="female">女生</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="绝育">
+          <el-switch v-model="editForm.isNeutered" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="疫苗">
+          <el-switch v-model="editForm.isVaccinated" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="性格描述" required>
+          <el-input v-model="editForm.personality" type="textarea" :rows="2" maxlength="500" show-word-limit />
+        </el-form-item>
+        <el-form-item label="送养原因" required>
+          <el-input v-model="editForm.reason" type="textarea" :rows="2" maxlength="500" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">取消</el-button>
+        <el-button type="primary" :loading="editSaving" @click="handleEditSubmit">提交审核</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
-import { getMyPets, offlinePet } from '@/api/pet'
+import { getCategories, getMyPets, getPetDetail, offlinePet, updatePet } from '@/api/pet'
 import { PET_STATUS, GENDER_MAP } from '@/utils/constants'
 
 const list = ref([])
 const loading = ref(true)
+const statusFilter = ref('')
+const categories = ref([])
+const editVisible = ref(false)
+const editSaving = ref(false)
+const editPetId = ref(null)
+const editForm = ref({
+  categoryId: null, name: '', age: '', gender: 'male',
+  isNeutered: 0, isVaccinated: 0,
+  personality: '', habit: '', reason: ''
+})
+
+const filteredList = computed(() => {
+  if (!statusFilter.value) return list.value
+  return list.value.filter(p => p.status === statusFilter.value)
+})
 
 async function loadList() {
   loading.value = true
@@ -88,6 +139,47 @@ async function loadList() {
     list.value = []
   } finally {
     loading.value = false
+  }
+}
+
+async function loadCategories() {
+  try { categories.value = await getCategories() } catch { categories.value = [] }
+}
+
+async function openEdit(petId) {
+  editPetId.value = petId
+  try {
+    const detail = await getPetDetail(petId)
+    editForm.value = {
+      categoryId: detail.categoryId,
+      name: detail.name || '',
+      age: detail.age || '',
+      gender: detail.gender || 'male',
+      isNeutered: detail.isNeutered || 0,
+      isVaccinated: detail.isVaccinated || 0,
+      personality: detail.personality || '',
+      habit: detail.habit || '',
+      reason: detail.reason || ''
+    }
+    editVisible.value = true
+  } catch {
+    ElMessage.error('获取宠物信息失败')
+  }
+}
+
+async function handleEditSubmit() {
+  if (!editForm.value.categoryId || !editForm.value.name || !editForm.value.personality || !editForm.value.reason) {
+    ElMessage.warning('请填写完整信息')
+    return
+  }
+  editSaving.value = true
+  try {
+    await updatePet(editPetId.value, editForm.value)
+    ElMessage.success('已提交审核')
+    editVisible.value = false
+    loadList()
+  } finally {
+    editSaving.value = false
   }
 }
 
@@ -102,78 +194,26 @@ async function handleOffline(petId) {
   }
 }
 
-onMounted(loadList)
+onMounted(() => { loadCategories(); loadList() })
 </script>
 
 <style scoped>
-.donate-list-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 24px 0 40px;
-}
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.page-title {
-  margin: 0;
-  font-size: 20px;
-  color: #303133;
-}
-.loading-center {
-  display: flex;
-  justify-content: center;
-  padding: 80px 0;
-}
-.empty-tip {
-  padding: 60px 0;
-}
+.donate-list-page { max-width: 800px; margin: 0 auto; padding: 24px 0 40px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-title { margin: 0; font-size: 20px; color: #303133; }
+.loading-center { display: flex; justify-content: center; padding: 80px 0; }
+.empty-tip { padding: 60px 0; }
 
-.pet-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.pet-list { display: flex; flex-direction: column; gap: 12px; }
+.pet-content { display: flex; align-items: center; gap: 16px; }
+.img-placeholder { width: 100px; height: 100px; background: #f5f7fa; border-radius: 8px; }
 
-.pet-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.img-placeholder {
-  width: 100px;
-  height: 100px;
-  background: #f5f7fa;
-  border-radius: 8px;
-}
+.pet-info { flex: 1; min-width: 0; }
+.pet-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pet-header h4 { margin: 0; font-size: 16px; color: #303133; }
+.pet-meta { margin: 0; font-size: 13px; color: #909399; }
 
-.pet-info {
-  flex: 1;
-  min-width: 0;
-}
-.pet-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.pet-header h4 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-}
-.pet-meta {
-  margin: 0;
-  font-size: 13px;
-  color: #909399;
-}
-
-.pet-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-}
+.pet-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; width: 110px; }
+.pet-actions .el-button { width: 100%; }
+.pet-actions .el-button + .el-button { margin-left: 0; }
 </style>

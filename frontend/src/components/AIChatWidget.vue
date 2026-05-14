@@ -5,7 +5,7 @@
     circle
     size="large"
     style="position:fixed;bottom:30px;right:30px;z-index:999"
-    @click="visible = true"
+    @click="openWidget"
   >
     <el-icon :size="20"><ChatDotRound /></el-icon>
   </el-button>
@@ -13,13 +13,18 @@
   <!-- 对话抽屉 -->
   <el-drawer
     v-model="visible"
-    title="AI 助手"
     size="420px"
     direction="rtl"
     :close-on-press-escape="true"
   >
+    <template #header>
+      <span class="widget-drawer-title">AI 助手</span>
+      <div class="widget-header-actions">
+        <el-button type="primary" size="small" @click="handleNewChat">新对话</el-button>
+        <el-button text size="small" :icon="FullScreen" @click="goFullPage" style="margin-left:4px;font-size:18px" />
+      </div>
+    </template>
     <div class="widget-body">
-      <!-- 消息列表 -->
       <div class="widget-messages" ref="msgRef">
         <div
           v-for="(msg, i) in messages"
@@ -37,9 +42,9 @@
         </div>
       </div>
 
-      <!-- 输入区 -->
       <div class="widget-input">
         <el-input
+          ref="inputRef"
           v-model="question"
           placeholder="输入你的问题..."
           :disabled="waiting"
@@ -48,6 +53,7 @@
           <template #append>
             <el-button
               type="primary"
+              style="background:#409EFF;color:#fff;font-weight:600"
               :disabled="!question.trim() || waiting"
               @click="sendMessage"
             >
@@ -62,17 +68,45 @@
 
 <script setup>
 import { ref, nextTick } from 'vue'
-import { ChatDotRound, Loading } from '@element-plus/icons-vue'
+import { ChatDotRound, Loading, FullScreen } from '@element-plus/icons-vue'
 import { chat } from '@/api/ai'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const visible = ref(false)
+const inputRef = ref(null)
 const question = ref('')
 const waiting = ref(false)
 const msgRef = ref(null)
+const sessionId = ref('')
 
 const messages = ref([
   { role: 'assistant', content: '你好！我是AI助手，有什么可以帮助你的？' }
 ])
+
+function newSessionId() {
+  return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)
+}
+
+function openWidget() {
+  if (!sessionId.value) {
+    sessionId.value = newSessionId()
+  }
+  visible.value = true
+}
+
+function handleNewChat() {
+  sessionId.value = newSessionId()
+  messages.value = [
+    { role: 'assistant', content: '你好！我是AI助手，有什么可以帮助你的？' }
+  ]
+}
+
+function goFullPage() {
+  visible.value = false
+  router.push('/ai')
+}
 
 function scrollToBottom() {
   nextTick(() => {
@@ -92,13 +126,14 @@ async function sendMessage() {
   scrollToBottom()
 
   try {
-    const res = await chat({ question: q })
+    const res = await chat({ question: q, sessionId: sessionId.value })
     messages.value.push({ role: 'assistant', content: res.answer })
   } catch {
     messages.value.push({ role: 'assistant', content: 'AI服务暂时不可用，请稍后再试。' })
   } finally {
     waiting.value = false
     scrollToBottom()
+    nextTick(() => inputRef.value?.focus())
   }
 }
 </script>
@@ -148,5 +183,16 @@ async function sendMessage() {
 .widget-input {
   padding-top: 12px;
   border-top: 1px solid #ebeef5;
+}
+
+.widget-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.widget-drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
 }
 </style>

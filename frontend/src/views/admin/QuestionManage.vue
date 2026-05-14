@@ -16,10 +16,12 @@
         <el-table-column label="答案" width="60">
           <template #default="{ row }">{{ row.correctAnswer }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="130">
+        <el-table-column label="操作" width="160">
           <template #default="{ row }">
-            <el-button size="small" @click="openDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+            <div class="action-group">
+              <el-button size="small" @click="openDialog(row)">编辑</el-button>
+              <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -130,4 +132,9 @@ onMounted(loadList)
 .admin-page { max-width: 1100px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { margin: 0; font-size: 20px; color: #303133; }
+.action-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
 </style>

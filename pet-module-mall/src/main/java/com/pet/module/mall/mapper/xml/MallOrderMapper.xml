@@ -11,6 +11,8 @@
         <result column="status" property="status"/>
         <result column="logistics_no" property="logisticsNo"/>
         <result column="logistics_status" property="logisticsStatus"/>
+        <result column="logistics_timeline" property="logisticsTimeline"/>
+        <result column="courier_company" property="courierCompany"/>
         <result column="receiver_name" property="receiverName"/>
         <result column="receiver_phone" property="receiverPhone"/>
         <result column="receiver_address" property="receiverAddress"/>
@@ -20,6 +22,7 @@
 
     <sql id="BaseColumns">
         id, order_no, user_id, total_amount, status, logistics_no, logistics_status,
+        logistics_timeline, courier_company,
         receiver_name, receiver_phone, receiver_address, created_at, updated_at
     </sql>
 
@@ -36,6 +39,8 @@
             <if test="status != null">status = #{status},</if>
             <if test="logisticsNo != null">logistics_no = #{logisticsNo},</if>
             <if test="logisticsStatus != null">logistics_status = #{logisticsStatus},</if>
+            <if test="logisticsTimeline != null">logistics_timeline = #{logisticsTimeline},</if>
+            <if test="courierCompany != null">courier_company = #{courierCompany},</if>
         </set>
         WHERE id = #{id}
     </update>

@@ -3,18 +3,22 @@ package com.pet.module.system.controller;
 import com.pet.common.result.Result;
 import com.pet.common.util.FileUtils;
 import com.pet.framework.annotation.Log;
+import com.pet.framework.util.JwtUtils;
 import com.pet.module.system.model.dto.*;
 import com.pet.module.system.model.vo.UserInfoVo;
 import com.pet.module.system.service.UserService;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Log("用户管理")
 @Api(tags = "用户管理")
@@ -24,6 +28,24 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    /**
+     * 预生成用户名（注册页面加载时调用）
+     */
+    @ApiOperation("预生成用户名")
+    @GetMapping("/generate-username")
+    public Result<Map<String, String>> generateUsername() {
+        String username = userService.generateUsername();
+        Map<String, String> data = new HashMap<>();
+        data.put("username", username);
+        return Result.success(data);
+    }
 
     /**
      * 用户注册
@@ -62,11 +84,31 @@ public class UserController {
     }
 
     /**
-     * 退出登录
+     * 退出登录 — 将 Token 加入 Redis 黑名单，使其立即失效
      */
     @ApiOperation("退出登录")
     @PostMapping("/logout")
-    public Result<String> logout() {
+    public Result<String> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            try {
+                Claims claims = jwtUtils.parseToken(token);
+                String jti = claims.getId();
+                long ttl = jwtUtils.getRemainingTtl(claims);
+                if (ttl > 0 && jti != null) {
+                    // Token 的剩余有效期作为黑名单的 TTL
+                    redisTemplate.opsForValue().set(
+                            "blacklist:token:" + jti,
+                            "1",
+                            ttl,
+                            TimeUnit.MILLISECONDS
+                    );
+                }
+            } catch (Exception e) {
+                // token 已过期等情况忽略，前端清除 localStorage 即可
+            }
+        }
         return Result.success("退出成功");
     }
 

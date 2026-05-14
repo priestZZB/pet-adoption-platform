@@ -5,11 +5,8 @@ package com.pet.module.mall.model.dto;
  */
 public class ShipDto {
 
-    private String logisticsNo;
-    private String logisticsStatus;
+    private String courierCompany;
 
-    public String getLogisticsNo() { return logisticsNo; }
-    public void setLogisticsNo(String logisticsNo) { this.logisticsNo = logisticsNo; }
-    public String getLogisticsStatus() { return logisticsStatus; }
-    public void setLogisticsStatus(String logisticsStatus) { this.logisticsStatus = logisticsStatus; }
+    public String getCourierCompany() { return courierCompany; }
+    public void setCourierCompany(String courierCompany) { this.courierCompany = courierCompany; }
 }

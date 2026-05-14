@@ -4,7 +4,7 @@
 
     <!-- 分类 Tabs -->
     <el-tabs v-model="categoryId" @tab-change="handleTabChange">
-      <el-tab-pane label="全部" :name="null" />
+      <el-tab-pane label="全部" name="all" />
       <el-tab-pane
         v-for="c in categories"
         :key="c.id"
@@ -33,7 +33,7 @@
           @click="goDetail(p.id)"
         >
           <el-image
-            :src="p.image"
+            :src="(p.image || '').split(',')[0]"
             fit="cover"
             style="width:100%;height:180px"
           >
@@ -90,7 +90,7 @@ async function loadProducts() {
   loading.value = true
   try {
     const params = { page: page.value, size: size.value }
-    if (categoryId.value) params.categoryId = categoryId.value
+    if (categoryId.value && categoryId.value !== 'all') params.categoryId = categoryId.value
     const res = await getMallProducts(params)
     productList.value = res.list || []
     total.value = res.total || 0

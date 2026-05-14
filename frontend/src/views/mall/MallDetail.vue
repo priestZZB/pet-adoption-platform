@@ -9,14 +9,27 @@
         <!-- 商品图片 -->
         <div class="detail-left">
           <el-image
-            :src="product.image"
+            :src="currentImage"
             fit="contain"
             style="width:100%;height:400px;border-radius:8px"
+            :preview-src-list="imageList"
+            preview-teleported
           >
             <template #error>
               <div class="img-placeholder">暂无图片</div>
             </template>
           </el-image>
+          <div v-if="imageList.length > 1" class="thumbnails">
+            <div
+              v-for="(img, i) in imageList"
+              :key="i"
+              class="thumb-item"
+              :class="{ active: currentImage === img }"
+              @click="currentImage = img"
+            >
+              <el-image :src="img" fit="cover" style="width:100%;height:100%" />
+            </div>
+          </div>
         </div>
 
         <!-- 商品信息 -->
@@ -79,7 +92,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading, ShoppingCart } from '@element-plus/icons-vue'
@@ -93,11 +106,19 @@ const userStore = useUserStore()
 const product = ref(null)
 const loading = ref(true)
 const quantity = ref(1)
+const currentImage = ref('')
+
+const imageList = computed(() => {
+  const img = product.value?.image
+  if (!img) return []
+  return img.split(',').filter(Boolean)
+})
 
 async function loadDetail() {
   loading.value = true
   try {
     product.value = await getMallProductDetail(route.params.id)
+    currentImage.value = imageList.value[0] || ''
   } catch {
     product.value = null
   } finally {
@@ -215,5 +236,26 @@ onMounted(loadDetail)
 .quantity-wrapper .label {
   font-size: 14px;
   color: #909399;
+}
+
+.thumbnails {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.thumb-item {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #e4e7ed;
+  transition: border-color 0.2s;
+}
+.thumb-item.active {
+  border-color: #409EFF;
+}
+.thumb-item:hover {
+  border-color: #409EFF;
 }
 </style>

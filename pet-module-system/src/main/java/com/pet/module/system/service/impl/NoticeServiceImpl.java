@@ -3,7 +3,9 @@ package com.pet.module.system.service.impl;
 import com.pet.common.enums.ResultCodeEnum;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.system.mapper.NoticeMapper;
+import com.pet.module.system.mapper.UserNoticeReadMapper;
 import com.pet.module.system.model.entity.SysNotice;
+import com.pet.module.system.model.entity.UserNoticeRead;
 import com.pet.module.system.model.vo.NoticeVo;
 import com.pet.module.system.service.NoticeService;
 import org.springframework.beans.BeanUtils;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,4 +77,32 @@ public class NoticeServiceImpl implements NoticeService {
     public List<SysNotice> getAllForAdmin() {
         return noticeMapper.selectAll();
     }
+
+    @Override
+    public List<NoticeVo> getUnreadNotices(Long userId) {
+        List<Long> readIds = userNoticeReadMapper.selectReadNoticeIdsByUserId(userId);
+        Set<Long> readSet = readIds.stream().collect(Collectors.toSet());
+        return noticeMapper.selectList().stream()
+                .filter(n -> n.getStatus() == 1 && !readSet.contains(n.getId()))
+                .map(n -> {
+                    NoticeVo vo = new NoticeVo();
+                    BeanUtils.copyProperties(n, vo);
+                    return vo;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void markAsRead(Long userId, Long noticeId) {
+        UserNoticeRead existing = userNoticeReadMapper.selectByUserAndNotice(userId, noticeId);
+        if (existing == null) {
+            UserNoticeRead record = new UserNoticeRead();
+            record.setUserId(userId);
+            record.setNoticeId(noticeId);
+            userNoticeReadMapper.insert(record);
+        }
+    }
+
+    @Autowired
+    private UserNoticeReadMapper userNoticeReadMapper;
 }

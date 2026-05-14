@@ -12,7 +12,7 @@ public interface AdoptService {
 
     AdoptApplyVo getApplicationDetail(Long id);
 
-    List<AdoptApplyVo> getAllApplications(String status);
+    List<AdoptApplyVo> getAllApplications(String status, int page, int size);
 
     AdoptApplyVo getAdminApplicationDetail(Long id);
 

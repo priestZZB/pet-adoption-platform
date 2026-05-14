@@ -7,11 +7,22 @@
     <div class="main-content">
       <router-view />
     </div>
+
+    <!-- 页脚 -->
+    <Footer />
+
+    <!-- 浮动AI助手按钮 -->
+    <AIChatWidget v-if="userStore.isLogin" />
   </div>
 </template>
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
+import AIChatWidget from '@/components/AIChatWidget.vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 </script>
 
 <style scoped>

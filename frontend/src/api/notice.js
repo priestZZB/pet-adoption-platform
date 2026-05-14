@@ -9,3 +9,13 @@ export function getNoticeList() {
 export function getNoticeDetail(id) {
   return request.get(`/notices/${id}`)
 }
+
+// 未读公告列表（登录用户）
+export function getUnreadNotices() {
+  return request.get('/notices/unread')
+}
+
+// 标记公告为已读
+export function markNoticeRead(id) {
+  return request.post(`/notices/${id}/read`)
+}

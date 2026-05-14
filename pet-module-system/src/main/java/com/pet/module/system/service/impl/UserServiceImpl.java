@@ -70,11 +70,13 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
         }
 
-        // 自动生成7位数字用户名，确保唯一
-        String username;
-        do {
-            username = RandomUtil.randomNumbers(7);
-        } while (userMapper.countByUsername(username) > 0);
+        // 使用前端传的用户名（已预生成），若被占用则重新生成
+        String username = dto.getUsername();
+        if (username == null || username.isEmpty() || userMapper.countByUsername(username) > 0) {
+            do {
+                username = "24" + RandomUtil.randomNumbers(7);
+            } while (userMapper.countByUsername(username) > 0);
+        }
 
         SysUser user = new SysUser();
         user.setUsername(username);
@@ -147,6 +149,15 @@ public class UserServiceImpl implements UserService {
         String role = roles.isEmpty() ? "USER" : roles.get(0);
 
         return jwtUtils.generateToken(String.valueOf(user.getId()), role);
+    }
+
+    @Override
+    public String generateUsername() {
+        String username;
+        do {
+            username = "24" + RandomUtil.randomNumbers(7);
+        } while (userMapper.countByUsername(username) > 0);
+        return username;
     }
 
     @Override

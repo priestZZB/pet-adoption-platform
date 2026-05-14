@@ -11,7 +11,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Log("公告管理")
 @Api(tags = "公告管理")
@@ -38,6 +41,38 @@ public class NoticeController {
     @GetMapping("/api/notices/{id}")
     public Result<NoticeVo> detail(@PathVariable Long id) {
         return Result.success(noticeService.getById(id));
+    }
+
+    /**
+     * 未读公告列表（登录用户，管理员除外）
+     */
+    @ApiOperation("未读公告列表")
+    @GetMapping("/api/notices/unread")
+    public Result<List<NoticeVo>> unread(HttpServletRequest request) {
+        Long userId = null;
+        String role = null;
+        try {
+            userId = Long.valueOf(request.getAttribute("userId").toString());
+            role = request.getAttribute("role").toString();
+        } catch (Exception e) {
+            return Result.success(List.of());
+        }
+        // 管理员不显示未读公告弹窗
+        if ("ADMIN".equals(role)) {
+            return Result.success(List.of());
+        }
+        return Result.success(noticeService.getUnreadNotices(userId));
+    }
+
+    /**
+     * 标记公告为已读
+     */
+    @ApiOperation("标记公告为已读")
+    @PostMapping("/api/notices/{id}/read")
+    public Result<String> markRead(HttpServletRequest request, @PathVariable Long id) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        noticeService.markAsRead(userId, id);
+        return Result.success("ok");
     }
 
     /**

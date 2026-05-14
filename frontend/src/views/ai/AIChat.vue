@@ -1,34 +1,46 @@
-﻿<template>
+<template>
   <div class="ai-chat-page">
-    <!-- 侧边栏：历史记录 -->
+    <!-- 侧边栏：对话列表 -->
     <div class="sidebar">
       <div class="sidebar-header">
         <h4>对话历史</h4>
-        <el-button
-          v-if="historyList.length > 0"
-          size="small"
-          type="danger"
-          plain
-          @click="handleClear"
-        >
-          清空记录
+      </div>
+
+      <div class="sidebar-new">
+        <el-button type="primary" style="width:100%" @click="handleNewChat">
+          + 新对话
         </el-button>
       </div>
 
       <div class="sidebar-list">
         <div
-          v-for="h in historyList"
-          :key="h.id"
-          class="history-item"
-          :class="{ active: activeHistoryId === h.id }"
-          @click="loadHistoryChat(h)"
+          v-for="s in sessions"
+          :key="s.sessionId"
+          class="session-item"
+          :class="{ active: currentSessionId === s.sessionId }"
+          @click="switchSession(s.sessionId)"
         >
-          <p class="history-question">{{ h.question }}</p>
-          <span class="history-time">{{ h.createdAt }}</span>
+          <div class="session-info">
+            <p class="session-title">{{ s.title || '新对话' }}</p>
+            <span class="session-meta">{{ s.msgCount }}条 · {{ s.createdAt }}</span>
+          </div>
+          <el-button
+            text
+            type="danger"
+            size="small"
+            :icon="Delete"
+            @click.stop="handleDeleteSession(s.sessionId)"
+          />
         </div>
-        <div v-if="historyList.length === 0" class="sidebar-empty">
+        <div v-if="sessions.length === 0" class="sidebar-empty">
           暂无对话记录
         </div>
+      </div>
+
+      <div v-if="sessions.length > 0" class="sidebar-footer">
+        <el-button size="small" type="danger" plain style="width:100%" @click="handleClearAll">
+          清空全部
+        </el-button>
       </div>
     </div>
 
@@ -44,7 +56,6 @@
           <div class="msg-bubble">{{ msg.content }}</div>
         </div>
 
-        <!-- 加载中 -->
         <div v-if="waiting" class="msg-row assistant">
           <div class="msg-bubble thinking">
             <el-icon class="is-loading"><Loading /></el-icon> AI正在思考...
@@ -54,6 +65,7 @@
 
       <div class="chat-input">
         <el-input
+          ref="inputRef"
           v-model="question"
           placeholder="输入你想了解的问题..."
           size="large"
@@ -63,6 +75,7 @@
           <template #append>
             <el-button
               type="primary"
+              style="background:#409EFF;color:#fff;font-weight:600"
               :disabled="!question.trim() || waiting"
               @click="sendMessage"
             >
@@ -78,19 +91,24 @@
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue'
-import { chat, getChatHistory, clearChatHistory } from '@/api/ai'
+import { Loading, Delete } from '@element-plus/icons-vue'
+import { chat, getSessions, getSessionMessages, clearChatHistory, deleteSession } from '@/api/ai'
 
 const messagesRef = ref(null)
+const inputRef = ref(null)
 const question = ref('')
 const messages = ref([
   { role: 'assistant', content: '你好！我是AI助手，可以帮你解答关于宠物领养、救助等方面的问题。有什么需要帮助的吗？' }
 ])
 const waiting = ref(false)
-const historyList = ref([])
-const activeHistoryId = ref(null)
+const sessions = ref([])
+const currentSessionId = ref('')
 
-// 滚动到底部
+// 生成唯一 sessionId
+function newSessionId() {
+  return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)
+}
+
 function scrollToBottom() {
   nextTick(() => {
     if (messagesRef.value) {
@@ -99,9 +117,50 @@ function scrollToBottom() {
   })
 }
 
+// 刷新侧边栏对话列表
+async function loadSessions() {
+  try {
+    sessions.value = await getSessions() || []
+  } catch {
+    sessions.value = []
+  }
+}
+
+// 切换到某次对话
+async function switchSession(sessionId) {
+  if (!sessionId) return
+  currentSessionId.value = sessionId
+  try {
+    const list = await getSessionMessages(sessionId) || []
+    messages.value = []
+    for (const item of list) {
+      messages.value.push({ role: 'user', content: item.question })
+      messages.value.push({ role: 'assistant', content: item.answer })
+    }
+  } catch {
+    messages.value = [{ role: 'assistant', content: '加载失败，请重试' }]
+  }
+  scrollToBottom()
+}
+
+// 新对话
+async function handleNewChat() {
+  currentSessionId.value = newSessionId()
+  messages.value = [
+    { role: 'assistant', content: '你好！我是AI助手，可以帮你解答关于宠物领养、救助等方面的问题。有什么需要帮助的吗？' }
+  ]
+  await loadSessions()
+}
+
+// 发送消息
 async function sendMessage() {
   const q = question.value.trim()
   if (!q || waiting.value) return
+
+  // 如果还没有 sessionId（理论不会），生成一个
+  if (!currentSessionId.value) {
+    currentSessionId.value = newSessionId()
+  }
 
   messages.value.push({ role: 'user', content: q })
   question.value = ''
@@ -109,52 +168,46 @@ async function sendMessage() {
   scrollToBottom()
 
   try {
-    const res = await chat({ question: q })
+    const res = await chat({ question: q, sessionId: currentSessionId.value })
     messages.value.push({ role: 'assistant', content: res.answer })
-    activeHistoryId.value = res.id
-    loadHistory()
+    loadSessions() // 刷新侧边栏
   } catch {
     messages.value.push({ role: 'assistant', content: '抱歉，AI服务暂时不可用，请稍后再试。' })
   } finally {
     waiting.value = false
     scrollToBottom()
+    nextTick(() => inputRef.value?.focus())
   }
 }
 
-function loadHistoryChat(h) {
-  activeHistoryId.value = h.id
-  messages.value = [
-    { role: 'user', content: h.question },
-    { role: 'assistant', content: h.answer }
-  ]
-  scrollToBottom()
+// 删除某次对话
+async function handleDeleteSession(sessionId) {
+  try {
+    await ElMessageBox.confirm('确定删除该对话？', '提示')
+    await deleteSession(sessionId)
+    if (currentSessionId.value === sessionId) {
+      handleNewChat()
+    }
+    loadSessions()
+    ElMessage.success('已删除')
+  } catch { /* 取消 */ }
 }
 
-async function loadHistory() {
+// 清空全部
+async function handleClearAll() {
   try {
-    const res = await getChatHistory({ page: 1, size: 50 })
-    historyList.value = res.list || []
-  } catch {
-    historyList.value = []
-  }
-}
-
-async function handleClear() {
-  try {
-    await ElMessageBox.confirm('确定清空所有对话记录？', '提示')
+    await ElMessageBox.confirm('确定清空所有对话？', '提示')
     await clearChatHistory()
-    historyList.value = []
-    activeHistoryId.value = null
-    messages.value = [
-      { role: 'assistant', content: '你好！我是AI助手，有什么可以帮助你的？' }
-    ]
+    sessions.value = []
+    handleNewChat()
     ElMessage.success('已清空')
-  } catch {
-    // 取消
-  }
+  } catch { /* 取消 */ }
 }
 
-onMounted(loadHistory)
+onMounted(() => {
+  loadSessions()
+  currentSessionId.value = newSessionId()
+})
 </script>
 
 <style scoped>
@@ -166,7 +219,7 @@ onMounted(loadHistory)
 
 /* 侧边栏 */
 .sidebar {
-  width: 260px;
+  width: 280px;
   flex-shrink: 0;
   background: #fff;
   border: 1px solid #ebeef5;
@@ -176,21 +229,21 @@ onMounted(loadHistory)
   overflow: hidden;
 }
 .sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid #ebeef5;
+  padding: 14px 16px 0;
 }
 .sidebar-header h4 {
   margin: 0;
   font-size: 14px;
   color: #303133;
 }
+.sidebar-new {
+  padding: 10px 16px;
+  border-bottom: 1px solid #ebeef5;
+}
 .sidebar-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 .sidebar-empty {
   text-align: center;
@@ -198,26 +251,37 @@ onMounted(loadHistory)
   color: #909399;
   padding: 40px 0;
 }
-.history-item {
+.sidebar-footer {
   padding: 10px 16px;
+  border-top: 1px solid #ebeef5;
+}
+.session-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px 10px 16px;
   cursor: pointer;
   border-left: 3px solid transparent;
   transition: background 0.2s;
+  gap: 6px;
 }
-.history-item:hover,
-.history-item.active {
+.session-item:hover,
+.session-item.active {
   background: #ecf5ff;
   border-left-color: #409EFF;
 }
-.history-question {
-  margin: 0 0 4px;
+.session-info {
+  flex: 1;
+  min-width: 0;
+}
+.session-title {
+  margin: 0 0 2px;
   font-size: 13px;
   color: #303133;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.history-time {
+.session-meta {
   font-size: 11px;
   color: #909399;
 }
@@ -232,13 +296,11 @@ onMounted(loadHistory)
   border-radius: 8px;
   overflow: hidden;
 }
-
 .chat-messages {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
 }
-
 .msg-row {
   display: flex;
   margin-bottom: 16px;
@@ -270,7 +332,6 @@ onMounted(loadHistory)
   gap: 6px;
   color: #909399 !important;
 }
-
 .chat-input {
   padding: 12px 16px;
   border-top: 1px solid #ebeef5;

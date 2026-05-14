@@ -1,15 +1,34 @@
 <template>
   <div class="navbar-wrapper">
-    <el-menu mode="horizontal" :router="true" class="navbar">
+    <el-menu mode="horizontal" :default-active="activeMenu" class="navbar">
       <div class="navbar-brand">
-        <el-icon :size="24" style="vertical-align:middle;margin-right:6px">
-          <StarFilled style="color:#409EFF" />
-        </el-icon>
-        <span style="font-size:18px;font-weight:bold;color:#303133">宠物领养救助平台</span>
+        <el-image src="/logo.jpg" fit="contain" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;border-radius:6px" />
+        <span style="font-size:18px;font-weight:bold;color:#303133">毛球寻觅</span>
       </div>
-      <el-menu-item index="/">首页</el-menu-item>
-      <el-menu-item index="/mall">商城</el-menu-item>
-      <el-menu-item index="/notices">公告</el-menu-item>
+      <el-menu-item index="/" @click="router.push('/')">
+        <el-icon><HomeFilled /></el-icon>
+        <span>首页</span>
+      </el-menu-item>
+      <el-menu-item index="/mall" @click="router.push('/mall')">
+        <el-icon><ShoppingBag /></el-icon>
+        <span>商城</span>
+      </el-menu-item>
+      <el-menu-item index="/notices" @click="router.push('/notices')">
+        <el-icon><Bell /></el-icon>
+        <span>公告</span>
+      </el-menu-item>
+      <el-menu-item index="/ai" @click="handleAIClick">
+        <el-icon><MagicStick /></el-icon>
+        <span>AI助手</span>
+      </el-menu-item>
+      <el-menu-item index="/user/orders" @click="handleOrderClick">
+        <el-icon><Tickets /></el-icon>
+        <span>我的订单</span>
+      </el-menu-item>
+      <el-menu-item index="/mall/cart" @click="handleCartClick">
+        <el-icon><ShoppingCart /></el-icon>
+        <span>购物车</span>
+      </el-menu-item>
     </el-menu>
 
     <div class="user-section">
@@ -24,7 +43,6 @@
           <transition name="dropdown-fade">
             <div v-if="dropdownOpen" class="dropdown-menu">
               <div class="dropdown-item" @click.stop="goPage('/user/profile')">个人中心</div>
-              <div class="dropdown-item" @click.stop="goPage('/user/password')">修改密码</div>
               <div class="dropdown-item" @click.stop="goPage('/adopt/exam')">领养考试</div>
               <div class="dropdown-item" v-if="userStore.isDonor" @click.stop="goPage('/donate/pets')">我的发布</div>
               <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/pending')">待审核宠物</div>
@@ -47,14 +65,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue"
+import { ref, computed, onMounted, onUnmounted } from "vue"
 import { useUserStore } from "@/stores/user"
-import { useRouter } from "vue-router"
+import { useRouter, useRoute } from "vue-router"
+import { ElMessage } from "element-plus"
 
 const userStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
+
+// 当前路由对应的高亮菜单
+const activeMenu = computed(() => route.path)
 
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
@@ -69,6 +92,33 @@ function handleLogout() {
   dropdownOpen.value = false
   userStore.logout()
   router.push("/")
+}
+
+function handleOrderClick() {
+  if (!userStore.isLogin) {
+    ElMessage.warning("请先登录")
+    router.push("/login")
+  } else {
+    router.push("/user/orders")
+  }
+}
+
+function handleCartClick() {
+  if (!userStore.isLogin) {
+    ElMessage.warning("请先登录")
+    router.push("/login")
+  } else {
+    router.push("/mall/cart")
+  }
+}
+
+function handleAIClick() {
+  if (!userStore.isLogin) {
+    ElMessage.warning("请先登录")
+    router.push("/login")
+  } else {
+    router.push("/ai")
+  }
 }
 
 function handleClickOutside(e) {
@@ -99,10 +149,11 @@ onUnmounted(() => {
 .navbar-brand {
   display: inline-flex;
   align-items: center;
-  margin-right: 30px;
-  padding: 0 20px;
+  margin-right: 10px;
+  padding: 0 16px;
   cursor: default;
   height: 60px;
+  flex-shrink: 0;
 }
 .user-section {
   flex-shrink: 0;

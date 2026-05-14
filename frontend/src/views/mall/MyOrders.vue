@@ -54,6 +54,21 @@
 
           <el-divider style="margin:10px 0" />
 
+          <div v-if="order.status === 'SHIPPED'" class="logistics-row">
+            <el-icon :size="16" style="margin-right:4px;color:#409EFF"><Van /></el-icon>
+            <span class="logistics-text">
+              本次快递由【<b>{{ order.courierCompany || '快递公司' }}</b>】为您配送
+              <span v-if="order.logisticsNo" style="margin-left:4px;color:#909399">({{ order.logisticsNo }})</span>
+            </span>
+          </div>
+          <div v-if="order.status === 'SHIPPED'" class="logistics-row" style="margin-top:4px">
+            <span style="margin-left:20px;font-size:13px;color:#606266">
+              物流状态：<b style="color:#409EFF">{{ order.logisticsStatus || '已发货' }}</b>
+            </span>
+          </div>
+
+          <el-divider style="margin:10px 0" />
+
           <div class="order-footer">
             <span class="order-total">
               共 {{ order.items?.length || 0 }} 件 · 合计
@@ -101,7 +116,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, Van } from '@element-plus/icons-vue'
 import { getMyOrders, payOrder, receiveOrder, cancelOrder } from '@/api/mall'
 import { ORDER_STATUS } from '@/utils/constants'
 
@@ -139,13 +154,34 @@ async function handleCancel(order) {
 }
 
 async function handleReceive(order) {
+  // 包裹未送达时弹出提示
+  if (order.logisticsStatus && order.logisticsStatus !== '已送达') {
+    try {
+      await ElMessageBox.confirm(
+        '您的包裹还未送达，确定要确认收货吗？',
+        '确认收货',
+        {
+          confirmButtonText: '确认收货',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+    } catch {
+      return // 用户点了取消
+    }
+  } else {
+    try {
+      await ElMessageBox.confirm('确认已收到商品？', '提示')
+    } catch {
+      return
+    }
+  }
   try {
-    await ElMessageBox.confirm('确认已收到商品？', '提示')
     await receiveOrder(order.id)
     ElMessage.success('已确认收货')
     loadOrders()
   } catch {
-    // 取消或失败
+    // 失败由拦截器处理
   }
 }
 
@@ -243,5 +279,15 @@ onMounted(loadOrders)
 .order-actions {
   display: flex;
   gap: 8px;
+}
+
+.logistics-row {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #606266;
+}
+.logistics-text b {
+  color: #409EFF;
 }
 </style>

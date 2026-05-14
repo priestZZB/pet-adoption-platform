@@ -1,5 +1,8 @@
 import request from './request'
 
+// 预生成用户名（注册页面加载时调用）
+export const generateUsername = () => request.get('/user/generate-username')
+
 // 用户注册（含ticket/randstr/captchaSign）
 export const register = (data) => request.post('/user/register', data)
 // 用户登录（用户名+密码）

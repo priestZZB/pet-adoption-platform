@@ -1,5 +1,6 @@
 package com.pet.module.adopt.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.adopt.mapper.AdoptApplicationMapper;
@@ -101,7 +102,8 @@ public class AdoptServiceImpl implements AdoptService {
     }
 
     @Override
-    public List<AdoptApplyVo> getAllApplications(String status) {
+    public List<AdoptApplyVo> getAllApplications(String status, int page, int size) {
+        PageHelper.startPage(page, size);
         List<AdoptApplication> list = adoptApplicationMapper.selectAll(status);
         return list.stream().map(this::convertToVo).collect(Collectors.toList());
     }

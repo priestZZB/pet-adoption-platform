@@ -10,6 +10,8 @@ public interface UserService {
 
     String register(RegisterDto dto);
 
+    String generateUsername();
+
     String login(LoginDto dto);
 
     String phoneLogin(PhoneLoginDto dto);

@@ -65,6 +65,10 @@
       <el-icon><Cpu /></el-icon>
       <span>AI记录</span>
     </el-menu-item>
+    <el-menu-item index="/admin/banners">
+      <el-icon><PictureFilled /></el-icon>
+      <span>轮播管理</span>
+    </el-menu-item>
   </el-menu>
 </template>
 

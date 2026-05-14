@@ -1,16 +1,19 @@
 ﻿<template>
   <div class="home-page">
     <!-- Banner 轮播 -->
-    <el-carousel height="360px" class="banner" :interval="5000">
+    <div class="banner-container">
+    <el-carousel height="100%" class="banner" :interval="5000">
       <el-carousel-item v-for="(item, idx) in banners" :key="idx">
-        <div class="banner-item" :style="{ background: item.bg }">
-          <div class="banner-text">
-            <h2>{{ item.title }}</h2>
-            <p>{{ item.desc }}</p>
-          </div>
+        <div class="banner-item">
+          <el-image
+            :src="item.imageUrl"
+            fit="cover"
+            style="width:100%;height:100%"
+          />
         </div>
       </el-carousel-item>
     </el-carousel>
+    </div>
 
     <!-- 搜索 + 筛选栏 -->
     <div class="toolbar">
@@ -113,6 +116,7 @@ import { useRouter } from 'vue-router'
 import { Search, Loading } from '@element-plus/icons-vue'
 import { getCategories, getPetList } from '@/api/pet'
 import { GENDER_MAP, PET_STATUS } from '@/utils/constants'
+import request from '@/api/request'
 import Pagination from '@/components/Pagination.vue'
 
 const router = useRouter()
@@ -129,12 +133,33 @@ const query = reactive({
   keyword: ''
 })
 
-// Banner 数据（静态）
-const banners = [
-  { title: '领养代替购买', desc: '给流浪的毛孩子一个温暖的家', bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
-  { title: '宠物救助行动', desc: '加入志愿者，帮助更多小动物', bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
-  { title: '宠物用品商城', desc: '优质宠物用品，一站式购齐', bg: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)' }
-]
+// 欢迎页（固定写死，放在轮播图最前面，使用本地图片）
+const WELCOME_IMAGE = '/uploads/banner/welcome.jpg'
+const welcomeBanner = {
+  imageUrl: WELCOME_IMAGE
+}
+
+// 从后端加载的轮播图
+const apiBanners = ref([])
+const banners = ref([welcomeBanner])
+
+async function loadBanners() {
+  try {
+    const res = await request.get('/banners')
+    if (res && res.length > 0) {
+      // 欢迎页 + 后端轮播图拼接
+      banners.value = [
+        welcomeBanner,
+        ...res.map(b => ({ imageUrl: b.imageUrl }))
+      ]
+    } else {
+      // 没有轮播图时只显示欢迎页
+      banners.value = [welcomeBanner]
+    }
+  } catch {
+    banners.value = [welcomeBanner]
+  }
+}
 
 // 加载分类
 async function loadCategories() {
@@ -179,6 +204,7 @@ function goDetail(id) {
 }
 
 onMounted(() => {
+  loadBanners()
   loadCategories()
   loadPets()
 })
@@ -192,29 +218,23 @@ onMounted(() => {
 }
 
 /* Banner */
-.banner {
+.banner-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 24px;
+  aspect-ratio: 2279 / 1280;
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 24px;
+}
+.banner {
+  height: 100% !important;
+  border-radius: 12px;
 }
 .banner-item {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-}
-.banner-text {
-  text-align: center;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.banner-text h2 {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-.banner-text p {
-  font-size: 16px;
-  opacity: 0.9;
 }
 
 /* 工具栏 */
@@ -285,4 +305,6 @@ onMounted(() => {
 .empty-tip {
   padding: 60px 0;
 }
+
+
 </style>

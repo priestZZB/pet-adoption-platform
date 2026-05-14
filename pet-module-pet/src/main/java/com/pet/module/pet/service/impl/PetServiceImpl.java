@@ -193,7 +193,7 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public List<PetSelectVo> getSelectablePets() {
-        List<String> statuses = Arrays.asList("PENDING", "FIRST_PASS", "APPROVED", "ADOPTED");
+        List<String> statuses = Arrays.asList("ADOPTED");
         List<PetInfo> list = petInfoMapper.selectByStatusList(statuses);
         return list.stream().map(p -> {
             PetSelectVo vo = new PetSelectVo();

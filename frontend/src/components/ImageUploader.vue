@@ -53,8 +53,9 @@ const headers = computed(() => ({
   Authorization: 'Bearer ' + (getToken() || '')
 }))
 
-function handleSuccess(response) {
+function handleSuccess(response, file) {
   if (response && response.data?.url) {
+    file.url = response.data.url
     urls.value.push(response.data.url)
     emit('change', [...urls.value])
   }

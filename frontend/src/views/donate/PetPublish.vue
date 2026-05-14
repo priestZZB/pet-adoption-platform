@@ -193,6 +193,13 @@ async function handleImageUpload(file) {
   try {
     const res = await uploadFiles([file], 'pet')
     imageUrlList.value = imageUrlList.value.concat(res.urls || [])
+    if (res.urls && res.urls[0]) {
+      imageFileList.value = imageFileList.value.concat({
+        uid: Date.now(),
+        name: file.name,
+        url: res.urls[0]
+      })
+    }
   } catch {
     ElMessage.error('图片上传失败')
   }

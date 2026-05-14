@@ -1,5 +1,7 @@
 package com.pet.module.mall.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
 import com.pet.common.exception.BusinessException;
 import com.pet.common.util.IdGenerator;
@@ -15,6 +17,7 @@ import com.pet.module.mall.model.vo.CartVo;
 import com.pet.module.mall.model.vo.OrderVo;
 import com.pet.module.mall.service.CartService;
 import com.pet.module.mall.service.OrderService;
+import com.pet.module.mall.service.ProductService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -22,9 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +46,25 @@ public class OrderServiceImpl implements OrderService {
     private CartService cartService;
 
     @Autowired
+    private ProductService productService;
+
+    @Autowired
     private StringRedisTemplate redisTemplate;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Random random = new Random();
+
+    private static final Map<String, String[]> COURIER_CONFIG = new LinkedHashMap<>();
+    static {
+        COURIER_CONFIG.put("顺丰快递", new String[]{"SF", "10"});
+        COURIER_CONFIG.put("圆通快递", new String[]{"YT", "10"});
+        COURIER_CONFIG.put("申通快递", new String[]{"STO", "9"});
+        COURIER_CONFIG.put("中通快递", new String[]{"ZTO", "9"});
+        COURIER_CONFIG.put("EMS", new String[]{"EMS", "10"});
+        COURIER_CONFIG.put("京东快递", new String[]{"JD", "12"});
+        COURIER_CONFIG.put("韵达快递", new String[]{"YD", "10"});
+        COURIER_CONFIG.put("极兔快递", new String[]{"JT", "10"});
+    }
 
     @Override
     @Transactional
@@ -104,6 +125,9 @@ public class OrderServiceImpl implements OrderService {
 
         // 清空购物车
         redisTemplate.delete("mall:cart:" + userId);
+
+        // 清除商品缓存，库存变化即时显示
+        productService.evictProductCache();
 
         return convertToVo(order);
     }
@@ -181,10 +205,12 @@ public class OrderServiceImpl implements OrderService {
                 mallProductMapper.updateById(prodUpdate);
             }
         }
+        productService.evictProductCache();
     }
 
     @Override
-    public List<OrderVo> getAllOrders(String status) {
+    public List<OrderVo> getAllOrders(String status, int page, int size) {
+        PageHelper.startPage(page, size);
         List<MallOrder> orders = mallOrderMapper.selectAll(status);
         return orders.stream().map(this::convertToVo).collect(Collectors.toList());
     }
@@ -204,17 +230,81 @@ public class OrderServiceImpl implements OrderService {
         if (!"PAID".equals(order.getStatus())) {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "仅已支付订单可发货");
         }
+
+        // 校验快递公司
+        String company = dto.getCourierCompany();
+        if (company == null || !COURIER_CONFIG.containsKey(company)) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "请选择快递公司");
+        }
+
         MallOrder update = new MallOrder();
         update.setId(id);
         update.setStatus("SHIPPED");
-        update.setLogisticsNo(dto.getLogisticsNo());
-        update.setLogisticsStatus(dto.getLogisticsStatus());
+        update.setCourierCompany(company);
+
+        // 生成随机物流时间线（秒，从发货时刻算起）
+        Map<String, Integer> timeline = new HashMap<>();
+        timeline.put("picked", 30 + random.nextInt(31));      // 30~60秒 → 已揽件
+        timeline.put("transit", 60 + random.nextInt(61));     // 60~120秒 → 运输中
+        timeline.put("delivering", 120 + random.nextInt(121));  // 120~240秒 → 派送中
+        timeline.put("delivered", 240 + random.nextInt(121));   // 240~360秒 → 已送达
+        try {
+            update.setLogisticsTimeline(objectMapper.writeValueAsString(timeline));
+        } catch (Exception e) {
+            throw new BusinessException(ResultCodeEnum.UNKNOWN_ERROR, "生成物流时间线失败");
+        }
+
+        // 根据快递公司自动生成单号
+        update.setLogisticsNo(generateTrackingNo(company));
+        update.setLogisticsStatus("已发货");
         mallOrderMapper.updateById(update);
+    }
+
+    /**
+     * 根据快递公司生成单号
+     */
+    private String generateTrackingNo(String company) {
+        String[] config = COURIER_CONFIG.get(company);
+        if (config == null) return null;
+        String prefix = config[0];
+        int digits = Integer.parseInt(config[1]);
+        StringBuilder sb = new StringBuilder(prefix);
+        for (int i = 0; i < digits; i++) {
+            sb.append(random.nextInt(10));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 根据物流时间线实时计算当前物流状态
+     */
+    private String computeLogisticsStatus(MallOrder order) {
+        if (order.getLogisticsTimeline() == null || order.getUpdatedAt() == null) {
+            return order.getLogisticsStatus();
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Integer> timeline = objectMapper.readValue(order.getLogisticsTimeline(), Map.class);
+            long elapsed = Duration.between(order.getUpdatedAt(), LocalDateTime.now()).getSeconds();
+
+            if (elapsed < timeline.get("picked"))     return "已发货";
+            if (elapsed < timeline.get("transit"))    return "已揽件";
+            if (elapsed < timeline.get("delivering")) return "运输中";
+            if (elapsed < timeline.get("delivered"))  return "派送中";
+            return "已送达";
+        } catch (Exception e) {
+            return order.getLogisticsStatus();
+        }
     }
 
     private OrderVo convertToVo(MallOrder order) {
         OrderVo vo = new OrderVo();
         BeanUtils.copyProperties(order, vo);
+
+        // 实时计算物流状态（覆盖 DB 中的静态值）
+        if ("SHIPPED".equals(order.getStatus())) {
+            vo.setLogisticsStatus(computeLogisticsStatus(order));
+        }
 
         List<MallOrderItem> items = mallOrderItemMapper.selectByOrderId(order.getId());
         List<OrderVo.OrderItemVo> itemVos = items.stream().map(item -> {

@@ -17,4 +17,8 @@ public interface NoticeService {
     void delete(Long id);
 
     List<SysNotice> getAllForAdmin();
+
+    List<NoticeVo> getUnreadNotices(Long userId);
+
+    void markAsRead(Long userId, Long noticeId);
 }

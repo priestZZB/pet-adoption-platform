@@ -101,5 +101,19 @@ export const replyFeedback = (id, reply) => request.post('/admin/feedback/' + id
 export const getLogs = (params) => request.get('/admin/logs', { params })
 
 // ===== AI记录 =====
-// 所有AI问答记录
-export const getAIRecords = () => request.get('/admin/ai/records')
+// 所有AI问答记录（分页）
+export const getAIRecords = (params) => request.get('/ai/admin/records', { params })
+// 所有对话列表（按 session 分组）
+export const getAdminSessions = () => request.get('/ai/admin/sessions')
+// 获取某次对话的消息列表（管理员，包含已删除）
+export const getAdminSessionMessages = (sessionId) => request.get('/ai/admin/sessions/' + sessionId + '/messages')
+
+// ===== 轮播管理 =====
+// 轮播图列表（管理员）
+export const getBanners = () => request.get('/admin/banners')
+// 新增轮播图
+export const addBanner = (data) => request.post('/admin/banners', data)
+// 编辑轮播图
+export const updateBanner = (id, data) => request.put('/admin/banners/' + id, data)
+// 删除轮播图
+export const deleteBanner = (id) => request.delete('/admin/banners/' + id)

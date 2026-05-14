@@ -16,6 +16,8 @@ public class MallOrder {
     private String status;
     private String logisticsNo;
     private String logisticsStatus;
+    private String logisticsTimeline;
+    private String courierCompany;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
@@ -36,6 +38,10 @@ public class MallOrder {
     public void setLogisticsNo(String logisticsNo) { this.logisticsNo = logisticsNo; }
     public String getLogisticsStatus() { return logisticsStatus; }
     public void setLogisticsStatus(String logisticsStatus) { this.logisticsStatus = logisticsStatus; }
+    public String getLogisticsTimeline() { return logisticsTimeline; }
+    public void setLogisticsTimeline(String logisticsTimeline) { this.logisticsTimeline = logisticsTimeline; }
+    public String getCourierCompany() { return courierCompany; }
+    public void setCourierCompany(String courierCompany) { this.courierCompany = courierCompany; }
     public String getReceiverName() { return receiverName; }
     public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
     public String getReceiverPhone() { return receiverPhone; }

@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ProductService {
 
+    void evictProductCache();
+
     List<ProductListVo> getProductList(Long categoryId, int page, int size);
 
     ProductDetailVo getProductDetail(Long id);

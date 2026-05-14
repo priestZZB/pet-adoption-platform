@@ -27,7 +27,7 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("宠物领养救助管理平台")
+                .title("毛球寻觅")
                 .description("Pet Adoption Platform API Documentation")
                 .version("1.0.0")
                 .build();

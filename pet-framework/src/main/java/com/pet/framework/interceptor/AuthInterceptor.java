@@ -9,6 +9,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -32,8 +33,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String BLACKLIST_PREFIX = "blacklist:token:";
 
     @Override
     public boolean preHandle(HttpServletRequest request,
@@ -67,6 +72,15 @@ public class AuthInterceptor implements HandlerInterceptor {
             throw new UnauthorizedException(ResultCodeEnum.TOKEN_EXPIRED);
         } catch (JwtException e) {
             throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
+        }
+
+        // 检查 Token 是否已被加入黑名单（退出登录时加入）
+        String jti = claims.getId();
+        if (jti != null) {
+            Boolean isBlacklisted = redisTemplate.hasKey(BLACKLIST_PREFIX + jti);
+            if (Boolean.TRUE.equals(isBlacklisted)) {
+                throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
+            }
         }
 
         // 3. 用户信息存入 request

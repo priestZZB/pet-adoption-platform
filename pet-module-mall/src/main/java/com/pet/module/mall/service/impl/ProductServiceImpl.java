@@ -87,6 +87,12 @@ public class ProductServiceImpl implements ProductService {
     }
     @CacheEvict(allEntries = true)
     @Override
+    public void evictProductCache() {
+        // 清空商品缓存（下单扣减库存后调用）
+    }
+
+    @CacheEvict(allEntries = true)
+    @Override
     public void toggleStatus(Long id) {
         MallProduct product = mallProductMapper.selectById(id);
         if (product == null) {

@@ -1,12 +1,13 @@
 package com.pet.module.adopt.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.adopt.model.entity.AdoptQuestion;
+import com.pet.module.adopt.model.vo.AdoptApplyVo;
 import com.pet.module.adopt.service.AdoptService;
 import com.pet.module.adopt.service.QuestionService;
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,13 +82,16 @@ public class AdminQuestionController {
     }
 
     /**
-     * 所有领养申请列表
+     * 所有领养申请列表（分页）
      */
-    @ApiOperation("所有领养申请列表（管理员）")
+    @ApiOperation("所有领养申请列表（管理员，分页）")
     @GetMapping("/applications")
-    public Result<List<com.pet.module.adopt.model.vo.AdoptApplyVo>> applications(
-            @RequestParam(required = false) String status) {
-        return Result.success(adoptService.getAllApplications(status));
+    public Result<PageInfo<AdoptApplyVo>> applications(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<AdoptApplyVo> list = adoptService.getAllApplications(status, page, size);
+        return Result.success(new PageInfo<>(list));
     }
 
     /**

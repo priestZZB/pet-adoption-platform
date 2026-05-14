@@ -19,7 +19,7 @@ public interface OrderService {
 
     void cancel(Long id);
 
-    List<OrderVo> getAllOrders(String status);
+    List<OrderVo> getAllOrders(String status, int page, int size);
 
     OrderVo getAdminOrderDetail(Long id);
 

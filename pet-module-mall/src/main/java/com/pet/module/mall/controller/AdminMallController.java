@@ -1,5 +1,6 @@
 package com.pet.module.mall.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
@@ -107,12 +108,16 @@ public class AdminMallController {
     }
 
     /**
-     * 所有订单列表
+     * 所有订单列表（分页）
      */
-    @ApiOperation("所有订单列表（管理员）")
+    @ApiOperation("所有订单列表（管理员，分页）")
     @GetMapping("/orders")
-    public Result<List<OrderVo>> orders(@RequestParam(required = false) String status) {
-        return Result.success(orderService.getAllOrders(status));
+    public Result<PageInfo<OrderVo>> orders(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<OrderVo> list = orderService.getAllOrders(status, page, size);
+        return Result.success(new PageInfo<>(list));
     }
 
     /**

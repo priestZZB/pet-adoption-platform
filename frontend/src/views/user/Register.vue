@@ -11,6 +11,23 @@
         size="large"
         @keyup.enter="handleRegister"
       >
+        <!-- 用户名（系统分配，不可更改） -->
+        <el-form-item>
+          <div class="username-row">
+            <el-input
+              :model-value="generatedUsername"
+              placeholder="正在生成…"
+              disabled
+              :prefix-icon="User"
+            />
+            <el-tooltip content="用户名由系统分配，不可更改" placement="top">
+              <span class="username-hint-abs">
+                <el-icon class="username-hint-icon"><WarningFilled /></el-icon>
+              </span>
+            </el-tooltip>
+          </div>
+        </el-form-item>
+
         <el-form-item prop="password">
           <el-input
             v-model="form.password"
@@ -65,6 +82,9 @@
           </div>
         </el-form-item>
 
+        <!-- 提示文字 -->
+        <div class="username-tip">⚠️ 请牢记您的用户名和密码</div>
+
         <el-form-item>
           <el-button
             type="primary"
@@ -88,11 +108,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { User, Lock, Iphone } from '@element-plus/icons-vue'
-import { register } from '@/api/user'
+import { User, Lock, Iphone, WarningFilled } from '@element-plus/icons-vue'
+import { register, generateUsername } from '@/api/user'
 import { sendSmsCode } from '@/api/sms'
 import CaptchaSlider from '@/components/CaptchaSlider.vue'
 
@@ -102,6 +122,7 @@ const captchaRef = ref(null)
 const submitting = ref(false)
 const smsSending = ref(false)
 const smsCountdown = ref(0)
+const generatedUsername = ref('')
 let smsTimer = null
 
 const form = reactive({
@@ -141,6 +162,16 @@ const rules = {
 }
 
 const validPhone = computed(() => /^1[3-9]\d{9}$/.test(form.phone))
+
+// 页面加载时从后端获取预分配的用户名
+onMounted(async () => {
+  try {
+    const res = await generateUsername()
+    generatedUsername.value = res?.username || ''
+  } catch {
+    generatedUsername.value = '获取失败'
+  }
+})
 
 // 发送短信验证码（先弹滑块验证，通过后发短信）
 async function handleSendSms() {
@@ -187,6 +218,7 @@ async function handleRegister() {
   submitting.value = true
   try {
     const result = await register({
+      username: generatedUsername.value,
       password: form.password,
       nickname: form.nickname || '用户',
       phone: form.phone,
@@ -269,5 +301,31 @@ async function handleRegister() {
 .sms-row .el-button {
   flex-shrink: 0;
   min-width: 110px;
+}
+.username-row {
+  position: relative;
+  width: 100%;
+}
+.username-hint-abs {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  z-index: 1;
+  line-height: 1;
+}
+.username-hint-icon {
+  color: #e6a23c;
+  font-size: 16px;
+}
+.username-tip {
+  text-align: center;
+  font-size: 13px;
+  color: #e6a23c;
+  margin-bottom: 12px;
+  margin-top: -6px;
 }
 </style>

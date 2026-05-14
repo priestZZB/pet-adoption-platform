@@ -9,7 +9,7 @@
       <el-table :data="list" border stripe v-loading="loading">
         <el-table-column label="图片" width="60">
           <template #default="{ row }">
-            <el-image :src="row.image" fit="cover" style="width:40px;height:40px;border-radius:4px">
+            <el-image :src="(row.image || '').split(',')[0]" fit="cover" style="width:40px;height:40px;border-radius:4px">
               <template #error><div class="img-xs" /></template>
             </el-image>
           </template>
@@ -60,7 +60,18 @@
           <el-input-number v-model="form.stock" :min="0" style="width:200px" />
         </el-form-item>
         <el-form-item label="主图">
-          <el-input v-model="form.image" placeholder="图片URL" />
+          <el-upload
+            ref="uploadRef"
+            action="/api/file/upload?module=mall"
+            :headers="uploadHeaders"
+            :file-list="uploadFileList"
+            list-type="picture-card"
+            multiple
+            :on-success="handleUploadSuccess"
+            :on-remove="handleUploadRemove"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -72,10 +83,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMallCategories, getMallProducts } from '@/api/mall'
 import { addProduct, updateProduct, toggleProductStatus } from '@/api/admin'
+import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination.vue'
 
 const list = ref([])
@@ -88,7 +100,13 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
 const saving = ref(false)
+const uploadRef = ref(null)
+const uploadFileList = ref([])
 const form = reactive({ categoryId: null, name: '', description: '', price: 0, stock: 0, image: '' })
+
+const uploadHeaders = computed(() => ({
+  Authorization: 'Bearer ' + (getToken() || '')
+}))
 
 async function loadList() {
   loading.value = true
@@ -109,11 +127,38 @@ function openDialog(row) {
   if (row) {
     isEdit.value = true; editId.value = row.id
     Object.assign(form, { categoryId: row.categoryId, name: row.name, description: row.description || '', price: row.price, stock: row.stock, image: row.image || '' })
+    // 编辑时回显已有图片
+    if (row.image) {
+      const urls = row.image.split(',').filter(Boolean)
+      uploadFileList.value = urls.map((url, i) => ({ name: '图片' + (i + 1), url: url }))
+    } else {
+      uploadFileList.value = []
+    }
   } else {
     isEdit.value = false; editId.value = null
     Object.assign(form, { categoryId: null, name: '', description: '', price: 0, stock: 0, image: '' })
+    uploadFileList.value = []
   }
   dialogVisible.value = true
+}
+
+function handleUploadSuccess(response, file) {
+  if (response && response.data && response.data.url) {
+    file.url = response.data.url
+    // 累加多张图片URL，逗号分隔
+    const urls = form.image ? form.image.split(',').filter(Boolean) : []
+    if (!urls.includes(response.data.url)) {
+      urls.push(response.data.url)
+      form.image = urls.join(',')
+    }
+  }
+}
+
+function handleUploadRemove(file, fileList) {
+  uploadFileList.value = fileList
+  // 从剩余文件列表中重建 image 字段，删除掉的图片就不会包括在内
+  const urls = fileList.map(f => f.url).filter(Boolean)
+  form.image = urls.join(',')
 }
 
 async function handleSave() {

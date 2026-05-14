@@ -17,10 +17,10 @@
         label-width="100px"
         size="large"
       >
-        <el-form-item label="关联宠物">
+        <el-form-item label="走访宠物">
           <el-select
             v-model="form.petId"
-            placeholder="请选择关联宠物"
+            placeholder="请选择已领养宠物"
             filterable
             clearable
             style="width:100%"
@@ -129,6 +129,13 @@ async function handleImageUpload(file) {
   try {
     const res = await uploadFiles([file], 'volunteer')
     imageUrlList.value = imageUrlList.value.concat(res.urls || [])
+    if (res.urls && res.urls[0]) {
+      imageFileList.value = imageFileList.value.concat({
+        uid: Date.now(),
+        name: file.name,
+        url: res.urls[0]
+      })
+    }
   } catch {
     ElMessage.error('图片上传失败')
   }
