@@ -9,7 +9,7 @@
       </div>
       <div class="sub-header-title">
         <el-image src="/images/logo.jpg" fit="contain" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;border-radius:4px" />
-        <span style="font-size:16px;font-weight:bold;color:#303133">毛球寻觅</span>
+        <span style="font-size:16px;font-weight:bold;color:#303133">有宠</span>
       </div>
     </div>
 

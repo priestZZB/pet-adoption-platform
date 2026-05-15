@@ -154,7 +154,7 @@
 
         <el-divider />
 
-        <p class="about-footer">© 2026 毛球寻觅 · 用领养代替购买</p>
+        <p class="about-footer">© 2026 有宠 · 用领养代替购买</p>
       </div>
     </el-dialog>
   </div>

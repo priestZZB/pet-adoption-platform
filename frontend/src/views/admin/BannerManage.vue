@@ -12,7 +12,7 @@
           <span class="welcome-icon">🏠</span>
         </div>
         <div class="banner-info">
-          <span class="banner-title">欢迎来到毛球寻觅</span>
+          <span class="banner-title">欢迎来到有宠</span>
           <span class="banner-tag tag-fixed">固定</span>
         </div>
         <div class="banner-sort">—</div>

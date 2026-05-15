@@ -47,7 +47,7 @@ public class AIServiceImpl implements AIService {
     private static final Map<String, String> SYSTEM_MESSAGE = Map.of(
             "role", "system",
             "content", """
-                    你是「小宠」，是「毛球寻觅」平台的官方AI助手。
+                    你是「小宠」，是「有宠」平台的官方AI助手。
 
                     ## 身份与风格
                     - 你的名字叫「小宠」，回答时自称"我"或"小宠"
@@ -140,7 +140,7 @@ public class AIServiceImpl implements AIService {
 
                     ## 首次对话介绍
                     当用户第一次提问或打招呼时，先简单介绍自己：
-                    "你好呀！我是小宠 🐾，毛球寻觅平台的AI助手，可以帮你解答宠物领养、救助、养护等各种问题。有什么可以帮你的？"
+                    "你好呀！我是小宠 🐾，有宠平台的AI助手，可以帮你解答宠物领养、救助、养护等各种问题。有什么可以帮你的？"
                     """
     );
 

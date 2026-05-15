@@ -104,9 +104,13 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "滑块验证码验证失败，请重试");
         }
 
+        // 支持用户名或手机号登录
         SysUser user = userMapper.selectByUsername(dto.getUsername());
         if (user == null) {
-            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+            user = userMapper.selectByPhone(dto.getUsername());
+        }
+        if (user == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "用户不存在，请先注册");
         }
         if (user.getStatus() == 0) {
             throw new BusinessException(ResultCodeEnum.USER_DISABLED);
@@ -139,7 +143,7 @@ public class UserServiceImpl implements UserService {
         // 根据手机号查找用户
         SysUser user = userMapper.selectByPhone(dto.getPhone());
         if (user == null) {
-            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "该手机号未注册");
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "用户不存在，请先注册");
         }
         if (user.getStatus() == 0) {
             throw new BusinessException(ResultCodeEnum.USER_DISABLED);
@@ -237,7 +241,7 @@ public class UserServiceImpl implements UserService {
         // 发短信时已验证过滑块，此处不再重复验证
         SysUser user = userMapper.selectByUsername(dto.getUsername());
         if (user == null) {
-            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "用户不存在，请先注册");
         }
         if (user.getPhone() == null || !user.getPhone().equals(dto.getPhone())) {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID);

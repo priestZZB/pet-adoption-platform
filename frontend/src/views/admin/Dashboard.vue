@@ -16,7 +16,7 @@
 
     <el-card class="welcome-card">
       <h4>欢迎回来，{{ userStore.userInfo?.nickname || '管理员' }}</h4>
-      <p>毛球寻觅 — 后台管理系统</p>
+      <p>有宠 — 后台管理系统</p>
     </el-card>
   </div>
 </template>

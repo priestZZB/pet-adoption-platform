@@ -1,7 +1,10 @@
 package com.pet.module.system.controller;
 
+import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
+import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.service.CaptchaService;
 import com.pet.module.system.service.SmsService;
 import io.swagger.annotations.Api;
@@ -27,6 +30,9 @@ public class SmsController {
     @Autowired
     private CaptchaService captchaService;
 
+    @Autowired
+    private UserMapper userMapper;
+
     /**
      * 发送短信验证码
      *
@@ -48,6 +54,13 @@ public class SmsController {
             return Result.error(400, "滑块验证码验证失败，请重试");
         }
 
+        // 登录/找回密码场景：检查手机号是否已注册
+        if ("login".equals(dto.getType()) || "reset".equals(dto.getType())) {
+            if (userMapper.countByPhone(dto.getPhone()) == 0) {
+                return Result.error(404, "用户不存在，请先注册");
+            }
+        }
+
         String code = smsService.sendCode(dto.getPhone());
         Map<String, String> data = new HashMap<>();
         data.put("phone", dto.getPhone());
@@ -61,6 +74,8 @@ public class SmsController {
      */
     public static class SmsCodeDto {
         private String phone;
+        /** 场景类型：register / login / reset */
+        private String type;
         /** 行为验证码票据 */
         private String ticket;
         /** 行为验证码随机字符串 */
@@ -70,6 +85,8 @@ public class SmsController {
 
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getType() { return type; }
+        public void setType(String type) { this.type = type; }
         public String getTicket() { return ticket; }
         public void setTicket(String ticket) { this.ticket = ticket; }
         public String getRandstr() { return randstr; }

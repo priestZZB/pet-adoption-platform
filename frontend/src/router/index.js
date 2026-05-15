@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 
 const routes = [
   // ===== 独立页（无布局）=====
-  { path: '/login',         component: () => import('@/views/user/Login.vue') },
+  { path: '/login',         component: () => import('@/views/auth/AuthPage.vue') },
   { path: '/register',      component: () => import('@/views/user/Register.vue') },
   { path: '/reset-password', component: () => import('@/views/user/ResetPassword.vue') },
 

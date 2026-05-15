@@ -3,7 +3,7 @@
     <el-menu mode="horizontal" :default-active="activeMenu" class="navbar">
       <div class="navbar-brand">
         <el-image src="/images/logo.jpg" fit="contain" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;border-radius:6px" />
-        <span style="font-size:18px;font-weight:bold;color:#303133">毛球寻觅</span>
+        <span style="font-size:18px;font-weight:bold;color:#303133">有宠</span>
       </div>
       <el-menu-item index="/" @click="router.push('/')">
         <el-icon><HomeFilled /></el-icon>
@@ -91,7 +91,6 @@ function goPage(path) {
 function handleLogout() {
   dropdownOpen.value = false
   userStore.logout()
-  router.push("/")
 }
 
 function handleOrderClick() {

@@ -1,109 +1,66 @@
 <template>
-  <div class="register-page">
-    <div class="register-card">
-      <h2 class="register-title">用户注册</h2>
-
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="0"
-        size="large"
-        @keyup.enter="handleRegister"
-      >
-        <!-- 用户名（系统分配，不可更改） -->
-        <el-form-item>
-          <div class="username-row">
-            <el-input
-              :model-value="generatedUsername"
-              placeholder="正在生成…"
-              disabled
-              :prefix-icon="User"
-            />
-            <el-tooltip content="用户名由系统分配，不可更改" placement="top">
-              <span class="username-hint-abs">
-                <el-icon class="username-hint-icon"><WarningFilled /></el-icon>
-              </span>
-            </el-tooltip>
+  <div class="page">
+    <div class="auth-bg"></div>
+    <div class="main">
+      <div class="card">
+        <div class="card-body">
+          <!-- 左：装饰 -->
+          <div class="card-left">
+            <div class="deco-icon">🐾</div>
+            <h2 class="deco-title">加入有宠大家庭</h2>
+            <p class="deco-desc">注册账号，开启你的宠物领养之旅<br/>用领养代替购买，给毛孩子一个温暖的家</p>
+            <div class="deco-list">
+              <div class="deco-item"><span>🐱</span> 浏览待领养宠物</div>
+              <div class="deco-item"><span>📋</span> 参加领养考试</div>
+              <div class="deco-item"><span>🛒</span> 宠物商城购物</div>
+              <div class="deco-item"><span>🤖</span> AI智能咨询</div>
+            </div>
           </div>
-        </el-form-item>
+          <!-- 右：注册表单 -->
+          <div class="card-right">
+            <div class="form-header">
+              <img src="/images/logo.jpg" class="form-logo" />
+              <span class="form-brand">有宠</span>
+            </div>
+            <p class="form-sub">创建你的账号 🐾</p>
 
-        <el-form-item prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="密码（6-20个字符）"
-            :prefix-icon="Lock"
-            show-password
-          />
-        </el-form-item>
-
-        <el-form-item prop="confirmPassword">
-          <el-input
-            v-model="form.confirmPassword"
-            type="password"
-            placeholder="确认密码"
-            :prefix-icon="Lock"
-            show-password
-          />
-        </el-form-item>
-
-        <el-form-item prop="nickname">
-          <el-input
-            v-model="form.nickname"
-            placeholder="昵称（选填）"
-            :prefix-icon="User"
-          />
-        </el-form-item>
-
-        <el-form-item prop="phone">
-          <el-input
-            v-model="form.phone"
-            placeholder="手机号"
-            :prefix-icon="Iphone"
-            maxlength="11"
-          />
-        </el-form-item>
-
-        <el-form-item prop="smsCode">
-          <div class="sms-row">
-            <el-input
-              v-model="form.smsCode"
-              placeholder="短信验证码"
-              maxlength="6"
-            />
-            <el-button
-              :disabled="smsCountdown > 0 || !validPhone"
-              :loading="smsSending"
-              @click="handleSendSms"
-            >
-              {{ smsCountdown > 0 ? `${smsCountdown}s` : '获取验证码' }}
-            </el-button>
+            <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large" @keyup.enter="handleRegister">
+              <el-form-item>
+                <div class="i-wrap">
+                  <i class="i-icon fas fa-user"></i>
+                  <el-input :model-value="generatedUsername" disabled placeholder="正在生成…" />
+                  <el-tooltip content="用户名由系统分配，不可更改" placement="top">
+                    <span class="hint"><i class="fas fa-info-circle"></i></span>
+                  </el-tooltip>
+                </div>
+              </el-form-item>
+              <el-form-item prop="password">
+                <div class="i-wrap"><i class="i-icon fas fa-lock"></i><el-input v-model="form.password" type="password" placeholder="密码（6-20个字符）" show-password /></div>
+              </el-form-item>
+              <el-form-item prop="confirmPassword">
+                <div class="i-wrap"><i class="i-icon fas fa-lock"></i><el-input v-model="form.confirmPassword" type="password" placeholder="确认密码" show-password /></div>
+              </el-form-item>
+              <el-form-item prop="nickname">
+                <div class="i-wrap"><i class="i-icon fas fa-tag"></i><el-input v-model="form.nickname" placeholder="昵称（选填）" /></div>
+              </el-form-item>
+              <el-form-item prop="phone">
+                <div class="i-wrap"><i class="i-icon fas fa-mobile-alt"></i><el-input v-model="form.phone" placeholder="手机号" maxlength="11" /></div>
+              </el-form-item>
+              <el-form-item prop="smsCode">
+                <div class="sms-row">
+                  <div class="i-wrap flex-1"><i class="i-icon fas fa-shield-alt"></i><el-input v-model="form.smsCode" placeholder="短信验证码" maxlength="6" /></div>
+                  <button type="button" class="sms-btn" :disabled="smsCountdown > 0 || !validPhone" :class="{ sending: smsSending }" @click="handleSendSms">{{ smsCountdown > 0 ? `${smsCountdown}s` : '获取验证码' }}</button>
+                </div>
+              </el-form-item>
+              <div class="tip">⚠️ 请牢记您的用户名和密码</div>
+              <el-form-item><button type="button" class="form-btn" :disabled="submitting" @click="handleRegister">{{ submitting ? '注册中…' : '注册' }}</button></el-form-item>
+            </el-form>
+            <div class="foot">已有账号？<router-link to="/login" class="link">去登录</router-link></div>
           </div>
-        </el-form-item>
-
-        <!-- 提示文字 -->
-        <div class="username-tip">⚠️ 请牢记您的用户名和密码</div>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            :loading="submitting"
-            style="width:100%"
-            @click="handleRegister"
-          >
-            注册
-          </el-button>
-        </el-form-item>
-      </el-form>
-
-      <div class="register-footer">
-        已有账号？<router-link to="/login">去登录</router-link>
+        </div>
       </div>
-
-      <!-- 隐藏的滑块验证码组件 -->
-      <CaptchaSlider ref="captchaRef" />
     </div>
+    <CaptchaSlider ref="captchaRef" />
   </div>
 </template>
 
@@ -111,221 +68,75 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { User, Lock, Iphone, WarningFilled } from '@element-plus/icons-vue'
 import { register, generateUsername } from '@/api/user'
 import { sendSmsCode } from '@/api/sms'
 import CaptchaSlider from '@/components/CaptchaSlider.vue'
 
-const router = useRouter()
-const formRef = ref(null)
-const captchaRef = ref(null)
-const submitting = ref(false)
-const smsSending = ref(false)
-const smsCountdown = ref(0)
-const generatedUsername = ref('')
+const router = useRouter(); const formRef = ref(null); const captchaRef = ref(null)
+const submitting = ref(false); const smsSending = ref(false); const smsCountdown = ref(0); const generatedUsername = ref('')
 let smsTimer = null
-
-const form = reactive({
-  password: '',
-  confirmPassword: '',
-  nickname: '',
-  phone: '',
-  smsCode: ''
-})
-
-// 验证密码确认
-const validateConfirm = (rule, value, callback) => {
-  if (value !== form.password) {
-    callback(new Error('两次输入的密码不一致'))
-  } else {
-    callback()
-  }
-}
-
-const rules = {
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码6-20个字符', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请再次输入密码', trigger: 'blur' },
-    { validator: validateConfirm, trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
-  ],
-  smsCode: [
-    { required: true, message: '请输入短信验证码', trigger: 'blur' },
-    { len: 6, message: '验证码为6位数字', trigger: 'blur' }
-  ]
-}
-
+const form = reactive({ password: '', confirmPassword: '', nickname: '', phone: '', smsCode: '' })
+const validateConfirm = (r, v, cb) => { if (v !== form.password) cb(new Error('两次输入的密码不一致')); else cb() }
+const rules = { password: [{ required: true, message: '请输入密码', trigger: 'blur' }, { min: 6, max: 20, message: '6-20个字符', trigger: 'blur' }], confirmPassword: [{ required: true, message: '请再次输入密码', trigger: 'blur' }, { validator: validateConfirm, trigger: 'blur' }], phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }, { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }], smsCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }, { len: 6, message: '6位数字', trigger: 'blur' }] }
 const validPhone = computed(() => /^1[3-9]\d{9}$/.test(form.phone))
 
-// 页面加载时从后端获取预分配的用户名
-onMounted(async () => {
-  try {
-    const res = await generateUsername()
-    generatedUsername.value = res?.username || ''
-  } catch {
-    generatedUsername.value = '获取失败'
-  }
-})
+onMounted(async () => { try { const r = await generateUsername(); generatedUsername.value = r?.username || '' } catch {}; if (!document.getElementById('fa-css')) { const l = document.createElement('link'); l.id = 'fa-css'; l.rel = 'stylesheet'; l.href = 'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css'; document.head.appendChild(l) } })
 
-// 发送短信验证码（先弹滑块验证，通过后发短信）
-async function handleSendSms() {
-  if (smsSending.value || smsCountdown.value > 0) return
-  if (!validPhone.value) {
-    ElMessage.warning('请先输入正确的手机号')
-    return
-  }
+async function handleSendSms() { if (smsSending.value || smsCountdown.value > 0) return; if (!validPhone.value) { ElMessage.warning('请输入正确手机号'); return }; try { const c = await captchaRef.value.showCaptcha(); smsSending.value = true; await sendSmsCode({ phone: form.phone, ...c }); ElMessage.success('验证码已发送'); smsCountdown.value = 60; smsTimer = setInterval(() => { smsCountdown.value--; if (smsCountdown.value <= 0) { clearInterval(smsTimer); smsTimer = null } }, 1000) } catch {} finally { smsSending.value = false } }
 
-  // 自动弹出滑块验证
-  try {
-    const captchaData = await captchaRef.value.showCaptcha()
-    // 滑块通过 → 发短信
-    smsSending.value = true
-    await sendSmsCode({
-      phone: form.phone,
-      ...captchaData
-    })
-    ElMessage.success('验证码已发送')
-    startSmsCountdown()
-  } catch (err) {
-    // 用户取消验证时不提示，其他错误由拦截器统一处理
-  } finally {
-    smsSending.value = false
-  }
-}
-
-function startSmsCountdown() {
-  smsCountdown.value = 60
-  smsTimer = setInterval(() => {
-    smsCountdown.value--
-    if (smsCountdown.value <= 0) {
-      clearInterval(smsTimer)
-      smsTimer = null
-    }
-  }, 1000)
-}
-
-// 注册（发短信时已验证过滑块，此处直接提交）
 async function handleRegister() {
-  const valid = await formRef.value.validate().catch(() => false)
-  if (!valid) return
-
-  submitting.value = true
-  try {
-    const result = await register({
-      username: generatedUsername.value,
-      password: form.password,
-      nickname: form.nickname || '用户',
-      phone: form.phone,
-      smsCode: form.smsCode
-    })
-    const username = result?.username || '—'
-    ElMessageBox.alert(
-      `注册成功！<br>您的用户名为：<b>${username}</b><br>请使用用户名和密码登录。`,
-      '注册成功',
-      {
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: '去登录',
-        type: 'success'
-      }
-    ).then(() => {
-      router.push('/login')
-    })
-  } catch (err) {
-    // 处理手机号已注册的情况
-    if (err?.message?.includes('手机号已被绑定')) {
-      ElMessageBox.confirm(
-        '该手机号已注册，是否直接登录？',
-        '手机号已存在',
-        { confirmButtonText: '去登录', cancelButtonText: '取消', type: 'info' }
-      ).then(() => {
-        router.push('/login')
-      }).catch(() => {})
-      return
-    }
-    // 其他错误由请求拦截器统一处理
-  } finally {
-    submitting.value = false
-  }
-}
+  const v = await formRef.value.validate().catch(() => false); if (!v) return; submitting.value = true
+  try { const r = await register({ username: generatedUsername.value, password: form.password, nickname: form.nickname || '用户', phone: form.phone, smsCode: form.smsCode }); const u = r?.username || '—'; ElMessageBox.alert(`注册成功！<br>您的用户名为：<b>${u}</b><br>请使用用户名和密码登录。`, '注册成功', { dangerouslyUseHTMLString: true, confirmButtonText: '去登录', type: 'success' }).then(() => router.push('/login')) } catch (err) { if (err?.message?.includes('手机号已被绑定')) { ElMessageBox.confirm('该手机号已注册，是否直接登录？', '手机号已存在', { confirmButtonText: '去登录', cancelButtonText: '取消', type: 'info' }).then(() => router.push('/login')).catch(() => {}) } } finally { submitting.value = false } }
 </script>
 
 <style scoped>
-.register-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.register-card {
-  width: 420px;
-  padding: 40px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  position: relative;
-}
-.register-title {
-  text-align: center;
-  margin-bottom: 24px;
-  font-size: 22px;
-  color: #303133;
-}
-.register-footer {
-  text-align: center;
-  font-size: 14px;
-  color: #909399;
-  margin-top: 8px;
-}
-.register-footer a {
-  color: #409EFF;
-  text-decoration: none;
-}
-.register-footer a:hover {
-  text-decoration: underline;
-}
-.sms-row {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-.sms-row .el-input {
-  flex: 1;
-}
-.sms-row .el-button {
-  flex-shrink: 0;
-  min-width: 110px;
-}
-.username-row {
-  position: relative;
-  width: 100%;
-}
-.username-hint-abs {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  z-index: 1;
-  line-height: 1;
-}
-.username-hint-icon {
-  color: #e6a23c;
-  font-size: 16px;
-}
-.username-tip {
-  text-align: center;
-  font-size: 13px;
-  color: #e6a23c;
-  margin-bottom: 12px;
-  margin-top: -6px;
-}
+.page { width: 100vw; min-height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; background: #f7f1e5; }
+.auth-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(247,241,229,0.82) 0%, rgba(254,250,245,0.9) 100%), url('/images/bg.png') center/cover no-repeat; box-sizing: border-box; }
+.main { position: relative; z-index: 1; width: 100%; max-width: 960px; padding: 20px; }
+
+.card { background: #fefaf5; border: 1px solid #d1e7dd; border-radius: 20px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
+.card-body { display: flex; gap: 28px; align-items: stretch; }
+
+/* 左 */
+.card-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 12px 8px; }
+.deco-icon { font-size: 44px; text-align: center; margin-bottom: 10px; }
+.deco-title { font-size: 22px; font-weight: 700; color: #5a4a42; text-align: center; margin: 0 0 6px; }
+.deco-desc { font-size: 13.5px; color: #8a7a6a; text-align: center; line-height: 1.7; margin: 0 0 20px; }
+.deco-list { display: flex; flex-direction: column; gap: 8px; }
+.deco-item { font-size: 14px; color: #5a4a42; padding: 8px 14px; background: #f7f1e5; border-radius: 10px; display: flex; align-items: center; gap: 8px; }
+
+/* 右 */
+.card-right { width: 360px; flex-shrink: 0; }
+.form-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 2px; }
+.form-logo { width: 40px; height: 40px; border-radius: 10px; }
+.form-brand { font-size: 22px; font-weight: 700; color: #5a4a42; }
+.form-sub { text-align: center; font-size: 12.5px; color: #a09080; margin: 0 0 14px; }
+
+.i-wrap { position: relative; width: 100%; }
+.i-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #b5a898; font-size: 15px; z-index: 2; pointer-events: none; }
+:deep(.el-input__wrapper) { padding-left: 42px !important; border-radius: 10px; border: 1px solid #d1e7dd; box-shadow: none !important; background: #fefaf5; height: 44px; }
+:deep(.el-input__wrapper:hover) { border-color: #b5d5c5; }
+:deep(.el-input__wrapper.is-focus) { border-color: #8ab8a0; box-shadow: 0 0 0 3px rgba(139,184,160,0.12) !important; }
+:deep(.el-form-item) { margin-bottom: 0; }
+:deep(.el-form-item--large) { margin-bottom: 22px; }
+:deep(.el-input__inner) { color: #5a4a42; font-size: 14px; }
+
+.hint { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 2; color: #b5a898; font-size: 14px; cursor: pointer; }
+.tip { text-align: center; font-size: 12px; color: #b5a898; margin-bottom: 10px; margin-top: -6px; }
+
+.sms-row { display: flex; gap: 8px; width: 100%; }
+.flex-1 { flex: 1; }
+.sms-btn { flex-shrink: 0; min-width: 100px; height: 44px; border: 1px solid #d1e7dd; border-radius: 10px; background: #fefaf5; color: #5a4a42; font-size: 13px; cursor: pointer; padding: 0 10px; white-space: nowrap; }
+.sms-btn:hover:not(:disabled) { background: #f0e8dc; }
+.sms-btn:disabled { color: #b5a898; cursor: not-allowed; }
+
+.form-btn { width: 100%; height: 44px; border: none; border-radius: 10px; background: #f8e8d8; color: #5a4a42; font-size: 15px; font-weight: 500; cursor: pointer; letter-spacing: 1px; }
+.form-btn:hover { background: #f0d8c0; }
+.form-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.foot { text-align: center; font-size: 13px; color: #a09080; margin-top: 12px; }
+.link { color: #5a4a42; font-weight: 500; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+@media (max-width: 800px) { .card-body { flex-direction: column; } .card-right { width: 100%; } }
 </style>

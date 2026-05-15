@@ -16,7 +16,7 @@
         <a href="javascript:void(0)" @click="showDialog('help')">帮助中心</a>
       </div>
 
-      <p class="footer-copy">© 2026 毛球寻觅 Pet Adoption Platform · All Rights Reserved</p>
+      <p class="footer-copy">© 2026 有宠 Pet Adoption Platform · All Rights Reserved</p>
       <p class="footer-icp">
         <a href="https://beian.miit.gov.cn/" target="_blank">陇ICP备2025019186号</a>
       </p>
@@ -171,7 +171,7 @@
     <el-dialog v-model="dialogs.disclaimer" title="免责声明" width="720px">
       <div class="legal-content">
         <h4>一、平台角色</h4>
-        <p>毛球寻觅平台（域名：<b>adopt.priestlab.top</b>）仅为宠物领养、送养、公益救助及商城服务提供网络空间、技术支持与信息展示匹配服务，属于中立信息中介平台。平台不直接参与用户之间私下约定、线下交接、口头或书面协议订立，不充当担保方，不对领养匹配结果、双方履约行为承担任何保证责任与连带法律责任。</p>
+        <p>有宠平台（域名：<b>adopt.priestlab.top</b>）仅为宠物领养、送养、公益救助及商城服务提供网络空间、技术支持与信息展示匹配服务，属于中立信息中介平台。平台不直接参与用户之间私下约定、线下交接、口头或书面协议订立，不充当担保方，不对领养匹配结果、双方履约行为承担任何保证责任与连带法律责任。</p>
 
         <h4>二、信息真实性</h4>
         <p>平台严格要求所有用户发布的宠物信息、个人资料、领养申请、送养资料等均需真实合法，但受技术及客观条件限制，无法对每一条用户发布信息、个人资质资料进行逐一完全核验。所有用户均应自行审慎甄别对方身份、信息真伪、宠物健康情况，自愿产生沟通、会面、领养行为，并对自身所有操作及行为独立承担全部责任。</p>
@@ -226,14 +226,18 @@
 
         <h4>五、商城相关</h4>
         <table class="help-table">
-          <tr><td class="help-q">如何购物？</td><td>浏览商品 → 加入购物车 → 结算填写收货信息 → 创建订单 → 模拟支付 → 等待发货</td></tr>
-          <tr><td class="help-q">订单状态？</td><td>待支付 → 已支付 → 已发货 → 已收货 / 已取消</td></tr>
+          <tbody>
+            <tr><td class="help-q">如何购物？</td><td>浏览商品 → 加入购物车 → 结算填写收货信息 → 创建订单 → 模拟支付 → 等待发货</td></tr>
+            <tr><td class="help-q">订单状态？</td><td>待支付 → 已支付 → 已发货 → 已收货 / 已取消</td></tr>
+          </tbody>
         </table>
 
         <h4>六、AI助手</h4>
         <table class="help-table">
-          <tr><td class="help-q">如何使用？</td><td>点击导航栏"AI助手"进入完整页面，或点击右下角浮动按钮快速提问。</td></tr>
-          <tr><td class="help-q">能问什么？</td><td>宠物领养、救助、养护、医疗、平台操作等宠物相关话题。</td></tr>
+          <tbody>
+            <tr><td class="help-q">如何使用？</td><td>点击导航栏"AI助手"进入完整页面，或点击右下角浮动按钮快速提问。</td></tr>
+            <tr><td class="help-q">能问什么？</td><td>宠物领养、救助、养护、医疗、平台操作等宠物相关话题。</td></tr>
+          </tbody>
         </table>
 
         <h4>七、联系方式</h4>

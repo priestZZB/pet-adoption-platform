@@ -1,10 +1,10 @@
 <template>
   <div class="login-page">
     <div class="login-card">
-      <div class="login-logo">
-        <el-image src="/images/logo.jpg" fit="contain" style="width:60px;height:60px;border-radius:12px;margin-bottom:8px" />
+      <div class="login-header">
+        <el-image src="/images/logo.jpg" fit="contain" class="login-logo-img" />
+        <span class="login-title">有宠</span>
       </div>
-      <h2 class="login-title">毛球寻觅</h2>
 
       <!-- Tab 切换 -->
       <el-tabs v-model="activeTab" stretch>
@@ -269,11 +269,24 @@ async function handlePhoneLogin() {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   position: relative;
 }
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.login-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
 .login-title {
-  text-align: center;
-  margin-bottom: 24px;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 600;
   color: #303133;
+  line-height: 1;
 }
 .login-links {
   display: flex;
