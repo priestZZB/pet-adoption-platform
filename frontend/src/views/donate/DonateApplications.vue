@@ -124,7 +124,7 @@ onMounted(loadList)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 16px 0 20px;
 }
 .loading-center {
@@ -142,6 +142,13 @@ onMounted(loadList)
   gap: 12px;
 }
 
+/* 卡片暖色 */
+:deep(.app-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -155,12 +162,12 @@ onMounted(loadList)
 }
 .user-name {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   font-weight: 500;
 }
 .user-phone {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 
 .detail-row {
@@ -175,18 +182,18 @@ onMounted(loadList)
   width: 80px;
   flex-shrink: 0;
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .detail-row p {
   margin: 0;
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   line-height: 1.6;
   white-space: pre-wrap;
 }
 .detail-row .time {
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 
 .app-actions {

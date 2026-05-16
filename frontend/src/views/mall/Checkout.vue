@@ -69,9 +69,9 @@
           </div>
         </div>
         <div style="text-align:right;margin-top:16px">
-          <el-button @click="$router.back()">返回购物车</el-button>
+          <el-button class="back-cart-btn" @click="$router.back()">返回购物车</el-button>
           <el-button
-            type="primary"
+            class="submit-order-btn"
             size="large"
             :loading="submitting"
             @click="handleSubmit"
@@ -169,7 +169,7 @@ onMounted(loadCart)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .loading-center {
@@ -183,6 +183,9 @@ onMounted(loadCart)
 
 .section-card {
   margin-bottom: 16px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 
 .order-items {
@@ -197,7 +200,7 @@ onMounted(loadCart)
   padding: 8px 0;
 }
 .order-item + .order-item {
-  border-top: 1px solid #f2f2f2;
+  border-top: 1px solid var(--yc-border);
 }
 .item-info {
   flex: 1;
@@ -207,11 +210,11 @@ onMounted(loadCart)
 }
 .item-name {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .item-price {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .item-subtotal {
   font-size: 14px;
@@ -222,7 +225,7 @@ onMounted(loadCart)
 .img-placeholder-xs {
   width: 60px;
   height: 60px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 4px;
 }
 
@@ -235,18 +238,43 @@ onMounted(loadCart)
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
 }
 .summary-row.total {
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
   font-weight: 500;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid var(--yc-border);
   padding-top: 8px;
 }
 .total-price {
   font-size: 24px;
   color: #F56C6C;
   font-weight: bold;
+}
+
+/* 按钮暖色 */
+:deep(.submit-order-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 28px;
+  font-size: 15px;
+}
+:deep(.submit-order-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.back-cart-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.back-cart-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

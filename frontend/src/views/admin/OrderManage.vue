@@ -4,7 +4,16 @@
 
     <el-card>
       <div class="toolbar">
-        <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width:130px" @change="loadList">
+        <el-select
+          v-model="statusFilter"
+          placeholder="全部状态"
+          clearable
+          style="width:130px"
+          popper-class="auto-close-popper"
+          :ref="(el) => setSelectRef('_self', el)"
+          @change="loadList"
+          @visible-change="(v) => onSelectVisible(v, '_self')"
+        >
           <el-option label="待支付" value="PENDING_PAY" />
           <el-option label="已支付" value="PAID" />
           <el-option label="已发货" value="SHIPPED" />
@@ -45,7 +54,15 @@
     <el-dialog v-model="shipVisible" title="发货" width="400px">
       <el-form :model="shipForm" label-width="80px">
         <el-form-item label="快递公司" required>
-          <el-select v-model="shipForm.courierCompany" placeholder="请选择快递公司" style="width:100%" @change="handleCompanyChange">
+          <el-select
+            v-model="shipForm.courierCompany"
+            placeholder="请选择快递公司"
+            style="width:100%"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_ship', el)"
+            @change="handleCompanyChange"
+            @visible-change="(v) => onSelectVisible(v, '_ship')"
+          >
             <el-option
               v-for="c in courierOptions"
               :key="c.value"
@@ -111,12 +128,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { getAllOrders, getAdminOrderDetail, shipOrder } from '@/api/admin'
 import { ORDER_STATUS } from '@/utils/constants'
 import Pagination from '@/components/Pagination.vue'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const courierOptions = [
   { label: '顺丰快递', value: '顺丰快递' },
@@ -211,6 +230,7 @@ async function showDetail(row) {
 }
 
 onMounted(loadList)
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>

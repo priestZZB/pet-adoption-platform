@@ -196,6 +196,9 @@ async function handleAvatarUpload(file) {
 
 .user-card {
   margin-bottom: 20px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 .user-header {
   display: flex;
@@ -220,7 +223,7 @@ async function handleAvatarUpload(file) {
   bottom: 0;
   width: 26px;
   height: 26px;
-  background: #409EFF;
+  background: var(--yc-accent);
   border: 2px solid #fff;
   border-radius: 50%;
   display: flex;
@@ -230,21 +233,21 @@ async function handleAvatarUpload(file) {
 }
 .avatar-hint {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   cursor: pointer;
 }
 .avatar-hint:hover {
-  color: #409EFF;
+  color: var(--yc-accent);
 }
 .user-meta h3 {
   margin: 0 0 4px;
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .user-meta .username {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .role-tags {
   display: flex;
@@ -273,13 +276,18 @@ async function handleAvatarUpload(file) {
 }
 .detail-label {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .detail-value {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 
+.menu-card {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -291,18 +299,18 @@ async function handleAvatarUpload(file) {
   align-items: center;
   gap: 8px;
   padding: 20px 12px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-input);
   cursor: pointer;
   transition: all 0.2s;
 }
 .menu-item:hover {
-  border-color: #409EFF;
-  background: #ecf5ff;
+  border-color: var(--yc-accent);
+  background: var(--yc-bg-page);
 }
 .menu-item span {
   font-size: 13px;
-  color: #606266;
+  color: var(--yc-text-primary);
 }
 
 /* 关于我们弹窗 */
@@ -315,11 +323,11 @@ async function handleAvatarUpload(file) {
 .about-logo h2 {
   margin: 10px 0 6px;
   font-size: 24px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .about-slogan {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-secondary);
   margin: 0;
 }
 .about-section {
@@ -328,12 +336,12 @@ async function handleAvatarUpload(file) {
 }
 .about-section h4 {
   font-size: 15px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 8px;
 }
 .about-section p {
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
   line-height: 1.7;
   margin: 0;
 }
@@ -343,7 +351,7 @@ async function handleAvatarUpload(file) {
 }
 .about-section li {
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
   line-height: 1.8;
 }
 .about-table {
@@ -353,19 +361,19 @@ async function handleAvatarUpload(file) {
 .about-table td {
   padding: 8px 12px;
   font-size: 14px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--yc-border);
 }
 .about-table td:first-child {
-  color: #909399;
+  color: var(--yc-text-tertiary);
   width: 100px;
   white-space: nowrap;
 }
 .about-table td:last-child {
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .about-footer {
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   margin: 8px 0 0;
 }
 </style>

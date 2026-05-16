@@ -9,7 +9,7 @@
     <template v-else>
       <div v-if="cartList.length === 0" class="empty-tip">
         <el-empty description="购物车是空的">
-          <el-button type="primary" @click="$router.push('/mall')">去商城逛逛</el-button>
+          <el-button class="go-mall-btn" @click="$router.push('/mall')">去商城逛逛</el-button>
         </el-empty>
       </div>
 
@@ -76,7 +76,7 @@
               <b class="total-price">¥{{ totalAmount }}</b>
             </span>
             <el-button
-              type="primary"
+              class="checkout-btn"
               size="large"
               :disabled="checkedCount === 0"
               @click="goCheckout"
@@ -183,7 +183,7 @@ onMounted(loadCart)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .loading-center {
@@ -196,8 +196,8 @@ onMounted(loadCart)
 }
 
 .cart-table {
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
   overflow: hidden;
 }
 .cart-header,
@@ -208,15 +208,15 @@ onMounted(loadCart)
   gap: 12px;
 }
 .cart-header {
-  background: #f5f7fa;
+  background: var(--yc-bg-page);
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   font-weight: 500;
 }
 .cart-row {
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid var(--yc-border);
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .cart-row .el-checkbox {
   flex-shrink: 0;
@@ -249,7 +249,7 @@ onMounted(loadCart)
 .img-placeholder-sm {
   width: 80px;
   height: 80px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 6px;
 }
 
@@ -260,9 +260,9 @@ onMounted(loadCart)
   align-items: center;
   margin-top: 20px;
   padding: 16px 20px;
-  background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  background: var(--yc-bg-card);
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
 }
 .footer-right {
   display: flex;
@@ -271,10 +271,38 @@ onMounted(loadCart)
 }
 .total-text {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .total-price {
   font-size: 20px;
   color: #F56C6C;
+}
+
+/* 按钮暖色 */
+:deep(.go-mall-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.go-mall-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.checkout-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 28px;
+  font-size: 15px;
+}
+:deep(.checkout-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 </style>

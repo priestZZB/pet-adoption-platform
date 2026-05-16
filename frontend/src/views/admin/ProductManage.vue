@@ -43,7 +43,13 @@
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑商品' : '新增商品'" width="500px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="分类" required>
-          <el-select v-model="form.categoryId" style="width:100%">
+          <el-select
+            v-model="form.categoryId"
+            style="width:100%"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_self', el)"
+            @visible-change="(v) => onSelectVisible(v, '_self')"
+          >
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
@@ -83,12 +89,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMallCategories, getMallProducts } from '@/api/mall'
 import { addProduct, updateProduct, toggleProductStatus } from '@/api/admin'
 import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination.vue'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const list = ref([])
 const total = ref(0)
@@ -179,6 +187,7 @@ async function handleToggle(row) {
 }
 
 onMounted(() => { loadCategories(); loadList() })
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>

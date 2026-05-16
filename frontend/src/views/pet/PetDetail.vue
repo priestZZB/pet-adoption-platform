@@ -8,12 +8,15 @@
       <div class="detail-layout">
         <!-- 左侧：图片轮播 -->
         <div class="detail-left">
-          <el-carousel height="400px" :interval="4000" arrow="always">
+          <el-carousel ref="carouselRef" height="400px" :interval="4000" arrow="always">
             <el-carousel-item v-for="(img, idx) in pet.images" :key="idx">
               <el-image
                 :src="img"
                 fit="contain"
                 style="width:100%;height:100%"
+                :preview-src-list="pet.images"
+                :initial-index="idx"
+                preview-teleported
               >
                 <template #error>
                   <div class="img-placeholder">图片加载失败</div>
@@ -29,6 +32,7 @@
               :key="idx"
               class="thumbnail-item"
               :class="{ active: idx === activeIdx }"
+              @click="handleThumbnailClick(idx)"
             >
               <el-image
                 :src="img"
@@ -143,12 +147,13 @@
             <el-button
               :type="isFav ? 'danger' : 'default'"
               :icon="Star"
+              class="fav-btn"
               @click="toggleFavorite"
             >
               {{ isFav ? '取消收藏' : '收藏' }}
             </el-button>
             <el-button
-              type="primary"
+              class="adopt-btn"
               :icon="Check"
               :disabled="pet.status !== 'APPROVED'"
               @click="handleAdopt"
@@ -186,6 +191,7 @@ const pet = ref(null)
 const loading = ref(true)
 const isFav = ref(false)
 const activeIdx = ref(0)
+const carouselRef = ref(null)
 
 async function loadDetail() {
   loading.value = true
@@ -280,6 +286,13 @@ async function handleAdopt() {
   router.push('/adopt/apply/' + pet.value.id)
 }
 
+function handleThumbnailClick(idx) {
+  activeIdx.value = idx
+  if (carouselRef.value) {
+    carouselRef.value.setActiveItem(idx)
+  }
+}
+
 onMounted(loadDetail)
 </script>
 
@@ -301,6 +314,11 @@ onMounted(loadDetail)
 .detail-layout {
   display: flex;
   gap: 32px;
+  background: var(--yc-bg-card);
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  padding: 28px;
+  box-shadow: var(--yc-shadow-card);
 }
 
 /* 左侧图片区 */
@@ -316,11 +334,11 @@ onMounted(loadDetail)
 }
 .thumbnail-item {
   border: 2px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--yc-radius-tag);
   overflow: hidden;
 }
 .thumbnail-item.active {
-  border-color: #409EFF;
+  border-color: var(--yc-accent);
 }
 
 /* 右侧信息区 */
@@ -336,7 +354,7 @@ onMounted(loadDetail)
 .pet-name {
   margin: 0;
   font-size: 24px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .info-grid {
   display: grid;
@@ -350,11 +368,11 @@ onMounted(loadDetail)
 }
 .info-item .label {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .info-item .value {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -362,18 +380,18 @@ onMounted(loadDetail)
 .section h4 {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
 }
 .section p {
   margin: 0;
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   line-height: 1.6;
   white-space: pre-wrap;
 }
 .na-text {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 
 /* 送养人信息 */
@@ -388,12 +406,12 @@ onMounted(loadDetail)
 }
 .donor-name {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   font-weight: 500;
 }
 .donor-phone {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 
 /* 操作按钮 */
@@ -401,8 +419,34 @@ onMounted(loadDetail)
   display: flex;
   gap: 12px;
 }
-.action-bar .el-button {
+.action-bar :deep(.el-button--default) {
   flex: 1;
+  border-radius: var(--yc-radius-btn);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-text-primary);
+}
+.action-bar :deep(.fav-btn) {
+  flex: 1;
+  min-width: 130px;
+  justify-content: center;
+  border-radius: var(--yc-radius-btn) !important;
+}
+.action-bar :deep(.el-button--default:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
+}
+.action-bar :deep(.adopt-btn) {
+  flex: 1;
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+.action-bar :deep(.adopt-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 
 /* 图片占位 */
@@ -412,8 +456,23 @@ onMounted(loadDetail)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--yc-bg-card);
+  color: var(--yc-text-tertiary);
   font-size: 14px;
+}
+
+/* 分隔线暖色 */
+:deep(.el-divider--horizontal) {
+  border-top: 1px solid var(--yc-border);
+  margin: 18px 0;
+}
+
+/* 左侧轮播 */
+:deep(.el-carousel__arrow) {
+  background: var(--yc-bg-card);
+  color: var(--yc-text-primary);
+}
+:deep(.el-carousel__arrow:hover) {
+  background: var(--yc-btn-primary);
 }
 </style>

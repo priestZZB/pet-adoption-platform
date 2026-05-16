@@ -35,4 +35,8 @@
     <select id="selectRoleIdsByUserId" resultType="long">
         SELECT role_id FROM sys_user_role WHERE user_id = #{userId}
     </select>
+
+    <delete id="deleteByUserIdAndRoleId">
+        DELETE FROM sys_user_role WHERE user_id = #{userId} AND role_id = #{roleId}
+    </delete>
 </mapper>

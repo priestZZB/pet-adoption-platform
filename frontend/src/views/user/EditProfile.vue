@@ -24,10 +24,10 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          <el-button class="save-btn" :loading="submitting" @click="handleSubmit">
             保存修改
           </el-button>
-          <el-button @click="$router.back()">取消</el-button>
+          <el-button class="cancel-btn" @click="$router.back()">取消</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -96,7 +96,35 @@ async function handleSubmit() {
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
+}
+
+:deep(.el-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+:deep(.save-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.save-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.cancel-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.cancel-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

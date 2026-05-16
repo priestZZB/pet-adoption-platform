@@ -45,6 +45,7 @@
             </div>
 
             <el-button
+              class="view-detail-btn"
               size="small"
               @click="$router.push('/pets/' + pet.id)"
             >
@@ -95,11 +96,6 @@ onMounted(loadList)
   margin: 0 auto;
   padding: 24px 0 40px;
 }
-.page-title {
-  font-size: 20px;
-  color: #303133;
-  margin: 0 0 20px;
-}
 .loading-center {
   display: flex;
   justify-content: center;
@@ -123,7 +119,7 @@ onMounted(loadList)
 .img-placeholder {
   width: 80px;
   height: 80px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 8px;
 }
 
@@ -140,11 +136,40 @@ onMounted(loadList)
 .pet-header h4 {
   margin: 0;
   font-size: 15px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .pet-meta {
   margin: 0;
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-secondary);
+}
+
+/* 卡片暖色 */
+:deep(.pet-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* Tabs 暖色 */
+:deep(.el-tabs__active-bar) {
+  background: var(--yc-accent);
+}
+:deep(.el-tabs__item.is-active) {
+  color: var(--yc-text-primary);
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--yc-accent);
+}
+
+/* 查看详情按钮暖色 */
+:deep(.view-detail-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.view-detail-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

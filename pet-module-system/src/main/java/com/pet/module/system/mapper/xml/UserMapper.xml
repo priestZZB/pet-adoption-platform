@@ -107,4 +107,17 @@
     <select id="selectByIdCard" resultMap="BaseResultMap">
         SELECT <include refid="BaseColumns"/> FROM sys_user WHERE id_card = #{idCard} LIMIT 1
     </select>
+
+    <!-- ========== Dashboard 统计 ========== -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM sys_user
+    </select>
+
+    <select id="countByVolunteerStatus" resultType="int">
+        SELECT COUNT(*) FROM sys_user WHERE volunteer_status = #{status}
+    </select>
+
+    <select id="countByDonorStatus" resultType="int">
+        SELECT COUNT(*) FROM sys_user WHERE donor_status = #{status}
+    </select>
 </mapper>

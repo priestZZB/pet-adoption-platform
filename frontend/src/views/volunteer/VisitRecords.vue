@@ -166,12 +166,13 @@ onMounted(loadList)
 }
 .visit-item {
   padding: 14px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
   cursor: pointer;
   transition: border-color 0.2s;
+  background: var(--yc-bg-card);
 }
-.visit-item:hover { border-color: #409EFF; }
+.visit-item:hover { border-color: var(--yc-accent); }
 .visit-header {
   display: flex;
   justify-content: space-between;
@@ -179,18 +180,18 @@ onMounted(loadList)
 }
 .visit-date {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   font-weight: 500;
 }
 .visit-pet {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
-.visit-time { font-size: 12px; color: #909399; }
+.visit-time { font-size: 12px; color: var(--yc-text-tertiary); }
 .visit-content {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
   line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -206,9 +207,27 @@ onMounted(loadList)
 .thumb {
   width: 50px;
   height: 50px;
-  border-radius: 4px;
+  border-radius: var(--yc-radius-tag);
 }
-.more { font-size: 12px; color: #909399; }
+.more { font-size: 12px; color: var(--yc-text-tertiary); }
+
+/* 卡片暖色 */
+:deep(.list-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* Tabs 暖色 */
+:deep(.el-tabs__active-bar) {
+  background: var(--yc-accent);
+}
+:deep(.el-tabs__item.is-active) {
+  color: var(--yc-text-primary);
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--yc-accent);
+}
 
 .detail-body {
   display: flex;
@@ -223,12 +242,12 @@ onMounted(loadList)
   width: 80px;
   flex-shrink: 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .detail-row span,
 .detail-row p {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0;
   line-height: 1.6;
   white-space: pre-wrap;
@@ -236,7 +255,7 @@ onMounted(loadList)
 .detail-images .label {
   display: block;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   margin-bottom: 8px;
 }
 .img-list {
@@ -247,7 +266,7 @@ onMounted(loadList)
 .detail-img {
   width: 100px;
   height: 100px;
-  border-radius: 6px;
+  border-radius: var(--yc-radius-tag);
   cursor: pointer;
 }
 </style>

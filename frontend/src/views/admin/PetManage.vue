@@ -4,7 +4,16 @@
 
     <el-card>
       <div class="toolbar">
-        <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width:130px" @change="handleSearch">
+        <el-select
+          v-model="statusFilter"
+          placeholder="全部状态"
+          clearable
+          style="width:130px"
+          popper-class="auto-close-popper"
+          :ref="(el) => setSelectRef('_self', el)"
+          @change="handleSearch"
+          @visible-change="(v) => onSelectVisible(v, '_self')"
+        >
           <el-option label="待初审" value="PENDING" />
           <el-option label="待终审" value="FIRST_PASS" />
           <el-option label="已通过" value="APPROVED" />
@@ -52,11 +61,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAllPets, updatePetStatus, finalReview } from '@/api/admin'
 import { PET_STATUS } from '@/utils/constants'
 import Pagination from '@/components/Pagination.vue'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const list = ref([])
 const total = ref(0)
@@ -101,6 +112,7 @@ async function handleFinal(row, action) {
 }
 
 onMounted(loadList)
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>

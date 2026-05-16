@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="admin-page">
     <h3 class="page-title">用户管理</h3>
 
@@ -48,20 +48,26 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="角色分配" width="160">
+        <el-table-column label="角色分配" width="180">
           <template #default="{ row }">
-            <el-select
-              :model-value="row.roles?.[0]"
-              size="small"
-              @change="(val) => handleAssignRole(row, val)"
-            >
-              <el-option
-                v-for="r in roleOptions"
-                :key="r.id"
-                :label="r.roleName"
-                :value="r.id"
-              />
-            </el-select>
+            <div class="select-tag-area">
+              <el-select
+                :ref="(el) => setSelectRef(row.id, el)"
+                :model-value="getRowRoleIds(row)"
+                size="small"
+                multiple
+                popper-class="auto-close-popper"
+                @change="(val) => handleAssignRole(row, val)"
+                @visible-change="(v) => onSelectVisible(v, row.id)"
+              >
+                <el-option
+                  v-for="r in roleOptions"
+                  :key="r.id"
+                  :label="r.roleName"
+                  :value="r.id"
+                />
+              </el-select>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="注册时间" width="170" />
@@ -78,12 +84,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getUserList, toggleUserStatus, getRoles, assignRole } from '@/api/admin'
 import { ROLE_MAP } from '@/utils/constants'
 import Pagination from '@/components/Pagination.vue'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 
+// ---- 鼠标移开即关闭下拉 ----
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
+
+// ---- 页面状态 ----
 const list = ref([])
 const total = ref(0)
 const page = ref(1)
@@ -132,39 +143,42 @@ async function handleToggleStatus(row) {
     await toggleUserStatus(row.id)
     row.status = row.status === 0 ? 1 : 0
     ElMessage.success(row.status === 1 ? '已启用' : '已禁用')
-  } catch {
-    // 请求拦截器统一处理
-  }
+  } catch { /* ignore */ }
 }
 
-async function handleAssignRole(row, roleId) {
+function getRowRoleIds(row) {
+  if (!row.roles || !roleOptions.value.length) return []
+  return row.roles.map(code => {
+    const found = roleOptions.value.find(r => r.roleCode === code)
+    return found ? found.id : null
+  }).filter(Boolean)
+}
+
+async function handleAssignRole(row, roleIds) {
+  if (!roleIds || roleIds.length === 0) {
+    ElMessage.warning('至少选择一个角色')
+    loadList()
+    return
+  }
   try {
-    await assignRole(row.id, roleId)
+    await assignRole(row.id, roleIds)
     ElMessage.success('角色修改成功')
     loadList()
-  } catch {
-    // 请求拦截器统一处理
-  }
+  } catch { /* ignore */ }
 }
 
 onMounted(() => {
   loadRoles()
   loadList()
 })
+
+onUnmounted(() => {
+  cleanupSelectAutoClose()
+})
 </script>
 
 <style scoped>
-.admin-page {
-  max-width: 1200px;
-}
-.page-title {
-  font-size: 20px;
-  color: #303133;
-  margin: 0 0 20px;
-}
-.toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
+.admin-page { max-width: 1200px; }
+.page-title { font-size: 20px; color: #303133; margin: 0 0 20px; }
+.toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
 </style>

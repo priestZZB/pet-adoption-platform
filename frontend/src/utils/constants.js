@@ -31,6 +31,6 @@ export const ROLE_MAP = {
 }
 
 export const GENDER_MAP = {
-  male:   '男生',
-  female: '女生'
+  male:   '公',
+  female: '母'
 }

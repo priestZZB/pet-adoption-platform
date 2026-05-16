@@ -12,3 +12,4 @@ com\pet\common\result\Result.class
 com\pet\common\util\StringUtils.class
 com\pet\common\exception\BusinessException.class
 com\pet\common\util\IdGenerator.class
+com\pet\common\event\NotificationEvent.class

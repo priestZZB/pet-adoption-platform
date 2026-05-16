@@ -47,7 +47,13 @@
           <el-input v-model="form.optionD" />
         </el-form-item>
         <el-form-item label="正确答案" required>
-          <el-select v-model="form.correctAnswer" style="width:120px">
+          <el-select
+            v-model="form.correctAnswer"
+            style="width:120px"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_self', el)"
+            @visible-change="(v) => onSelectVisible(v, '_self')"
+          >
             <el-option label="A" value="A" />
             <el-option label="B" value="B" />
             <el-option label="C" value="C" />
@@ -64,10 +70,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getQuestions, addQuestion, updateQuestion, deleteQuestion } from '@/api/admin'
 import Pagination from '@/components/Pagination.vue'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const list = ref([])
 const total = ref(0)
@@ -126,6 +134,7 @@ async function handleDelete(id) {
 }
 
 onMounted(loadList)
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>

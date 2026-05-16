@@ -40,14 +40,14 @@
 
         <div class="pay-action">
           <el-button
-            type="primary"
+            class="pay-btn"
             size="large"
             :loading="paying"
             @click="handlePay"
           >
             模拟支付
           </el-button>
-          <el-button size="large" @click="goOrderDetail">
+          <el-button class="order-detail-btn" size="large" @click="goOrderDetail">
             查看订单详情
           </el-button>
         </div>
@@ -124,6 +124,9 @@ onMounted(loadOrder)
 
 .pay-card {
   text-align: center;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 .pay-header {
   padding: 20px 0 10px;
@@ -131,11 +134,11 @@ onMounted(loadOrder)
 .pay-header h2 {
   margin: 12px 0 8px;
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .order-no {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 
 .pay-amount {
@@ -147,7 +150,7 @@ onMounted(loadOrder)
 }
 .pay-amount .label {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .pay-amount .amount {
   font-size: 28px;
@@ -164,11 +167,11 @@ onMounted(loadOrder)
   gap: 12px;
   padding: 6px 0;
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .info-row .label {
   width: 70px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   flex-shrink: 0;
 }
 
@@ -177,5 +180,30 @@ onMounted(loadOrder)
   gap: 16px;
   justify-content: center;
   padding-bottom: 10px;
+}
+
+/* 按钮暖色 */
+:deep(.pay-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 36px;
+  font-size: 16px;
+}
+:deep(.pay-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.order-detail-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.order-detail-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

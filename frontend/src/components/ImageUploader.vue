@@ -80,3 +80,23 @@ if (props.fileList.length && urls.value.length === 0) {
   urls.value = props.fileList.map(f => (typeof f === 'string' ? f : f.url))
 }
 </script>
+
+<style scoped>
+:deep(.el-upload--picture-card) {
+  border: 2px dashed var(--yc-border);
+  border-radius: var(--yc-radius-input);
+  background: var(--yc-bg-input);
+  transition: border-color 0.2s;
+}
+:deep(.el-upload--picture-card:hover) {
+  border-color: var(--yc-border-hover);
+  background: var(--yc-bg-page);
+}
+:deep(.el-upload-list--picture-card .el-upload-list__item) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-input);
+}
+:deep(.el-upload-list--picture-card .el-upload-list__item-status-label) {
+  display: none;
+}
+</style>

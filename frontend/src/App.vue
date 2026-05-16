@@ -1,13 +1,13 @@
 <template>
   <router-view />
   <!-- 未读公告弹窗 -->
-  <el-dialog v-model="noticeVisible" title="📢 平台公告" width="500px" :close-on-click-modal="false" :show-close="false">
+  <el-dialog v-model="noticeVisible" title="📢 平台公告" width="500px" :close-on-click-modal="false" :show-close="false" class="notice-dialog">
     <div v-if="currentNotice" class="notice-body">
       <h3 class="notice-title">{{ currentNotice.title }}</h3>
       <div class="notice-content">{{ currentNotice.content }}</div>
     </div>
     <template #footer>
-      <el-button type="primary" size="large" style="width:100%" @click="handleNoticeRead">我知道了</el-button>
+      <el-button size="large" style="width:100%" class="notice-dialog-btn" @click="handleNoticeRead">我知道了</el-button>
     </template>
   </el-dialog>
 </template>
@@ -83,12 +83,57 @@ watch(() => userStore.token, (newToken) => {
 .notice-title {
   margin: 0 0 16px;
   font-size: 18px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .notice-content {
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
   line-height: 1.8;
   white-space: pre-wrap;
+}
+
+/* 全局 dialog 暖色风格 */
+.notice-dialog .el-dialog {
+  border-radius: var(--yc-radius-card);
+}
+.notice-dialog .el-dialog__header {
+  background: var(--yc-bg-page);
+  border-radius: var(--yc-radius-card) var(--yc-radius-card) 0 0;
+  margin: 0;
+  padding: 18px 20px 14px;
+}
+.notice-dialog .el-dialog__title {
+  color: var(--yc-text-primary);
+  font-size: 17px;
+}
+.notice-dialog .el-dialog__body {
+  padding: 8px 20px 12px;
+}
+.notice-dialog .el-dialog__footer {
+  padding: 0 20px 18px;
+  border-top: 1px solid var(--yc-border);
+}
+
+.notice-dialog-btn {
+  height: 42px;
+  border-radius: var(--yc-radius-btn);
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+.notice-dialog-btn:hover {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+
+/* ===== 全局 body 背景（防止 fixed 导航栏脱离布局后漏出白色）===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--yc-bg-page);
 }
 </style>

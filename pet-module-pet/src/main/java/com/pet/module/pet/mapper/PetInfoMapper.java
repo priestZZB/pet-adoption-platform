@@ -25,4 +25,9 @@ public interface PetInfoMapper {
     List<PetInfo> selectReviewedByReviewer(Long reviewerId);
 
     List<PetInfo> selectByStatusList(@Param("statusList") List<String> statusList);
+
+    // ========== Dashboard 统计 ==========
+    int countAll();
+
+    int countByStatus(@Param("status") String status);
 }

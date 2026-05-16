@@ -75,9 +75,9 @@
           <p v-else style="font-size:14px;color:#606266">确认初审通过该宠物？</p>
         </el-form>
         <template #footer>
-          <el-button @click="reviewVisible = false">取消</el-button>
+          <el-button class="review-cancel-btn" @click="reviewVisible = false">取消</el-button>
           <el-button
-            type="primary"
+            class="review-confirm-btn"
             :loading="reviewing"
             :disabled="reviewAction === 'REJECTED' && !reviewRemark"
             @click="confirmReview"
@@ -158,11 +158,6 @@ onMounted(loadList)
   margin: 0 auto;
   padding: 24px 0 40px;
 }
-.page-title {
-  font-size: 20px;
-  color: #303133;
-  margin: 0 0 20px;
-}
 .loading-center {
   display: flex;
   justify-content: center;
@@ -186,7 +181,7 @@ onMounted(loadList)
 .img-placeholder {
   width: 100px;
   height: 100px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 8px;
 }
 
@@ -203,17 +198,17 @@ onMounted(loadList)
 .pet-header h4 {
   margin: 0;
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .pet-meta {
   margin: 0 0 4px;
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-secondary);
 }
 .pet-donor {
   margin: 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 
 .pet-actions {
@@ -221,5 +216,46 @@ onMounted(loadList)
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/* 卡片暖色 */
+:deep(.pet-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* Tabs 暖色 */
+:deep(.el-tabs__active-bar) {
+  background: var(--yc-accent);
+}
+:deep(.el-tabs__item.is-active) {
+  color: var(--yc-text-primary);
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--yc-accent);
+}
+
+/* 弹窗按钮暖色 */
+:deep(.review-cancel-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.review-cancel-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
+}
+:deep(.review-confirm-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.review-confirm-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 </style>

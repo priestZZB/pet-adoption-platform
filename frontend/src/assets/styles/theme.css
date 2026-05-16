@@ -1,0 +1,59 @@
+/* ==========================================
+   有宠 - 全局主题变量
+   宠物领养救助管理平台
+   ========================================== */
+
+:root {
+  /* ============ 前台 - 暖色系 ============ */
+
+  /* 背景 */
+  --yc-bg-page: #f7f1e5;           /* 页面背景 - 暖奶油 */
+  --yc-bg-card: #fefaf5;           /* 卡片/表面 - 暖白 */
+  --yc-bg-input: #fefaf5;          /* 输入框背景 */
+  --yc-bg-overlay: rgba(247,241,229,0.82);  /* 渐变 overlay 色 */
+
+  /* 文字 */
+  --yc-text-primary: #5a4a42;      /* 主文字 - 暖棕 */
+  --yc-text-secondary: #a09080;    /* 次要文字 - 浅褐 */
+  --yc-text-tertiary: #b5a898;     /* 辅助/图标色 */
+  --yc-text-muted: #909399;        /* 弱化文字 */
+
+  /* 边框 */
+  --yc-border: #d1e7dd;            /* 边框 - 豆沙绿 */
+  --yc-border-hover: #b5d5c5;      /* 边框悬浮 */
+  --yc-border-focus: #8ab8a0;      /* 边框聚焦 */
+
+  /* 按钮 */
+  --yc-btn-primary: #ecd5bd;       /* 按钮 - 暖杏（加深避免与背景重合） */
+  --yc-btn-hover: #e0c8ac;         /* 按钮 Hover */
+  --yc-btn-text: #4d3d35;          /* 按钮文字 - 深暖棕 */
+  --yc-btn-disabled: #e0d5c8;      /* 按钮禁用 */
+
+  /* 强调 */
+  --yc-accent: #8ab8a0;            /* 强调色 - 豆沙绿 */
+  --yc-accent-light: rgba(139,184,160,0.12);  /* 强调色透明 */
+
+  /* ============ 后台 - 科技感 ============ */
+
+  --yc-admin-sidebar: #1a2332;          /* 侧边栏 - 深海军蓝 */
+  --yc-admin-sidebar-text: #bfcbd9;     /* 侧边栏文字 */
+  --yc-admin-sidebar-active: #409EFF;   /* 侧边栏激活 */
+  --yc-admin-bg: #f0f2f5;              /* 后台内容区背景 */
+  --yc-admin-card: #ffffff;            /* 后台卡片背景 */
+  --yc-admin-border: #e8e8e8;          /* 后台边框 */
+
+  /* ============ 圆角 ============ */
+
+  --yc-radius-card: 16px;          /* 卡片圆角 */
+  --yc-radius-input: 10px;         /* 输入框圆角 */
+  --yc-radius-btn: 10px;           /* 按钮圆角 */
+  --yc-radius-tag: 6px;            /* 标签圆角 */
+  --yc-radius-sm: 4px;             /* 小元素圆角 */
+
+  /* ============ 阴影 ============ */
+
+  --yc-shadow-card: 0 4px 24px rgba(0,0,0,0.04);       /* 前台卡片 */
+  --yc-shadow-dialog: 0 8px 32px rgba(0,0,0,0.08);     /* 前台弹窗 */
+  --yc-shadow-dropdown: 0 4px 16px rgba(0,0,0,0.12);   /* 下拉菜单 */
+  --yc-shadow-admin-card: 0 2px 12px rgba(0,0,0,0.06); /* 后台卡片 */
+}

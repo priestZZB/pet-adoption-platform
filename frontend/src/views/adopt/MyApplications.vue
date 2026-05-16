@@ -9,7 +9,7 @@
     <template v-else>
       <div v-if="list.length === 0" class="empty-tip">
         <el-empty description="暂无领养申请">
-          <el-button type="primary" @click="$router.push('/')">去看看宠物</el-button>
+          <el-button class="go-pets-btn" @click="$router.push('/')">去看看宠物</el-button>
         </el-empty>
       </div>
 
@@ -47,7 +47,7 @@
             </div>
 
             <!-- 操作 -->
-            <el-button @click="showDetail(item)">
+            <el-button class="detail-btn" @click="showDetail(item)">
               查看详情
             </el-button>
           </div>
@@ -134,7 +134,7 @@ onMounted(loadList)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .loading-center {
@@ -160,7 +160,7 @@ onMounted(loadList)
 .img-placeholder {
   width: 80px;
   height: 80px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 8px;
 }
 
@@ -171,7 +171,7 @@ onMounted(loadList)
 .pet-name {
   margin: 0 0 6px;
   font-size: 15px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .app-meta {
   display: flex;
@@ -180,7 +180,39 @@ onMounted(loadList)
 }
 .app-time {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
+}
+
+/* 申请卡片暖色 */
+:deep(.application-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* 查看详情按钮 */
+:deep(.detail-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.detail-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
+}
+
+/* 空状态按钮 */
+:deep(.go-pets-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.go-pets-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 
 /* 弹窗详情 */
@@ -197,12 +229,12 @@ onMounted(loadList)
   width: 80px;
   flex-shrink: 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .detail-row span,
 .detail-row p {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0;
   line-height: 1.6;
   white-space: pre-wrap;

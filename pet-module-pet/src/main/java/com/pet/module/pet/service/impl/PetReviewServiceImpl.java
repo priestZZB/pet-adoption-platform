@@ -1,6 +1,7 @@
 package com.pet.module.pet.service.impl;
 
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.pet.mapper.PetInfoMapper;
 import com.pet.module.pet.mapper.PetReviewRecordMapper;
@@ -10,6 +11,7 @@ import com.pet.module.pet.model.entity.PetReviewRecord;
 import com.pet.module.pet.service.PetReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,9 @@ public class PetReviewServiceImpl implements PetReviewService {
 
     @Autowired
     private PetReviewRecordMapper petReviewRecordMapper;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -55,6 +60,23 @@ public class PetReviewServiceImpl implements PetReviewService {
         record.setAction(dto.getAction());
         record.setRemark(dto.getRemark());
         petReviewRecordMapper.insert(record);
+
+        // 通知送养人初审结果
+        String petName = pet.getName() != null ? pet.getName() : "宠物";
+        if ("APPROVED".equals(dto.getAction())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    pet.getUserId(), "PET_REVIEW",
+                    "宠物初审通过",
+                    "你发布的" + petName + "已通过初审，等待管理员终审",
+                    petId));
+        } else if ("REJECTED".equals(dto.getAction())) {
+            String reason = dto.getRemark() != null ? dto.getRemark() : "信息不符合要求";
+            eventPublisher.publishEvent(new NotificationEvent(
+                    pet.getUserId(), "PET_REVIEW",
+                    "宠物初审未通过",
+                    "你发布的" + petName + "未通过初审，原因：" + reason,
+                    petId));
+        }
     }
 
     @Override
@@ -88,5 +110,22 @@ public class PetReviewServiceImpl implements PetReviewService {
         record.setAction(dto.getAction());
         record.setRemark(dto.getRemark());
         petReviewRecordMapper.insert(record);
+
+        // 通知送养人终审结果
+        String petName = pet.getName() != null ? pet.getName() : "宠物";
+        if ("APPROVED".equals(dto.getAction())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    pet.getUserId(), "PET_REVIEW",
+                    "宠物终审通过",
+                    "你发布的" + petName + "已通过终审，现在可以被申请领养了",
+                    petId));
+        } else if ("REJECTED".equals(dto.getAction())) {
+            String reason = dto.getRemark() != null ? dto.getRemark() : "信息不符合要求";
+            eventPublisher.publishEvent(new NotificationEvent(
+                    pet.getUserId(), "PET_REVIEW",
+                    "宠物终审未通过",
+                    "你发布的" + petName + "未通过终审，原因：" + reason,
+                    petId));
+        }
     }
 }

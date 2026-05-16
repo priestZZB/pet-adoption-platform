@@ -24,7 +24,10 @@
             filterable
             clearable
             style="width:100%"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_self', el)"
             :loading="petsLoading"
+            @visible-change="(v) => onSelectVisible(v, '_self')"
           >
             <el-option
               v-for="pet in petOptions"
@@ -69,10 +72,10 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          <el-button class="visit-submit-btn" :loading="submitting" @click="handleSubmit">
             提交记录
           </el-button>
-          <el-button @click="$router.push('/volunteer/visits')">取消</el-button>
+          <el-button class="visit-cancel-btn" @click="$router.push('/volunteer/visits')">取消</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -80,12 +83,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { submitVisit, getSelectablePets } from '@/api/volunteer'
 import { uploadFiles } from '@/api/file'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const router = useRouter()
 const activeTab = ref('add')
@@ -173,6 +178,7 @@ function onTabChange(tab) {
 }
 
 onMounted(loadPets)
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>
@@ -183,5 +189,42 @@ onMounted(loadPets)
 }
 .submit-card {
   margin-top: 4px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* Tabs 暖色 */
+:deep(.el-tabs__active-bar) {
+  background: var(--yc-accent);
+}
+:deep(.el-tabs__item.is-active) {
+  color: var(--yc-text-primary);
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--yc-accent);
+}
+
+/* 按钮暖色 */
+:deep(.visit-submit-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.visit-submit-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.visit-cancel-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.visit-cancel-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

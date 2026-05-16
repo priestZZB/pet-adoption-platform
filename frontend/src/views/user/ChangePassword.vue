@@ -65,7 +65,7 @@
 
         <el-form-item>
           <el-button
-            type="primary"
+            class="pwd-submit-btn"
             :loading="submitting"
             @click="handleSubmit"
           >
@@ -207,7 +207,7 @@ async function handleSubmit() {
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .sms-row {
@@ -221,5 +221,24 @@ async function handleSubmit() {
 .sms-row .el-button {
   flex-shrink: 0;
   min-width: 110px;
+}
+
+:deep(.el-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+:deep(.pwd-submit-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.pwd-submit-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 </style>

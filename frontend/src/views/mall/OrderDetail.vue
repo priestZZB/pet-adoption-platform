@@ -100,7 +100,7 @@
         <div class="action-bar">
           <el-button
             v-if="order.status === 'PENDING_PAY'"
-            type="primary"
+            class="od-pay-btn"
             size="large"
             @click="handlePay"
           >
@@ -108,6 +108,7 @@
           </el-button>
           <el-button
             v-if="order.status === 'PENDING_PAY'"
+            class="od-cancel-btn"
             size="large"
             @click="handleCancel"
           >
@@ -115,7 +116,7 @@
           </el-button>
           <el-button
             v-if="order.status === 'SHIPPED'"
-            type="success"
+            class="od-receive-btn"
             size="large"
             @click="handleReceive"
           >
@@ -218,11 +219,30 @@ onMounted(loadDetail)
 
 .section-card {
   margin-top: 16px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 
 .step-status {
   text-align: center;
   margin-top: 20px;
+}
+
+/* steps 暖色 */
+:deep(.el-step.is-success .el-step__head) {
+  color: var(--yc-accent);
+  border-color: var(--yc-accent);
+}
+:deep(.el-step.is-success .el-step__title) {
+  color: var(--yc-accent);
+}
+:deep(.el-step.is-process .el-step__head.is-process) {
+  color: var(--yc-accent);
+  border-color: var(--yc-accent);
+}
+:deep(.el-step.is-process .el-step__title.is-process) {
+  color: var(--yc-text-primary);
 }
 
 .info-grid {
@@ -234,11 +254,11 @@ onMounted(loadDetail)
   display: flex;
   gap: 12px;
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .info-row .label {
   width: 80px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   flex-shrink: 0;
 }
 
@@ -254,7 +274,7 @@ onMounted(loadDetail)
   padding: 6px 0;
 }
 .order-item + .order-item {
-  border-top: 1px solid #f5f7fa;
+  border-top: 1px solid var(--yc-border);
   padding-top: 12px;
 }
 .item-info {
@@ -265,11 +285,11 @@ onMounted(loadDetail)
 }
 .item-name {
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .item-price {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .item-subtotal {
   font-size: 14px;
@@ -279,7 +299,7 @@ onMounted(loadDetail)
 .img-placeholder-xs {
   width: 60px;
   height: 60px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 4px;
 }
 
@@ -292,13 +312,13 @@ onMounted(loadDetail)
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
 }
 .summary-row.total {
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
   font-weight: 500;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid var(--yc-border);
   padding-top: 8px;
 }
 .total-price {
@@ -312,5 +332,39 @@ onMounted(loadDetail)
   justify-content: flex-end;
   gap: 12px;
   margin-top: 16px;
+}
+
+/* 按钮暖色 */
+:deep(.od-pay-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.od-pay-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.od-cancel-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.od-cancel-btn:hover) {
+  border-color: #f56c6c;
+  color: #f56c6c;
+}
+:deep(.od-receive-btn) {
+  background: var(--yc-accent);
+  border: 1px solid var(--yc-accent);
+  color: #fff;
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.od-receive-btn:hover) {
+  background: #7aaa92;
+  border-color: #7aaa92;
 }
 </style>

@@ -13,6 +13,9 @@
       </div>
     </div>
 
+    <!-- 背景层（同登录页暖色纹理） -->
+    <div class="auth-bg"></div>
+
     <!-- 主内容 -->
     <div class="sub-content">
       <router-view />
@@ -38,18 +41,30 @@ function goBack() {
 <style scoped>
 .sub-layout {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--yc-bg-page);
+  position: relative;
+}
+.auth-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, rgba(247,241,229,0.82) 0%, rgba(254,250,245,0.9) 100%),
+              url('/images/bg.png') center/cover no-repeat;
+  pointer-events: none;
 }
 .sub-header {
   display: flex;
   align-items: center;
   height: 56px;
   padding: 0 16px;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
-  position: sticky;
+  background: var(--yc-bg-card);
+  border-bottom: 1px solid var(--yc-border);
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .sub-header-left {
   flex: 1;
@@ -61,8 +76,33 @@ function goBack() {
   white-space: nowrap;
 }
 .sub-content {
-  padding: 20px;
+  position: relative;
+  z-index: 1;
+  padding: 76px 20px 0;
   max-width: 800px;
   margin: 0 auto;
+}
+
+/* 去掉子页面多余的底部留白 */
+.sub-content :deep(.detail-page),
+.sub-content :deep(.exam-page),
+.sub-content :deep(.apply-page),
+.sub-content :deep(.publish-page),
+.sub-content :deep(.applications-page),
+.sub-content :deep(.favorites-page),
+.sub-content :deep(.pending-page),
+.sub-content :deep(.history-page),
+.sub-content :deep(.add-visit-page),
+.sub-content :deep(.visits-page),
+.sub-content :deep(.profile-page),
+.sub-content :deep(.edit-page),
+.sub-content :deep(.realname-page),
+.sub-content :deep(.password-page),
+.sub-content :deep(.feedback-page),
+.sub-content :deep(.checkout-page),
+.sub-content :deep(.pay-page),
+.sub-content :deep(.donate-list-page),
+.sub-content :deep(.notice-detail-page) {
+  padding-bottom: 0 !important;
 }
 </style>

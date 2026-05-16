@@ -12,7 +12,7 @@
           <p>通过线：<b>100 分</b>（满分才能申请领养）</p>
           <p>请认真作答，展示你对宠物负责的态度</p>
         </div>
-        <el-button type="primary" size="large" @click="startExam">
+        <el-button class="exam-btn" size="large" @click="startExam">
           开始答题
         </el-button>
       </div>
@@ -58,7 +58,7 @@
           </el-button>
           <el-button
             v-if="currentIdx < questions.length - 1"
-            type="primary"
+            class="exam-nav-btn"
             :disabled="!answers[currentQuestion?.id]"
             @click="currentIdx++"
           >
@@ -66,7 +66,7 @@
           </el-button>
           <el-button
             v-else
-            type="success"
+            class="exam-submit-btn"
             :disabled="!answers[currentQuestion?.id]"
             @click="submitExamFn"
           >
@@ -93,10 +93,10 @@
           {{ result.isPassed ? '满分通过，现在可以提交领养申请了' : '未达到满分（100分），请重新考试' }}
         </p>
         <div class="result-actions">
-          <el-button v-if="!result.isPassed" type="primary" @click="startExam">
+          <el-button v-if="!result.isPassed" class="exam-btn" @click="startExam">
             重新考试
           </el-button>
-          <el-button v-if="result.isPassed" type="primary" size="large" @click="goAdopt">
+          <el-button v-if="result.isPassed" class="exam-btn" size="large" @click="goAdopt">
             去领养
           </el-button>
         </div>
@@ -198,7 +198,7 @@ const submitExamFn = submitExamAction
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 
@@ -213,17 +213,17 @@ const submitExamFn = submitExamAction
 .phase-content h3 {
   margin: 0;
   font-size: 18px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 
 /* 考试说明 */
 .intro-rules {
   font-size: 15px;
-  color: #606266;
+  color: var(--yc-text-secondary);
   line-height: 2;
 }
 .intro-rules b {
-  color: #409EFF;
+  color: var(--yc-accent);
 }
 
 /* 答题区 */
@@ -239,11 +239,11 @@ const submitExamFn = submitExamAction
 }
 .q-number {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .q-text {
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
   line-height: 1.6;
   margin: 0 0 20px;
 }
@@ -263,9 +263,19 @@ const submitExamFn = submitExamAction
   padding: 12px 16px;
   font-size: 15px;
   box-sizing: border-box;
+  border-radius: var(--yc-radius-input);
+  border-color: var(--yc-border);
+  transition: border-color 0.2s;
 }
-.q-option :deep(.el-radio__label) {
+.q-option:hover {
+  border-color: var(--yc-border-hover);
+}
+.q-option:deep(.el-radio__label) {
   flex: 1;
+}
+:deep(.q-option.is-checked) {
+  border-color: var(--yc-accent);
+  background: var(--yc-accent-light);
 }
 
 /* 导航 */
@@ -277,25 +287,73 @@ const submitExamFn = submitExamAction
   width: 100%;
 }
 
+/* 按钮暖色 */
+:deep(.exam-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 28px;
+  font-size: 15px;
+}
+:deep(.exam-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.exam-nav-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.exam-nav-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.exam-submit-btn) {
+  background: var(--yc-accent);
+  border: 1px solid var(--yc-accent);
+  color: #fff;
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.exam-submit-btn:hover) {
+  background: #7aaa92;
+  border-color: #7aaa92;
+  color: #fff;
+}
+
+/* 进度条暖色 */
+:deep(.el-progress-bar__inner) {
+  background: var(--yc-accent) !important;
+}
+:deep(.el-progress__text) {
+  color: var(--yc-text-secondary);
+}
+
 /* 结果 */
 .result-score {
   font-size: 48px;
   font-weight: bold;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .score-num {
-  color: #409EFF;
+  color: var(--yc-accent);
 }
 .score-divider {
   margin: 0 4px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .score-total {
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .result-label {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   margin: 0;
 }
 .result-actions {
@@ -315,20 +373,27 @@ const submitExamFn = submitExamAction
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  border: 1px solid #ebeef5;
-  border-radius: 6px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-tag);
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-primary);
 }
 .history-time {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .pass { color: #67C23A; }
 .fail { color: #F56C6C; }
 .empty-history {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   padding: 20px 0;
+}
+
+/* Card 暖色 */
+:deep(.el-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 </style>

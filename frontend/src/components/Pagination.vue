@@ -40,3 +40,22 @@ function onSizeChange(val) {
   emit('change', { page: 1, size: val })
 }
 </script>
+
+<style scoped>
+:deep(.el-pagination.is-background .el-pager li) {
+  border-radius: var(--yc-radius-tag);
+}
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background: var(--yc-accent);
+  border-color: var(--yc-accent);
+}
+:deep(.el-pagination.is-background .el-pager li:not(.is-active):hover) {
+  color: var(--yc-accent);
+}
+:deep(.el-pagination button:hover) {
+  color: var(--yc-accent);
+}
+:deep(.el-pagination .el-select .el-input .el-input__inner) {
+  border-radius: var(--yc-radius-input);
+}
+</style>

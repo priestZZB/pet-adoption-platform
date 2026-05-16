@@ -17,4 +17,7 @@ public interface MallOrderMapper {
     List<MallOrder> selectByUserId(@Param("userId") Long userId, @Param("status") String status);
 
     List<MallOrder> selectAll(@Param("status") String status);
+
+    // ========== Dashboard 统计 ==========
+    int countAll();
 }

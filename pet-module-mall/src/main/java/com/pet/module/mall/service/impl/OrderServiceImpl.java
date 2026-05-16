@@ -3,6 +3,7 @@ package com.pet.module.mall.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.common.util.IdGenerator;
 import com.pet.module.mall.mapper.MallOrderItemMapper;
@@ -20,6 +21,7 @@ import com.pet.module.mall.service.OrderService;
 import com.pet.module.mall.service.ProductService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +52,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
@@ -161,6 +166,12 @@ public class OrderServiceImpl implements OrderService {
         update.setId(id);
         update.setStatus("PAID");
         mallOrderMapper.updateById(update);
+
+        eventPublisher.publishEvent(new NotificationEvent(
+                order.getUserId(), "ORDER_STATUS",
+                "订单支付成功",
+                "订单" + order.getOrderNo() + "已支付成功，等待卖家发货",
+                id));
     }
 
     @Override
@@ -258,6 +269,12 @@ public class OrderServiceImpl implements OrderService {
         update.setLogisticsNo(generateTrackingNo(company));
         update.setLogisticsStatus("已发货");
         mallOrderMapper.updateById(update);
+
+        eventPublisher.publishEvent(new NotificationEvent(
+                order.getUserId(), "ORDER_STATUS",
+                "订单已发货",
+                "订单" + order.getOrderNo() + "已发货，快递：" + company + "，单号：" + update.getLogisticsNo(),
+                id));
     }
 
     /**

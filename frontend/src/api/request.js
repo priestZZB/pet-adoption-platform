@@ -5,7 +5,20 @@ import router from '@/router'
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || '/api',
-  timeout: 15000
+  timeout: 15000,
+  paramsSerializer: {
+    serialize(params) {
+      const parts = []
+      for (const [key, val] of Object.entries(params)) {
+        if (Array.isArray(val)) {
+          val.forEach(v => parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v)))
+        } else {
+          parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(val))
+        }
+      }
+      return parts.join('&')
+    }
+  }
 })
 
 // 请求拦截器 — 注入 Bearer Token

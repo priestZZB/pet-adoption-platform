@@ -91,8 +91,8 @@ router.beforeEach(async (to, from) => {
   }
   if (to.meta.role) {
     const userStore = useUserStore()
-    // 如果有 token 但角色还没加载（刷新页面场景），先获取用户信息
-    if (token && userStore.roles.length === 0) {
+    // 每次进入需要角色的页面都重新获取用户信息，确保角色是最新的
+    if (token) {
       await userStore.fetchUserInfo()
     }
     if (!userStore.hasRole(to.meta.role)) {

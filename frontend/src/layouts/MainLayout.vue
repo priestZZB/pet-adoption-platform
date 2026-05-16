@@ -33,7 +33,18 @@ const userStore = useUserStore()
 }
 .main-content {
   flex: 1;
-  padding: 20px;
-  background: #f5f7fa;
+  padding: 76px 20px 0;
+  background: var(--yc-bg-page);
+}
+
+/* 去掉子页面多余的底部留白（Footer 自带 margin-top 已提供间距） */
+.main-content :deep(.home-page),
+.main-content :deep(.mall-page),
+.main-content :deep(.cart-page),
+.main-content :deep(.orders-page),
+.main-content :deep(.notice-page),
+.main-content :deep(.dashboard),
+.main-content :deep(.ai-chat-page) {
+  padding-bottom: 0 !important;
 }
 </style>

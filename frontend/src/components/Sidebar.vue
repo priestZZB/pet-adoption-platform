@@ -3,6 +3,9 @@
     :default-active="route.path"
     :router="true"
     collapse-transition
+    background-color="transparent"
+    text-color="#bfcbd9"
+    active-text-color="#fff"
     style="height:100%;border-right:none"
   >
     <el-menu-item index="/admin">

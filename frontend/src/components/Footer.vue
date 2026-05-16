@@ -266,8 +266,8 @@ function showDialog(name) {
 .footer {
   text-align: center;
   padding: 30px 20px;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--yc-bg-page);
+  color: var(--yc-text-muted);
   font-size: 13px;
   margin-top: 40px;
 }
@@ -277,12 +277,12 @@ function showDialog(name) {
 .footer-title {
   font-size: 16px;
   font-weight: bold;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin-right: 12px;
 }
 .footer-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-secondary);
 }
 .footer-links {
   display: flex;
@@ -291,30 +291,30 @@ function showDialog(name) {
   gap: 0;
 }
 .footer-links a {
-  color: #606266;
+  color: var(--yc-text-secondary);
   text-decoration: none;
 }
 .footer-links a:hover {
-  color: #409EFF;
+  color: var(--yc-accent);
 }
 .sep {
   margin: 0 12px;
-  color: #dcdfe6;
+  color: var(--yc-border);
 }
 .footer-copy {
   margin-top: 10px;
-  color: #c0c4cc;
+  color: var(--yc-text-tertiary);
 }
 .footer-icp {
   margin-top: 6px;
 }
 .footer-icp a {
-  color: #c0c4cc;
+  color: var(--yc-text-tertiary);
   text-decoration: none;
   font-size: 12px;
 }
 .footer-icp a:hover {
-  color: #409EFF;
+  color: var(--yc-accent);
 }
 
 /* 弹窗内容样式 */

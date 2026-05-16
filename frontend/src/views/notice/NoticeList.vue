@@ -59,7 +59,7 @@ onMounted(loadList)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .loading-center {
@@ -81,15 +81,16 @@ onMounted(loadList)
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
   cursor: pointer;
   transition: all 0.2s;
   gap: 20px;
+  background: var(--yc-bg-card);
 }
 .notice-item:hover {
-  border-color: #409EFF;
-  background: #ecf5ff;
+  border-color: var(--yc-accent);
+  background: var(--yc-bg-page);
 }
 .notice-content {
   flex: 1;
@@ -98,12 +99,12 @@ onMounted(loadList)
 .notice-title {
   margin: 0 0 6px;
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .notice-summary {
   margin: 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -111,6 +112,6 @@ onMounted(loadList)
 .notice-time {
   flex-shrink: 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 </style>

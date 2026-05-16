@@ -11,7 +11,14 @@
         size="large"
       >
         <el-form-item label="宠物分类" prop="categoryId">
-          <el-select v-model="form.categoryId" placeholder="请选择分类" style="width:200px">
+          <el-select
+            v-model="form.categoryId"
+            placeholder="请选择分类"
+            style="width:200px"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_cat', el)"
+            @visible-change="(v) => onSelectVisible(v, '_cat')"
+          >
             <el-option
               v-for="c in categories"
               :key="c.id"
@@ -26,7 +33,14 @@
         </el-form-item>
 
         <el-form-item label="年龄" prop="age">
-          <el-select v-model="form.age" placeholder="请选择年龄" style="width:200px">
+          <el-select
+            v-model="form.age"
+            placeholder="请选择年龄"
+            style="width:200px"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_age', el)"
+            @visible-change="(v) => onSelectVisible(v, '_age')"
+          >
             <el-option
               v-for="n in 100"
               :key="n"
@@ -39,8 +53,8 @@
 
         <el-form-item label="性别" prop="gender">
           <el-radio-group v-model="form.gender">
-            <el-radio value="male">男生</el-radio>
-            <el-radio value="female">女生</el-radio>
+            <el-radio value="male">公</el-radio>
+            <el-radio value="female">母</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -121,10 +135,10 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          <el-button class="publish-submit-btn" :loading="submitting" @click="handleSubmit">
             提交发布
           </el-button>
-          <el-button @click="$router.back()">取消</el-button>
+          <el-button class="publish-cancel-btn" @click="$router.back()">取消</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -132,12 +146,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getCategories, publishPet } from '@/api/pet'
 import { uploadFile, uploadFiles } from '@/api/file'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const router = useRouter()
 const formRef = ref(null)
@@ -248,6 +264,7 @@ async function handleSubmit() {
 }
 
 onMounted(loadCategories)
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>
@@ -258,27 +275,34 @@ onMounted(loadCategories)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
+}
+
+/* Card 暖色 */
+:deep(.el-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 
 .upload-box {
   width: 120px;
   height: 120px;
-  border: 1px dashed #dcdfe6;
-  border-radius: 6px;
+  border: 1px dashed var(--yc-border);
+  border-radius: var(--yc-radius-input);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   cursor: pointer;
   transition: border-color 0.2s;
 }
 .upload-box:hover {
-  border-color: #409EFF;
-  color: #409EFF;
+  border-color: var(--yc-accent);
+  color: var(--yc-accent);
 }
 
 .multi-upload-wrap {
@@ -289,6 +313,29 @@ onMounted(loadCategories)
 .upload-tip {
   margin: 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
+}
+
+/* 按钮暖色 */
+:deep(.publish-submit-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.publish-submit-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+:deep(.publish-cancel-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.publish-cancel-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

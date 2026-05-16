@@ -23,7 +23,10 @@
           placeholder="全部分类"
           clearable
           style="width:160px"
+          popper-class="auto-close-popper"
+          :ref="(el) => setSelectRef('_self', el)"
           @change="handleSearch"
+          @visible-change="(v) => onSelectVisible(v, '_self')"
         >
           <el-option
             v-for="c in categories"
@@ -43,7 +46,7 @@
           @clear="handleSearch"
         />
 
-        <el-button type="primary" :icon="Search" @click="handleSearch">
+        <el-button class="search-btn" :icon="Search" @click="handleSearch">
           搜索
         </el-button>
       </div>
@@ -111,12 +114,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Loading } from '@element-plus/icons-vue'
 import { getCategories, getPetList } from '@/api/pet'
 import { GENDER_MAP, PET_STATUS } from '@/utils/constants'
 import request from '@/api/request'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 import Pagination from '@/components/Pagination.vue'
 
 const router = useRouter()
@@ -208,6 +213,7 @@ onMounted(() => {
   loadCategories()
   loadPets()
 })
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>
@@ -225,6 +231,7 @@ onMounted(() => {
   aspect-ratio: 2279 / 1280;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: var(--yc-shadow-card);
 }
 .banner {
   height: 100% !important;
@@ -249,6 +256,20 @@ onMounted(() => {
   align-items: center;
 }
 
+/* 搜索按钮暖色 */
+:deep(.search-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.search-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+
 /* 宠物卡片网格 */
 .pet-grid {
   display: grid;
@@ -258,9 +279,12 @@ onMounted(() => {
 .pet-card {
   cursor: pointer;
   transition: transform 0.2s;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
 }
 .pet-card:hover {
   transform: translateY(-4px);
+  border-color: var(--yc-border-hover);
 }
 .pet-cover {
   position: relative;
@@ -276,8 +300,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--yc-bg-card);
+  color: var(--yc-text-tertiary);
   font-size: 14px;
 }
 .pet-info {
@@ -286,11 +310,11 @@ onMounted(() => {
 .pet-name {
   margin: 0 0 6px;
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .pet-meta {
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-secondary);
 }
 .dot {
   margin: 0 4px;

@@ -2,7 +2,7 @@
   <div class="donate-list-page">
     <div class="page-header">
       <h3 class="page-title">我发布的宠物</h3>
-      <el-button type="primary" @click="$router.push('/donate/publish')">发布新宠物</el-button>
+      <el-button class="publish-new-btn" @click="$router.push('/donate/publish')">发布新宠物</el-button>
     </div>
 
     <!-- 状态筛选 -->
@@ -22,7 +22,7 @@
     <template v-else>
       <div v-if="filteredList.length === 0" class="empty-tip">
         <el-empty :description="statusFilter ? '暂无该状态的宠物' : '还没有发布过宠物'">
-          <el-button v-if="!statusFilter" type="primary" @click="$router.push('/donate/publish')">去发布</el-button>
+          <el-button v-if="!statusFilter" class="publish-new-btn" @click="$router.push('/donate/publish')">去发布</el-button>
         </el-empty>
       </div>
 
@@ -67,7 +67,13 @@
     <el-dialog v-model="editVisible" title="重新上架" width="600px">
       <el-form :model="editForm" label-width="100px" size="large">
         <el-form-item label="宠物分类" required>
-          <el-select v-model="editForm.categoryId" style="width:200px">
+          <el-select
+            v-model="editForm.categoryId"
+            style="width:200px"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_cat', el)"
+            @visible-change="(v) => onSelectVisible(v, '_cat')"
+          >
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
@@ -75,14 +81,20 @@
           <el-input v-model="editForm.name" maxlength="50" />
         </el-form-item>
         <el-form-item label="年龄" required>
-          <el-select v-model="editForm.age" style="width:200px">
+          <el-select
+            v-model="editForm.age"
+            style="width:200px"
+            popper-class="auto-close-popper"
+            :ref="(el) => setSelectRef('_age', el)"
+            @visible-change="(v) => onSelectVisible(v, '_age')"
+          >
             <el-option v-for="n in 100" :key="n" :label="n + '岁'" :value="n + '岁'" />
           </el-select>
         </el-form-item>
         <el-form-item label="性别" required>
           <el-radio-group v-model="editForm.gender">
-            <el-radio value="male">男生</el-radio>
-            <el-radio value="female">女生</el-radio>
+            <el-radio value="male">公</el-radio>
+            <el-radio value="female">母</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="绝育">
@@ -99,19 +111,21 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editVisible = false">取消</el-button>
-        <el-button type="primary" :loading="editSaving" @click="handleEditSubmit">提交审核</el-button>
+        <el-button class="dialog-cancel-btn" @click="editVisible = false">取消</el-button>
+        <el-button class="dialog-submit-btn" :loading="editSaving" @click="handleEditSubmit">提交审核</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { getCategories, getMyPets, getPetDetail, offlinePet, updatePet } from '@/api/pet'
 import { PET_STATUS, GENDER_MAP } from '@/utils/constants'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const list = ref([])
 const loading = ref(true)
@@ -195,25 +209,81 @@ async function handleOffline(petId) {
 }
 
 onMounted(() => { loadCategories(); loadList() })
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>
 .donate-list-page { max-width: 800px; margin: 0 auto; padding: 24px 0 40px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.page-title { margin: 0; font-size: 20px; color: #303133; }
+.page-title { margin: 0; font-size: 20px; color: var(--yc-text-primary); }
 .loading-center { display: flex; justify-content: center; padding: 80px 0; }
 .empty-tip { padding: 60px 0; }
 
 .pet-list { display: flex; flex-direction: column; gap: 12px; }
 .pet-content { display: flex; align-items: center; gap: 16px; }
-.img-placeholder { width: 100px; height: 100px; background: #f5f7fa; border-radius: 8px; }
+.img-placeholder { width: 100px; height: 100px; background: var(--yc-bg-card); border-radius: 8px; }
 
 .pet-info { flex: 1; min-width: 0; }
 .pet-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.pet-header h4 { margin: 0; font-size: 16px; color: #303133; }
-.pet-meta { margin: 0; font-size: 13px; color: #909399; }
+.pet-header h4 { margin: 0; font-size: 16px; color: var(--yc-text-primary); }
+.pet-meta { margin: 0; font-size: 13px; color: var(--yc-text-secondary); }
 
 .pet-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; width: 110px; }
 .pet-actions .el-button { width: 100%; }
 .pet-actions .el-button + .el-button { margin-left: 0; }
+
+/* 卡片暖色 */
+:deep(.pet-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* Tabs 暖色 */
+:deep(.el-tabs__active-bar) {
+  background: var(--yc-accent);
+}
+:deep(.el-tabs__item.is-active) {
+  color: var(--yc-text-primary);
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--yc-accent);
+}
+
+/* 按钮暖色 */
+:deep(.publish-new-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.publish-new-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+
+/* 弹窗按钮 */
+:deep(.dialog-cancel-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.dialog-cancel-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
+}
+:deep(.dialog-submit-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.dialog-submit-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
 </style>

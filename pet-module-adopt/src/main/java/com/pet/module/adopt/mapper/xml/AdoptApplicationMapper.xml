@@ -56,4 +56,13 @@
         SELECT COUNT(*) FROM adopt_application
         WHERE user_id = #{userId} AND pet_id = #{petId} AND status != 'REJECTED'
     </select>
+
+    <!-- ========== Dashboard 统计 ========== -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM adopt_application
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM adopt_application WHERE status = #{status}
+    </select>
 </mapper>

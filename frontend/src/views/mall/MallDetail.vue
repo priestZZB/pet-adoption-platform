@@ -9,10 +9,12 @@
         <!-- 商品图片 -->
         <div class="detail-left">
           <el-image
+            :key="currentImgIndex"
             :src="currentImage"
             fit="contain"
             style="width:100%;height:400px;border-radius:8px"
             :preview-src-list="imageList"
+            :initial-index="currentImgIndex"
             preview-teleported
           >
             <template #error>
@@ -25,7 +27,7 @@
               :key="i"
               class="thumb-item"
               :class="{ active: currentImage === img }"
-              @click="currentImage = img"
+              @click="currentImage = img; currentImgIndex = i"
             >
               <el-image :src="img" fit="cover" style="width:100%;height:100%" />
             </div>
@@ -70,7 +72,7 @@
               />
             </div>
             <el-button
-              type="primary"
+              class="add-cart-btn"
               size="large"
               :icon="ShoppingCart"
               :disabled="product.stock <= 0"
@@ -107,6 +109,7 @@ const product = ref(null)
 const loading = ref(true)
 const quantity = ref(1)
 const currentImage = ref('')
+const currentImgIndex = ref(0)
 
 const imageList = computed(() => {
   const img = product.value?.image
@@ -119,6 +122,7 @@ async function loadDetail() {
   try {
     product.value = await getMallProductDetail(route.params.id)
     currentImage.value = imageList.value[0] || ''
+    currentImgIndex.value = 0
   } catch {
     product.value = null
   } finally {
@@ -162,6 +166,11 @@ onMounted(loadDetail)
 .detail-layout {
   display: flex;
   gap: 40px;
+  background: var(--yc-bg-card);
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  padding: 28px;
+  box-shadow: var(--yc-shadow-card);
 }
 .detail-left {
   flex: 1;
@@ -177,8 +186,8 @@ onMounted(loadDetail)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--yc-bg-card);
+  color: var(--yc-text-tertiary);
   font-size: 14px;
   border-radius: 8px;
 }
@@ -186,12 +195,12 @@ onMounted(loadDetail)
 .product-name {
   margin: 0 0 10px;
   font-size: 22px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .product-desc {
   margin: 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-secondary);
   line-height: 1.6;
 }
 
@@ -205,7 +214,7 @@ onMounted(loadDetail)
 .price-row .label,
 .info-row .label {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   width: 50px;
   flex-shrink: 0;
 }
@@ -235,7 +244,23 @@ onMounted(loadDetail)
 }
 .quantity-wrapper .label {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
+}
+
+/* 加入购物车按钮暖色 */
+:deep(.add-cart-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 28px;
+  font-size: 15px;
+}
+:deep(.add-cart-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 
 .thumbnails {
@@ -246,16 +271,16 @@ onMounted(loadDetail)
 .thumb-item {
   width: 64px;
   height: 64px;
-  border-radius: 6px;
+  border-radius: var(--yc-radius-tag);
   overflow: hidden;
   cursor: pointer;
-  border: 2px solid #e4e7ed;
+  border: 2px solid var(--yc-border);
   transition: border-color 0.2s;
 }
 .thumb-item.active {
-  border-color: #409EFF;
+  border-color: var(--yc-accent);
 }
 .thumb-item:hover {
-  border-color: #409EFF;
+  border-color: var(--yc-accent);
 }
 </style>

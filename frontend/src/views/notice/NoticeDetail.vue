@@ -64,20 +64,23 @@ onMounted(loadDetail)
 
 .detail-card {
   margin-top: 20px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 .detail-title {
   margin: 0 0 8px;
   font-size: 22px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .detail-time {
   margin: 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .detail-content {
   font-size: 15px;
-  color: #303133;
+  color: var(--yc-text-primary);
   line-height: 1.8;
   white-space: pre-wrap;
 }

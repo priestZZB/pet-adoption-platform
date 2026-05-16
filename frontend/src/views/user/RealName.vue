@@ -47,7 +47,7 @@
                 </div>
               </div>
               <el-button
-                type="primary"
+                class="capture-btn"
                 :disabled="!cameraReady"
                 :icon="Camera"
                 @click="handleCapture"
@@ -70,7 +70,7 @@
 
         <el-form-item>
           <el-button
-            type="primary"
+            class="auth-submit-btn"
             :loading="submitting"
             :disabled="!capturedImage"
             @click="handleSubmit"
@@ -231,8 +231,14 @@ onUnmounted(() => {
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
+}
+
+:deep(.el-card) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 
 .result-card {
@@ -244,11 +250,11 @@ onUnmounted(() => {
 .result-content h3 {
   margin: 12px 0 8px;
   font-size: 18px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .result-info {
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-secondary);
   line-height: 1.8;
 }
 
@@ -262,9 +268,10 @@ onUnmounted(() => {
   position: relative;
   width: 320px;
   height: 240px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  background: var(--yc-bg-page);
+  border-radius: var(--yc-radius-input);
   overflow: hidden;
+  border: 1px solid var(--yc-border);
 }
 .video-preview {
   width: 100%;
@@ -278,16 +285,16 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #909399;
+  color: var(--yc-text-tertiary);
   font-size: 14px;
   gap: 8px;
 }
 .captured-preview {
   width: 320px;
   height: 240px;
-  border-radius: 8px;
+  border-radius: var(--yc-radius-input);
   object-fit: cover;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--yc-border);
 }
 .camera-actions {
   display: flex;
@@ -296,6 +303,28 @@ onUnmounted(() => {
 .face-tip {
   margin: 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
+}
+
+:deep(.capture-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+}
+:deep(.capture-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+}
+:deep(.auth-submit-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.auth-submit-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
 }
 </style>

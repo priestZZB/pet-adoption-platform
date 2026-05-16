@@ -1,11 +1,13 @@
 package com.pet.module.system.service.impl;
 
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.system.mapper.FeedbackMapper;
 import com.pet.module.system.model.entity.SysFeedback;
 import com.pet.module.system.service.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +17,9 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Autowired
     private FeedbackMapper feedbackMapper;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     public void submit(Long userId, String content, String images) {
@@ -49,5 +54,12 @@ public class FeedbackServiceImpl implements FeedbackService {
         update.setReply(reply);
         update.setStatus(1);
         feedbackMapper.updateById(update);
+
+        String summary = reply.length() > 30 ? reply.substring(0, 30) + "…" : reply;
+        eventPublisher.publishEvent(new NotificationEvent(
+                feedback.getUserId(), "FEEDBACK_REPLY",
+                "反馈已回复",
+                "管理员回复了你的反馈：" + summary,
+                id));
     }
 }

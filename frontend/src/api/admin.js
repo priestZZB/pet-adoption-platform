@@ -8,7 +8,7 @@ export const toggleUserStatus = (id) => request.put('/admin/user/' + id + '/stat
 // 角色列表
 export const getRoles = () => request.get('/admin/roles')
 // 修改用户角色
-export const assignRole = (id, roleId) => request.put('/admin/user/' + id + '/role', null, { params: { roleId } })
+export const assignRole = (id, roleIds) => request.put('/admin/user/' + id + '/role', null, { params: { roleIds } })
 
 // ===== 志愿者审核 =====
 // 志愿者申请列表
@@ -107,6 +107,10 @@ export const getAIRecords = (params) => request.get('/ai/admin/records', { param
 export const getAdminSessions = () => request.get('/ai/admin/sessions')
 // 获取某次对话的消息列表（管理员，包含已删除）
 export const getAdminSessionMessages = (sessionId) => request.get('/ai/admin/sessions/' + sessionId + '/messages')
+
+// ===== Dashboard 控制台 =====
+// 控制台统计数据
+export const getDashboardStats = () => request.get('/admin/dashboard/stats')
 
 // ===== 轮播管理 =====
 // 轮播图列表（管理员）

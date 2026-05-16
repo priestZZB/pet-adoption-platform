@@ -64,4 +64,9 @@
         <if test="status != null and status != ''">WHERE status = #{status}</if>
         ORDER BY created_at DESC
     </select>
+
+    <!-- ========== Dashboard 统计 ========== -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM mall_order
+    </select>
 </mapper>

@@ -16,4 +16,6 @@ public interface UserRoleMapper {
     List<String> selectRoleCodesByUserId(Long userId);
 
     List<Long> selectRoleIdsByUserId(Long userId);
+
+    int deleteByUserIdAndRoleId(@Param("userId") Long userId, @Param("roleId") Long roleId);
 }

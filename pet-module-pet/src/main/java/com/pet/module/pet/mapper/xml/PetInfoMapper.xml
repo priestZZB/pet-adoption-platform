@@ -95,4 +95,13 @@
         </foreach>
         ORDER BY created_at DESC
     </select>
+
+    <!-- ========== Dashboard 统计 ========== -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM pet_info
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM pet_info WHERE status = #{status}
+    </select>
 </mapper>

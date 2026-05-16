@@ -119,7 +119,7 @@ function showNoticeDetail(i) { noticeDetail.value = i; noticeVisible.value = tru
 function showAllNotices() { router.push('/notices') }
 function formatDate(s) { if (!s) return ''; const d = new Date(s); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
 
-onMounted(() => { loadBanners(); loadNotices(); if (!document.getElementById('fa-css')) { const l = document.createElement('link'); l.id = 'fa-css'; l.rel = 'stylesheet'; l.href = 'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css'; document.head.appendChild(l) } })
+onMounted(() => { loadBanners(); loadNotices() })
 
 const loginFormRef = ref(null); const phoneFormRef = ref(null)
 const loginTab = ref('username'); const submitting = ref(false); const smsSending = ref(false); const smsCountdown = ref(0)

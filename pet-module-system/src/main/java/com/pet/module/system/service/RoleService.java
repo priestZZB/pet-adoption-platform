@@ -15,6 +15,8 @@ public interface RoleService {
 
     void assignRole(Long userId, Long roleId);
 
+    void assignRoles(Long userId, List<Long> roleIds);
+
     void reviewVolunteerApply(Long userId, String action, String remark);
 
     void reviewDonorApply(Long userId, String action, String remark);

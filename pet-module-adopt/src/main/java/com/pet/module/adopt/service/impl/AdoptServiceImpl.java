@@ -2,6 +2,7 @@ package com.pet.module.adopt.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.adopt.mapper.AdoptApplicationMapper;
 import com.pet.module.adopt.mapper.AdoptExamRecordMapper;
@@ -19,6 +20,7 @@ import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,9 @@ public class AdoptServiceImpl implements AdoptService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -84,6 +89,15 @@ public class AdoptServiceImpl implements AdoptService {
         application.setCommitment(dto.getCommitment());
         application.setStatus("PENDING");
         adoptApplicationMapper.insert(application);
+
+        // 通知送养人有人申请领养他的宠物
+        String applierName = applier.getNickname() != null ? applier.getNickname() : applier.getUsername();
+        String petName = pet.getName() != null ? pet.getName() : "宠物";
+        eventPublisher.publishEvent(new NotificationEvent(
+                pet.getUserId(), "ADOPT_APPLY",
+                "新领养申请",
+                applierName + "申请领养你发布的" + petName + "，请尽快审核",
+                application.getId()));
     }
 
     @Override
@@ -133,6 +147,23 @@ public class AdoptServiceImpl implements AdoptService {
             petUpdate.setStatus("ADOPTED");
             petInfoMapper.updateById(petUpdate);
         }
+
+        // 通知申请人
+        PetInfo pet = petInfoMapper.selectById(app.getPetId());
+        String petName = pet != null && pet.getName() != null ? pet.getName() : "宠物";
+        if ("APPROVED".equals(action)) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    app.getUserId(), "ADOPT_REVIEW",
+                    "领养申请已通过",
+                    "管理员已批准你领养" + petName + "的申请🎉",
+                    id));
+        } else {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    app.getUserId(), "ADOPT_REVIEW",
+                    "领养申请未通过",
+                    "管理员驳回了你领养" + petName + "的申请",
+                    id));
+        }
     }
 
     @Override
@@ -160,6 +191,23 @@ public class AdoptServiceImpl implements AdoptService {
             petUpdate.setId(app.getPetId());
             petUpdate.setStatus("ADOPTED");
             petInfoMapper.updateById(petUpdate);
+        }
+
+        // 通知申请人
+        PetInfo pet = petInfoMapper.selectById(app.getPetId());
+        String petName = pet != null && pet.getName() != null ? pet.getName() : "宠物";
+        if ("APPROVED".equals(action)) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    app.getUserId(), "ADOPT_REVIEW",
+                    "领养申请已通过",
+                    "恭喜！你领养" + petName + "的申请已通过🎉",
+                    id));
+        } else {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    app.getUserId(), "ADOPT_REVIEW",
+                    "领养申请未通过",
+                    "你领养" + petName + "的申请已被拒绝",
+                    id));
         }
     }
 

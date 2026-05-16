@@ -4,7 +4,16 @@
 
     <el-card>
       <div class="toolbar">
-        <el-select v-model="moduleFilter" placeholder="全部模块" clearable style="width:150px" @change="loadList">
+        <el-select
+          v-model="moduleFilter"
+          placeholder="全部模块"
+          clearable
+          style="width:150px"
+          popper-class="auto-close-popper"
+          :ref="(el) => setSelectRef('_self', el)"
+          @change="loadList"
+          @visible-change="(v) => onSelectVisible(v, '_self')"
+        >
           <el-option label="用户管理" value="用户管理" />
           <el-option label="宠物管理" value="宠物管理" />
           <el-option label="系统管理" value="系统管理" />
@@ -31,9 +40,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { getLogs } from '@/api/admin'
 import Pagination from '@/components/Pagination.vue'
+import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
+const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 const list = ref([])
 const total = ref(0)
@@ -56,6 +67,7 @@ async function loadList() {
 function onPageChange({ page: p, size: s }) { page.value = p; size.value = s; loadList() }
 
 onMounted(loadList)
+onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>

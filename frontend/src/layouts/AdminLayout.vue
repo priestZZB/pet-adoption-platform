@@ -97,8 +97,8 @@ onUnmounted(() => {
 
 .sidebar-wrap {
   width: 220px;
-  background: #304156;
-  color: #bfcbd9;
+  background: var(--yc-admin-sidebar);
+  color: var(--yc-admin-sidebar-text);
   display: flex;
   flex-direction: column;
   transition: width 0.3s;
@@ -136,7 +136,7 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 0 20px;
   background: #fff;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 2px solid #409EFF;
   flex-shrink: 0;
 }
 .topbar-right {
@@ -207,6 +207,110 @@ onUnmounted(() => {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background: #f0f2f5;
+  background: var(--yc-admin-bg);
+}
+
+/* 侧边栏菜单激活 - 科技蓝左发光条 */
+.sidebar-wrap :deep(.el-menu-item.is-active) {
+  background: rgba(64,158,255,0.08) !important;
+  position: relative;
+  color: #fff !important;
+}
+.sidebar-wrap :deep(.el-menu-item.is-active::before) {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: #409EFF;
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px rgba(64,158,255,0.4);
+}
+.sidebar-wrap :deep(.el-menu-item:hover) {
+  background: rgba(64,158,255,0.05);
+}
+
+/* 侧边栏深色主题适配 */
+.sidebar-wrap :deep(.el-menu) {
+  background: transparent;
+  border-right: none;
+}
+.sidebar-wrap :deep(.el-menu-item) {
+  color: var(--yc-admin-sidebar-text);
+}
+.sidebar-wrap :deep(.el-menu-item:hover) {
+  color: #fff;
+}
+.sidebar-wrap :deep(.el-tooltip__trigger) {
+  outline: none;
+}
+</style>
+
+<!-- 全局后台页面通用样式 -->
+<style>
+/* 页面容器 */
+.admin-page,
+.dashboard {
+  padding: 8px;
+}
+
+/* 页面标题：深海军蓝 + 左侧科技蓝条 */
+.admin-page .page-title,
+.dashboard .page-title {
+  font-size: 18px;
+  color: #1a2332;
+  margin: 0 0 16px;
+  padding-left: 12px;
+  border-left: 3px solid #409EFF;
+}
+
+/* 后台卡片 */
+.admin-page .el-card,
+.dashboard .el-card {
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+/* 后台表格圆角 */
+.admin-page .el-table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.admin-page .el-table th.el-table__cell {
+  background: #f5f7fa;
+  color: #1a2332;
+  font-weight: 600;
+}
+
+/* 后台表格内按钮（排除 link 类型，避免蓝底蓝字看不清） */
+.admin-page .el-button--primary:not(.el-button--link) {
+  background: #409EFF;
+  border-color: #409EFF;
+}
+.admin-page .el-button--primary:not(.el-button--link):hover {
+  background: #66b1ff;
+  border-color: #66b1ff;
+}
+
+/* 后台分页 */
+.admin-page .el-pagination.is-background .el-pager li.is-active {
+  background: #409EFF;
+}
+
+/* 后台弹窗 */
+.admin-page .el-dialog {
+  border-radius: 12px;
+}
+.admin-page .el-dialog__header {
+  margin: 0;
+  padding: 18px 20px 14px;
+}
+
+/* 后台搜索按钮暖色改为科技蓝 */
+.admin-page .toolbar .el-button--primary {
+  background: #409EFF;
+  border-color: #409EFF;
 }
 </style>

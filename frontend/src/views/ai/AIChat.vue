@@ -7,7 +7,7 @@
       </div>
 
       <div class="sidebar-new">
-        <el-button type="primary" style="width:100%" @click="handleNewChat">
+        <el-button class="new-chat-btn" style="width:100%" @click="handleNewChat">
           + 新对话
         </el-button>
       </div>
@@ -38,7 +38,7 @@
       </div>
 
       <div v-if="sessions.length > 0" class="sidebar-footer">
-        <el-button size="small" type="danger" plain style="width:100%" @click="handleClearAll">
+        <el-button size="small" class="clear-all-btn" style="width:100%" @click="handleClearAll">
           清空全部
         </el-button>
       </div>
@@ -46,78 +46,171 @@
 
     <!-- 主对话区 -->
     <div class="chat-main">
-      <div class="chat-messages" ref="messagesRef">
+      <div class="chat-messages" ref="messagesRef" @scroll="onScroll">
         <div
           v-for="(msg, idx) in messages"
           :key="idx"
           class="msg-row"
           :class="msg.role"
         >
-          <div class="msg-bubble">{{ msg.content }}</div>
+          <el-avatar
+            v-if="msg.role === 'assistant'"
+            :size="32"
+            src="/images/ai-avatar.jpg"
+            class="msg-avatar"
+          />
+          <div class="msg-bubble" @mouseenter="hoveredMsg = idx" @mouseleave="hoveredMsg = null">
+            <div class="msg-content" v-html="renderMarkdown(msg.content)"></div>
+            <button
+              v-if="msg.role === 'assistant' && hoveredMsg === idx"
+              class="copy-btn"
+              title="复制"
+              @click="copyText(msg.content)"
+            >
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          <el-avatar
+            v-if="msg.role === 'user'"
+            :size="32"
+            :src="userStore.userInfo?.avatar || ''"
+            class="msg-avatar"
+          >
+            {{ (userStore.userInfo?.nickname?.[0] || 'U').toUpperCase() }}
+          </el-avatar>
         </div>
 
         <div v-if="waiting" class="msg-row assistant">
+          <el-avatar :size="32" src="/images/ai-avatar.jpg" class="msg-avatar" />
           <div class="msg-bubble thinking">
             <el-icon class="is-loading"><Loading /></el-icon> AI正在思考...
           </div>
         </div>
+
       </div>
 
-      <div class="chat-input">
-        <el-input
-          ref="inputRef"
-          v-model="question"
-          placeholder="输入你想了解的问题..."
-          size="large"
-          :disabled="waiting"
-          @keyup.enter="sendMessage"
+      <!-- 回到底部按钮（固定在聊天区右下角，不在滚动容器内） -->
+      <transition name="fade">
+        <button
+          v-if="showScrollBtn"
+          class="scroll-bottom-btn"
+          @click="scrollToBottom"
         >
-          <template #append>
-            <el-button
-              type="primary"
-              style="background:#409EFF;color:#fff;font-weight:600"
-              :disabled="!question.trim() || waiting"
-              @click="sendMessage"
-            >
-              发送
-            </el-button>
-          </template>
-        </el-input>
+          <el-icon><ArrowDown /></el-icon>
+        </button>
+      </transition>
+
+      <div class="chat-input">
+        <div class="chat-input-row">
+          <el-input
+            ref="inputRef"
+            v-model="question"
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 4 }"
+            placeholder="输入你想了解的问题... (Enter发送, Shift+Enter换行)"
+            :disabled="waiting"
+            class="chat-input-field"
+            @keydown="handleKeydown"
+          />
+          <el-button
+            class="send-msg-btn"
+            :disabled="!question.trim() || waiting"
+            @click="sendMessage"
+          >
+            发送
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading, Delete } from '@element-plus/icons-vue'
+import { Loading, Delete, ArrowDown } from '@element-plus/icons-vue'
 import { chat, getSessions, getSessionMessages, clearChatHistory, deleteSession } from '@/api/ai'
+import { marked } from 'marked'
 
+const userStore = useUserStore()
 const messagesRef = ref(null)
 const inputRef = ref(null)
 const question = ref('')
 const messages = ref([
-  { role: 'assistant', content: '你好！我是AI助手，可以帮你解答关于宠物领养、救助等方面的问题。有什么需要帮助的吗？' }
+  { role: 'assistant', content: '你好呀！我是小宠，有宠平台的AI助手 🐾\n\n我可以帮你解答宠物领养、救助、日常养护等方面的问题，也可以帮你了解平台功能。有什么需要帮忙的吗？' }
 ])
 const waiting = ref(false)
 const sessions = ref([])
 const currentSessionId = ref('')
+const hoveredMsg = ref(null)
+const showScrollBtn = ref(false)
+const isAtBottom = ref(true)
 
-// 生成唯一 sessionId
+function renderMarkdown(text) {
+  if (!text) return ''
+  // 1. 统一换行符 + 压缩连续空行
+  let t = text
+    .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+  // 2. 转义 HTML 特殊字符
+  t = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // 3. 处理行内格式
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>')
+  t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+  // 4. 代码块
+  t = t.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+  // 5. 引用块
+  t = t.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>')
+  // 6. 双换行先占位，再替换单换行，最后还原占位
+  t = t.replace(/\n\n/g, '\x00')
+  t = t.replace(/\n/g, '<br>')
+  t = t.replace(/\x00/g, '<br><br>')
+  return t
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage.success('已复制')
+  } catch {
+    ElMessage.error('复制失败')
+  }
+}
+
+function onScroll() {
+  const el = messagesRef.value
+  if (!el) return
+  const dist = el.scrollHeight - el.scrollTop - el.clientHeight
+  isAtBottom.value = dist < 60
+  showScrollBtn.value = dist > 100
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    sendMessage()
+  }
+}
+
 function newSessionId() {
   return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)
 }
 
-function scrollToBottom() {
+function scrollToBottom(isAuto) {
   nextTick(() => {
-    if (messagesRef.value) {
-      messagesRef.value.scrollTop = messagesRef.value.scrollHeight
+    const el = messagesRef.value
+    if (el) {
+      el.scrollTop = el.scrollHeight
+      // 自动滚动时不显示回底按钮（用户自己滚上去了才显示）
+      if (isAuto) {
+        showScrollBtn.value = false
+      }
     }
   })
 }
 
-// 刷新侧边栏对话列表
 async function loadSessions() {
   try {
     sessions.value = await getSessions() || []
@@ -126,7 +219,6 @@ async function loadSessions() {
   }
 }
 
-// 切换到某次对话
 async function switchSession(sessionId) {
   if (!sessionId) return
   currentSessionId.value = sessionId
@@ -143,21 +235,18 @@ async function switchSession(sessionId) {
   scrollToBottom()
 }
 
-// 新对话
 async function handleNewChat() {
   currentSessionId.value = newSessionId()
   messages.value = [
-    { role: 'assistant', content: '你好！我是AI助手，可以帮你解答关于宠物领养、救助等方面的问题。有什么需要帮助的吗？' }
+    { role: 'assistant', content: '你好呀！我是小宠，有宠平台的AI助手 🐾\n\n我可以帮你解答宠物领养、救助、日常养护等方面的问题，也可以帮你了解平台功能。有什么需要帮忙的吗？' }
   ]
   await loadSessions()
 }
 
-// 发送消息
 async function sendMessage() {
   const q = question.value.trim()
   if (!q || waiting.value) return
 
-  // 如果还没有 sessionId（理论不会），生成一个
   if (!currentSessionId.value) {
     currentSessionId.value = newSessionId()
   }
@@ -165,22 +254,21 @@ async function sendMessage() {
   messages.value.push({ role: 'user', content: q })
   question.value = ''
   waiting.value = true
-  scrollToBottom()
+  scrollToBottom(true)
 
   try {
     const res = await chat({ question: q, sessionId: currentSessionId.value })
     messages.value.push({ role: 'assistant', content: res.answer })
-    loadSessions() // 刷新侧边栏
+    loadSessions()
   } catch {
     messages.value.push({ role: 'assistant', content: '抱歉，AI服务暂时不可用，请稍后再试。' })
   } finally {
     waiting.value = false
-    scrollToBottom()
+    scrollToBottom(true)
     nextTick(() => inputRef.value?.focus())
   }
 }
 
-// 删除某次对话
 async function handleDeleteSession(sessionId) {
   try {
     await ElMessageBox.confirm('确定删除该对话？', '提示')
@@ -193,7 +281,6 @@ async function handleDeleteSession(sessionId) {
   } catch { /* 取消 */ }
 }
 
-// 清空全部
 async function handleClearAll() {
   try {
     await ElMessageBox.confirm('确定清空所有对话？', '提示')
@@ -217,16 +304,17 @@ onMounted(() => {
   gap: 16px;
 }
 
-/* 侧边栏 */
+/* ===== 侧边栏 ===== */
 .sidebar {
   width: 280px;
   flex-shrink: 0;
   background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid #d0d9e8;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
 .sidebar-header {
   padding: 14px 16px 0;
@@ -234,11 +322,11 @@ onMounted(() => {
 .sidebar-header h4 {
   margin: 0;
   font-size: 14px;
-  color: #303133;
+  color: #1a2332;
 }
 .sidebar-new {
   padding: 10px 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid #d0d9e8;
 }
 .sidebar-list {
   flex: 1;
@@ -253,7 +341,7 @@ onMounted(() => {
 }
 .sidebar-footer {
   padding: 10px 16px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid #d0d9e8;
 }
 .session-item {
   display: flex;
@@ -261,13 +349,16 @@ onMounted(() => {
   padding: 10px 12px 10px 16px;
   cursor: pointer;
   border-left: 3px solid transparent;
-  transition: background 0.2s;
+  border-bottom: 1px solid #e8edf5;
+  transition: all 0.2s;
   gap: 6px;
 }
-.session-item:hover,
+.session-item:hover {
+  background: #f5f8ff;
+}
 .session-item.active {
-  background: #ecf5ff;
-  border-left-color: #409EFF;
+  background: #eef4ff;
+  border-left-color: #3B82F6;
 }
 .session-info {
   flex: 1;
@@ -276,7 +367,7 @@ onMounted(() => {
 .session-title {
   margin: 0 0 2px;
   font-size: 13px;
-  color: #303133;
+  color: #1a2332;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -286,15 +377,17 @@ onMounted(() => {
   color: #909399;
 }
 
-/* 主对话区 */
+/* ===== 主对话区 ===== */
 .chat-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid #d0d9e8;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  position: relative;
 }
 .chat-messages {
   flex: 1;
@@ -303,37 +396,228 @@ onMounted(() => {
 }
 .msg-row {
   display: flex;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  gap: 10px;
+  align-items: flex-start;
 }
 .msg-row.user {
   justify-content: flex-end;
 }
+.msg-avatar {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 .msg-bubble {
-  max-width: 70%;
+  max-width: 65%;
   padding: 12px 16px;
   border-radius: 12px;
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
 }
+
+/* AI 气泡 - 浅蓝灰 */
 .msg-row.assistant .msg-bubble {
-  background: #f0f2f5;
-  color: #303133;
+  background: #f0f4f8;
+  color: #1a2332;
   border-bottom-left-radius: 4px;
 }
+
+/* 用户气泡 - 科技蓝 */
 .msg-row.user .msg-bubble {
-  background: #409EFF;
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
   color: #fff;
   border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.2);
 }
+
 .thinking {
   display: flex;
   align-items: center;
   gap: 6px;
   color: #909399 !important;
+  background: #f0f4f8 !important;
 }
+
+/* ===== 输入框 ===== */
 .chat-input {
   padding: 12px 16px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid #d0d9e8;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chat-input-field {
+  flex: 1;
+}
+
+/* ===== 按钮 ===== */
+:deep(.new-chat-btn) {
+  background: #3B82F6;
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 10px 16px;
+  height: 36px;
+  transition: all 0.2s;
+}
+:deep(.new-chat-btn:hover) {
+  background: #2563EB;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+  color: #fff;
+}
+:deep(.send-msg-btn) {
+  background: #3B82F6 !important;
+  border: 1px solid #3B82F6 !important;
+  color: #fff !important;
+  font-weight: 600;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+:deep(.send-msg-btn:hover) {
+  background: #2563EB !important;
+  border-color: #2563EB !important;
+  color: #fff !important;
+}
+:deep(.clear-all-btn) {
+  border: 1px solid #d0d9e8;
+  border-radius: 8px;
+  color: #606266;
+}
+:deep(.clear-all-btn:hover) {
+  border-color: #f56c6c;
+  color: #f56c6c;
+}
+
+/* ===== 复制按钮 ===== */
+.msg-bubble {
+  position: relative;
+}
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  transition: all 0.15s;
+}
+.copy-btn:hover {
+  background: #fff;
+  color: #3B82F6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ===== 回到底部按钮（固定在聊天区右下角）===== */
+.chat-main {
+  position: relative;
+}
+.scroll-bottom-btn {
+  position: absolute;
+  bottom: 76px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d0d9e8;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  color: #3B82F6;
+  transition: all 0.2s;
+  z-index: 10;
+}
+.scroll-bottom-btn:hover {
+  background: #3B82F6;
+  color: #fff;
+  border-color: #3B82F6;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ===== 输入框多行 ===== */
+.chat-input-field :deep(.el-textarea__inner) {
+  border: 1px solid #d0d9e8;
+  border-radius: 10px;
+  box-shadow: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+}
+.chat-input-field :deep(.el-textarea__inner:focus) {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+</style>
+
+<!-- v-html 渲染的 Markdown 内容用非 scoped 样式确保生效 -->
+<style>
+.msg-content {
+  line-height: 1.6;
+}
+.msg-content strong {
+  font-weight: 700;
+}
+.msg-content ul,
+.msg-content ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+.msg-content li {
+  margin-bottom: 2px;
+}
+.msg-content code {
+  background: rgba(0,0,0,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+.msg-content pre {
+  background: #1a2332;
+  color: #e8e8e8;
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.msg-content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+.msg-content a {
+  color: #3B82F6;
+  text-decoration: underline;
+}
+.msg-content blockquote {
+  border-left: 3px solid #d0d9e8;
+  margin: 8px 0;
+  padding: 4px 12px;
+  color: #606266;
 }
 </style>

@@ -38,7 +38,7 @@
 
         <el-form-item>
           <el-button
-            type="primary"
+            class="fb-submit-btn"
             :loading="submitting"
             @click="handleSubmit"
           >
@@ -180,15 +180,21 @@ onMounted(loadList)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 
 .submit-card {
   margin-bottom: 20px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 .list-card {
   margin-bottom: 20px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 
 .loading-center {
@@ -207,8 +213,9 @@ onMounted(loadList)
 }
 .feedback-item {
   padding: 16px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-page);
 }
 .feedback-item + .feedback-item {
   margin-top: 8px;
@@ -221,12 +228,12 @@ onMounted(loadList)
 }
 .feedback-time {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
 }
 .feedback-content {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #303133;
+  color: var(--yc-text-primary);
   line-height: 1.6;
   white-space: pre-wrap;
 }
@@ -239,19 +246,33 @@ onMounted(loadList)
 .feedback-img {
   width: 80px;
   height: 80px;
-  border-radius: 4px;
+  border-radius: var(--yc-radius-tag);
   cursor: pointer;
 }
 .feedback-reply {
   padding: 10px 12px;
-  background: #f5f7fa;
-  border-radius: 6px;
+  background: var(--yc-bg-page);
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-input);
   font-size: 14px;
-  color: #606266;
+  color: var(--yc-text-secondary);
   line-height: 1.6;
 }
 .reply-label {
   font-weight: 500;
-  color: #409EFF;
+  color: var(--yc-accent);
+}
+
+:deep(.fb-submit-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.fb-submit-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
 }
 </style>

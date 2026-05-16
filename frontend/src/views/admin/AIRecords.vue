@@ -10,7 +10,7 @@
         <el-table-column prop="createdAt" label="开始时间" width="180" />
         <el-table-column label="操作" width="100" align="center">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="showSession(row)">
+            <el-button class="view-session-btn" size="small" @click="showSession(row)">
               查看对话
             </el-button>
           </template>
@@ -124,5 +124,19 @@ onMounted(loadList)
 .msg-row.user .msg-bubble {
   background: #f5f7fa;
   color: #303133;
+}
+
+/* 查看对话按钮 */
+:deep(.view-session-btn) {
+  color: #409EFF;
+  border: none;
+  background: none;
+  padding: 0 4px;
+  font-size: 13px;
+}
+:deep(.view-session-btn:hover) {
+  color: #66b1ff;
+  text-decoration: underline;
+  background: none;
 }
 </style>

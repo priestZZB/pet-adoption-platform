@@ -3,6 +3,7 @@ package com.pet.module.system.controller;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
+import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.dto.VolunteerApplyDto;
 import com.pet.module.system.model.entity.SysOperationLog;
 import com.pet.module.system.model.entity.SysRole;
@@ -36,9 +37,8 @@ public class AdminController {
     @Autowired
     private OperationLogService operationLogService;
 
-    /**
-     * 用户列表（分页 + 关键词搜索）
-     */
+    // ===================== 原有接口 =====================
+
     @ApiOperation("用户列表（分页+搜索）")
     @GetMapping("/users")
     public Result<PageInfo<UserListVo>> userList(
@@ -49,9 +49,6 @@ public class AdminController {
         return Result.success(new PageInfo<>(list));
     }
 
-    /**
-     * 禁用/启用用户
-     */
     @ApiOperation("禁用/启用用户")
     @PutMapping("/user/{id}/status")
     public Result<String> toggleStatus(HttpServletRequest request, @PathVariable Long id) {
@@ -65,35 +62,26 @@ public class AdminController {
         return Result.success("操作成功");
     }
 
-    /**
-     * 角色列表
-     */
     @ApiOperation("角色列表")
     @GetMapping("/roles")
     public Result<List<SysRole>> roles() {
         return Result.success(roleService.getAllRoles());
     }
 
-    /**
-     * 修改用户角色
-     */
     @ApiOperation("修改用户角色")
     @PutMapping("/user/{id}/role")
     public Result<String> assignRole(HttpServletRequest request,
                                      @PathVariable Long id,
-                                     @RequestParam Long roleId) {
-        roleService.assignRole(id, roleId);
+                                     @RequestParam List<Long> roleIds) {
+        roleService.assignRoles(id, roleIds);
         operationLogService.addLog(
                 Long.valueOf(request.getAttribute("userId").toString()), null,
-                "用户管理", "修改用户角色: userId=" + id + ", roleId=" + roleId,
+                "用户管理", "修改用户角色: userId=" + id + ", roleIds=" + roleIds,
                 request.getRemoteAddr()
         );
         return Result.success("角色修改成功");
     }
 
-    /**
-     * 操作日志列表
-     */
     @ApiOperation("操作日志列表")
     @GetMapping("/logs")
     public Result<PageInfo<SysOperationLog>> logs(
@@ -104,18 +92,12 @@ public class AdminController {
         return Result.success(new PageInfo<>(list));
     }
 
-    /**
-     * 志愿者申请列表
-     */
     @ApiOperation("志愿者申请列表")
     @GetMapping("/volunteer/applies")
     public Result<List<SysUser>> volunteerApplies() {
         return Result.success(userService.getVolunteerApplies());
     }
 
-    /**
-     * 审核志愿者申请（通过/驳回）
-     */
     @ApiOperation("审核志愿者申请")
     @PutMapping("/volunteer/apply/{id}")
     public Result<String> reviewVolunteer(HttpServletRequest request,
@@ -129,18 +111,12 @@ public class AdminController {
         return Result.success("审核完成");
     }
 
-    /**
-     * 送养人申请列表
-     */
     @ApiOperation("送养人申请列表")
     @GetMapping("/donor/applies")
     public Result<List<SysUser>> donorApplies() {
         return Result.success(userService.getDonorApplies());
     }
 
-    /**
-     * 审核送养人申请（通过/驳回）
-     */
     @ApiOperation("审核送养人申请")
     @PutMapping("/donor/apply/{id}")
     public Result<String> reviewDonor(HttpServletRequest request,

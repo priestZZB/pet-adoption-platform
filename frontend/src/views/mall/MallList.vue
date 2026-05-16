@@ -131,7 +131,7 @@ onMounted(() => {
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .loading-center {
@@ -151,9 +151,12 @@ onMounted(() => {
 .product-card {
   cursor: pointer;
   transition: transform 0.2s;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
 }
 .product-card:hover {
   transform: translateY(-4px);
+  border-color: var(--yc-border-hover);
 }
 .img-placeholder {
   width: 100%;
@@ -161,8 +164,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--yc-bg-card);
+  color: var(--yc-text-tertiary);
   font-size: 14px;
 }
 .product-info {
@@ -171,7 +174,7 @@ onMounted(() => {
 .product-name {
   margin: 0 0 8px;
   font-size: 15px;
-  color: #303133;
+  color: var(--yc-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -188,6 +191,17 @@ onMounted(() => {
 }
 .stock {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
+}
+
+/* Tabs 下划线暖色 */
+:deep(.el-tabs__active-bar) {
+  background: var(--yc-accent);
+}
+:deep(.el-tabs__item.is-active) {
+  color: var(--yc-text-primary);
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--yc-accent);
 }
 </style>

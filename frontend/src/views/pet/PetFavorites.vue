@@ -49,7 +49,7 @@
             <div class="card-footer">
               <span class="donor">{{ pet.userNickname }}</span>
               <el-button
-                type="danger"
+                class="unfav-btn"
                 size="small"
                 plain
                 @click.stop="handleUnfavorite(pet.id)"
@@ -112,7 +112,7 @@ onMounted(loadFavorites)
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 24px;
 }
 .loading-center {
@@ -131,9 +131,12 @@ onMounted(loadFavorites)
 }
 .pet-card {
   transition: transform 0.2s;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
 }
 .pet-card:hover {
   transform: translateY(-4px);
+  border-color: var(--yc-border-hover);
 }
 .pet-cover {
   position: relative;
@@ -150,8 +153,8 @@ onMounted(loadFavorites)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  color: #909399;
+  background: var(--yc-bg-card);
+  color: var(--yc-text-tertiary);
   font-size: 14px;
 }
 .pet-info {
@@ -160,11 +163,11 @@ onMounted(loadFavorites)
 .pet-name {
   margin: 0 0 6px;
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .pet-meta {
   font-size: 13px;
-  color: #909399;
+  color: var(--yc-text-secondary);
   margin-bottom: 10px;
 }
 .dot {
@@ -177,6 +180,18 @@ onMounted(loadFavorites)
 }
 .donor {
   font-size: 12px;
-  color: #909399;
+  color: var(--yc-text-tertiary);
+}
+
+/* 取消收藏按钮暖色 */
+:deep(.unfav-btn) {
+  border-radius: var(--yc-radius-tag);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-text-secondary);
+}
+:deep(.unfav-btn:hover) {
+  border-color: #f56c6c;
+  color: #f56c6c;
+  background: #fef0f0;
 }
 </style>

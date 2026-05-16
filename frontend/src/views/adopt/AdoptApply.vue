@@ -70,13 +70,13 @@
 
           <el-form-item>
             <el-button
-              type="primary"
+              class="submit-adopt-btn"
               :loading="submitting"
               @click="handleSubmit"
             >
               提交申请
             </el-button>
-            <el-button @click="$router.back()">取消</el-button>
+            <el-button class="cancel-adopt-btn" @click="$router.back()">取消</el-button>
           </el-form-item>
         </el-form>
       </el-card>
@@ -206,7 +206,7 @@ onMounted(async () => {
 }
 .page-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--yc-text-primary);
   margin: 0 0 20px;
 }
 .loading-center {
@@ -220,6 +220,9 @@ onMounted(async () => {
 
 .pet-summary {
   margin-bottom: 16px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
 }
 .pet-summary-inner {
   display: flex;
@@ -229,21 +232,50 @@ onMounted(async () => {
 .pet-meta h4 {
   margin: 0 0 6px;
   font-size: 16px;
-  color: #303133;
+  color: var(--yc-text-primary);
 }
 .pet-meta p {
   margin: 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--yc-text-secondary);
 }
 .img-placeholder {
   width: 100px;
   height: 100px;
-  background: #f5f7fa;
+  background: var(--yc-bg-card);
   border-radius: 8px;
 }
 
 .form-card {
   margin-bottom: 20px;
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  background: var(--yc-bg-card);
+}
+
+/* 提交按钮暖色 */
+:deep(.submit-adopt-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 28px;
+  font-size: 15px;
+}
+:deep(.submit-adopt-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+/* 取消按钮暖色 */
+:deep(.cancel-adopt-btn) {
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-text-primary);
+}
+:deep(.cancel-adopt-btn:hover) {
+  border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
 }
 </style>

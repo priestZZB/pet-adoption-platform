@@ -32,4 +32,11 @@ public interface UserMapper {
     List<SysUser> selectVolunteerApplies();
 
     List<SysUser> selectDonorApplies();
+
+    // ========== Dashboard 统计 ==========
+    int countAll();
+
+    int countByVolunteerStatus(@Param("status") String status);
+
+    int countByDonorStatus(@Param("status") String status);
 }
