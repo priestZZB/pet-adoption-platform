@@ -8,6 +8,7 @@ server:
 spring:
   profiles:
     active: dev                      # 默认激活 dev 环境
+    include: secret                   # 引入敏感配置（不提交到Git）
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -17,7 +18,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/pet_adoption?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 123456
+    # password 在 application-secret.yml 中配置（不提交到Git）
 
     # HikariCP 连接池
     hikari:
@@ -79,30 +80,21 @@ logging:
 # ---- 项目自定义配置 ----
 pet:
   ai:
-    api-key: "sk-9b69be49171e41bd96589f71b7f88521"
+    # api-key 在 application-secret.yml 中配置（不提交到Git）
     model: "deepseek-chat"
     api-url: "https://api.deepseek.com/chat/completions"
   jwt:
-    secret: "PetAdoptionPlatformSecretKey2024!@#$%^&*()"
+    # secret 在 application-secret.yml 中配置（不提交到Git）
     expiration: 86400000              # Token 有效期 24 小时（毫秒）
   upload:
     path: /data/pet-adoption/uploads                    # 文件上传存储路径
 
-  # ---- 第三方服务配置 ----
+  # ---- 第三方服务配置（敏感值在 application-secret.yml 中配置）----
   third-party:
-    appcode: "57ae43ff92f44edda9500eebcdc7b5d3"
-    # ① 人脸比对（公安实名认证）
     face:
       url: "https://selfiev2.market.alicloudapi.com/face/verify_selfie_idnumber"
-    # ③ 行为验证码（滑块验证码）
     captcha:
-      app-id: "193347059"
-      app-secret: "vzvaQXQjhqgQ7pDXb80NTadLU"
       verify-url: "https://lhxwyzmjk.market.alicloudapi.com/captcha/verification_code"
-
-    # ④ 三网106短信
     sms:
       url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
-      template-id: "908e94ccf08b4476ba6c876d13f084ad"
-      sign-id: "2e65b1bb3d054466b82f0c9d125465e2"
 
