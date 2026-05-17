@@ -59,7 +59,13 @@ async function loadList() {
 
 function openDialog(row) {
   if (row) { isEdit.value = true; editId.value = row.id; form.name = row.name; form.sortOrder = row.sortOrder }
-  else { isEdit.value = false; editId.value = null; form.name = ''; form.sortOrder = 0 }
+  else {
+    isEdit.value = false; editId.value = null; form.name = ''
+    const usedOrders = new Set(list.value.map(i => i.sortOrder))
+    let next = 1
+    while (usedOrders.has(next)) next++
+    form.sortOrder = next
+  }
   dialogVisible.value = true
 }
 

@@ -69,6 +69,10 @@
           <el-icon :size="24" color="#409EFF"><Edit /></el-icon>
           <span>编辑资料</span>
         </div>
+        <div class="menu-item" @click="$router.push('/user/phone')">
+          <el-icon :size="24" color="#409EFF"><Iphone /></el-icon>
+          <span>修改手机号</span>
+        </div>
         <div class="menu-item" @click="$router.push('/user/real-name')">
           <el-icon :size="24" color="#409EFF"><Postcard /></el-icon>
           <span>实名认证</span>
@@ -161,13 +165,12 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
 import {
-  CircleCheck, Edit, Postcard, Lock, User, UserFilled,
+  CircleCheck, Edit, Postcard, Lock, User, UserFilled, Iphone,
   Star, Tickets, Select, ChatLineSquare, Camera, InfoFilled, StarFilled
 } from '@element-plus/icons-vue'
-import { uploadFile } from '@/api/file'
 import { uploadAvatar } from '@/api/user'
 import { ROLE_MAP } from '@/utils/constants'
 import { useUserStore } from '@/stores/user'
@@ -180,9 +183,7 @@ async function handleAvatarUpload(file) {
     await uploadAvatar(file)
     await userStore.fetchUserInfo()
     ElMessage.success('头像已更新')
-  } catch {
-    // 请求拦截器统一处理
-  }
+  } catch {}
   return false
 }
 </script>
@@ -282,6 +283,7 @@ async function handleAvatarUpload(file) {
   font-size: 14px;
   color: var(--yc-text-primary);
 }
+
 
 .menu-card {
   border: 1px solid var(--yc-border);

@@ -1,7 +1,9 @@
 package com.pet.module.system.service;
 
+import java.util.Map;
+
 /**
- * 实名认证服务（调用第三方人脸比对API）
+ * 实名认证服务（活体检测 + 人脸比对）
  */
 public interface RealNameService {
 
@@ -24,4 +26,21 @@ public interface RealNameService {
      * @return true=认证通过，false=不通过
      */
     boolean verifyWithImageUrl(String name, String idNumber, String imageUrl);
+
+    /**
+     * 获取活体检测H5页面Token
+     *
+     * @param returnUrl 活体采集完成后跳转的页面URL
+     * @return { url: H5页面地址, orderNo: 订单号 }
+     */
+    Map<String, String> getLivenessToken(String returnUrl);
+
+    /**
+     * 查询活体检测结果
+     *
+     * @param orderNo 活体检测订单号
+     * @param hbId    活体ID（可选，传空字符串）
+     * @return { result: 检测结果码, desc: 描述, orderNo: 订单号 }
+     */
+    Map<String, Object> checkLivenessResult(String orderNo, String hbId);
 }

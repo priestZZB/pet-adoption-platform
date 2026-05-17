@@ -28,6 +28,17 @@ public interface UserService {
 
     void realNameAuth(Long userId, RealNameDto dto);
 
+    /**
+     * 实名认证（免滑块验证，用于活体检测后直接调用的流程）
+     */
+    void realNameAuthDirect(Long userId, RealNameDto dto);
+
+    /**
+     * 检查身份证号是否可绑定（未被其他账号使用）
+     * @throws BusinessException 如果已被绑定
+     */
+    void checkIdCardAvailable(Long userId, String idCard);
+
     List<UserListVo> getUserList(String keyword, int page, int size);
 
     void toggleUserStatus(Long userId);

@@ -39,13 +39,50 @@
           </div>
 
           <el-form v-show="loginTab === 'username'" ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0" size="large" @keyup.enter="handleLogin">
-            <el-form-item prop="username">
-              <div class="i-wrap"><i class="i-icon fas fa-user"></i><el-input v-model="loginForm.username" placeholder="请输入用户名或手机号" /></div>
+            <el-form-item prop="username" class="username-item">
+              <div class="i-wrap">
+                <i class="i-icon fas fa-user"></i>
+                <el-input v-model="loginForm.username" placeholder="请输入用户名或手机号" @focus="showHistory" @blur="hideHistoryDelay" />
+                <!-- 历史账号下拉 -->
+                <div v-if="historyVisible && historyList.length > 0" class="history-dropdown">
+                  <div class="history-title">最近登录</div>
+                  <div
+                    v-for="(h, i) in historyList"
+                    :key="i"
+                    class="history-item"
+                    @mousedown.prevent="selectHistory(h)"
+                  >
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ h }}</span>
+                  </div>
+                </div>
+              </div>
             </el-form-item>
-            <el-form-item prop="password">
+            <el-form-item prop="password" class="password-item">
               <div class="i-wrap"><i class="i-icon fas fa-lock"></i><el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password /></div>
             </el-form-item>
             <el-form-item><button type="button" class="login-btn" :disabled="submitting" @click="handleLogin">{{ submitting ? '登录中…' : '登录' }}</button></el-form-item>
+            <!-- 记住我 + 协议勾选 -->
+            <div class="agree-row">
+              <label class="agree-label">
+                <input type="checkbox" v-model="rememberMe" class="agree-check" />
+                <span class="agree-text">记住我</span>
+              </label>
+              <span class="agree-sep" style="margin:0 6px">|</span>
+              <label class="agree-label">
+                <input type="checkbox" v-model="agreed" class="agree-check" />
+                <span class="agree-text">已阅读并同意</span>
+              </label>
+              <span class="agree-links">
+                <a href="javascript:void(0)" @click="showLegal('privacy')">隐私政策</a>
+                <span class="agree-sep">|</span>
+                <a href="javascript:void(0)" @click="showLegal('terms')">用户协议</a>
+                <span class="agree-sep">|</span>
+                <a href="javascript:void(0)" @click="showLegal('disclaimer')">免责声明</a>
+                <span class="agree-sep">|</span>
+                <a href="javascript:void(0)" @click="showLegal('help')">帮助中心</a>
+              </span>
+            </div>
           </el-form>
 
           <el-form v-show="loginTab === 'phone'" ref="phoneFormRef" :model="phoneForm" :rules="phoneRules" label-width="0" size="large" @keyup.enter="handlePhoneLogin">
@@ -59,6 +96,22 @@
               </div>
             </el-form-item>
             <el-form-item><button type="button" class="login-btn" :disabled="submitting" @click="handlePhoneLogin">{{ submitting ? '登录中…' : '登录' }}</button></el-form-item>
+            <!-- 协议勾选 -->
+            <div class="agree-row">
+              <label class="agree-label">
+                <input type="checkbox" v-model="agreed" class="agree-check" />
+                <span class="agree-text">我已阅读并同意</span>
+              </label>
+              <span class="agree-links">
+                <a href="javascript:void(0)" @click="showLegal('privacy')">隐私政策</a>
+                <span class="agree-sep">|</span>
+                <a href="javascript:void(0)" @click="showLegal('terms')">用户协议</a>
+                <span class="agree-sep">|</span>
+                <a href="javascript:void(0)" @click="showLegal('disclaimer')">免责声明</a>
+                <span class="agree-sep">|</span>
+                <a href="javascript:void(0)" @click="showLegal('help')">帮助中心</a>
+              </span>
+            </div>
           </el-form>
 
           <div class="foot-links">
@@ -95,12 +148,13 @@
       <div class="notice-body">{{ noticeDetail?.content }}</div>
     </el-dialog>
     <CaptchaSlider ref="captchaRef" />
+    <LegalDialogs ref="legalRef" />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import request from '@/api/request'
 import { login, phoneLogin } from '@/api/user'
@@ -108,8 +162,11 @@ import { sendSmsCode } from '@/api/sms'
 import { getNoticeList } from '@/api/notice'
 import { useUserStore } from '@/stores/user'
 import CaptchaSlider from '@/components/CaptchaSlider.vue'
+import LegalDialogs from '@/components/LegalDialogs.vue'
 
-const router = useRouter(); const userStore = useUserStore(); const captchaRef = ref(null)
+const router = useRouter(); const route = useRoute(); const userStore = useUserStore()
+const captchaRef = ref(null); const legalRef = ref(null); const agreed = ref(false)
+
 const WELCOME_IMAGE = '/images/welcome.jpg'
 const welcomeBanner = { imageUrl: WELCOME_IMAGE }
 const banners = ref([welcomeBanner]); const notices = ref([]); const noticeVisible = ref(false); const noticeDetail = ref(null)
@@ -118,20 +175,72 @@ async function loadNotices() { try { const r = await getNoticeList(); notices.va
 function showNoticeDetail(i) { noticeDetail.value = i; noticeVisible.value = true }
 function showAllNotices() { router.push('/notices') }
 function formatDate(s) { if (!s) return ''; const d = new Date(s); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
+function showLegal(name) { legalRef.value?.open(name) }
 
-onMounted(() => { loadBanners(); loadNotices() })
+onMounted(() => {
+  loadBanners(); loadNotices()
+  // 从注册页带过来的用户名，自动填入
+  const u = route.query.username
+  if (u) { loginForm.username = u }
+})
 
 const loginFormRef = ref(null); const phoneFormRef = ref(null)
 const loginTab = ref('username'); const submitting = ref(false); const smsSending = ref(false); const smsCountdown = ref(0)
+const rememberMe = ref(false)
+const historyVisible = ref(false)
+const historyList = ref([])
+let historyHideTimer = null
 let smsTimer = null
 const loginForm = reactive({ username: '', password: '' })
 const phoneForm = reactive({ phone: '', smsCode: '' })
 const loginRules = { username: [{ required: true, message: '请输入用户名或手机号', trigger: 'blur' }], password: [{ required: true, message: '请输入密码', trigger: 'blur' }] }
+
+// 历史账号管理
+const HISTORY_KEY = 'login_history'
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY)
+    historyList.value = raw ? JSON.parse(raw) : []
+  } catch { historyList.value = [] }
+}
+function saveHistory(username) {
+  let list = [username]
+  // 去重，新的放最前面
+  for (const h of historyList.value) {
+    if (h !== username) list.push(h)
+  }
+  if (list.length > 5) list = list.slice(0, 5)
+  historyList.value = list
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list))
+}
+function showHistory() {
+  if (historyHideTimer) clearTimeout(historyHideTimer)
+  loadHistory()
+  historyVisible.value = true
+}
+function hideHistoryDelay() {
+  historyHideTimer = setTimeout(() => { historyVisible.value = false }, 200)
+}
+function selectHistory(username) {
+  loginForm.username = username
+  historyVisible.value = false
+  // 自动聚焦到密码框
+  setTimeout(() => {
+    const pwInput = document.querySelector('.password-item .el-input__inner')
+    if (pwInput) pwInput.focus()
+  }, 100)
+}
 const phoneRules = { phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }, { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }], smsCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }, { len: 6, message: '6位数字', trigger: 'blur' }] }
 const validPhone = computed(() => /^1[3-9]\d{9}$/.test(phoneForm.phone))
 async function handleSendSms() { if (smsSending.value || smsCountdown.value > 0) return; if (!validPhone.value) { ElMessage.warning('请输入正确手机号'); return }; try { const c = await captchaRef.value.showCaptcha(); smsSending.value = true; await sendSmsCode({ phone: phoneForm.phone, type: 'login', ...c }); ElMessage.success('验证码已发送'); smsCountdown.value = 60; smsTimer = setInterval(() => { smsCountdown.value--; if (smsCountdown.value <= 0) { clearInterval(smsTimer); smsTimer = null } }, 1000) } catch {} finally { smsSending.value = false } }
-async function handleLogin() { const v = await loginFormRef.value.validate().catch(() => false); if (!v) return; try { const c = await captchaRef.value.showCaptcha(); submitting.value = true; const r = await login({ username: loginForm.username, password: loginForm.password, ...c }); userStore.setToken(r.token); await userStore.fetchUserInfo(); ElMessage.success('登录成功'); router.push('/') } catch {} finally { submitting.value = false } }
-async function handlePhoneLogin() { const v = await phoneFormRef.value.validate().catch(() => false); if (!v) return; submitting.value = true; try { const r = await phoneLogin({ phone: phoneForm.phone, smsCode: phoneForm.smsCode }); userStore.setToken(r.token); await userStore.fetchUserInfo(); ElMessage.success('登录成功'); router.push('/') } catch {} finally { submitting.value = false } }
+async function handleLogin() {
+  const v = await loginFormRef.value.validate().catch(() => false); if (!v) return
+  if (!agreed.value) { ElMessage.warning('请先阅读并同意相关协议'); return }
+  try { const c = await captchaRef.value.showCaptcha(); submitting.value = true; const r = await login({ username: loginForm.username, password: loginForm.password, ...c }); userStore.setToken(r.token); await userStore.fetchUserInfo(); if (rememberMe.value) saveHistory(loginForm.username); ElMessage.success('登录成功'); router.push('/') } catch {} finally { submitting.value = false } }
+async function handlePhoneLogin() {
+  const v = await phoneFormRef.value.validate().catch(() => false); if (!v) return
+  if (!agreed.value) { ElMessage.warning('请先阅读并同意相关协议'); return }
+  submitting.value = true; try { const r = await phoneLogin({ phone: phoneForm.phone, smsCode: phoneForm.smsCode }); userStore.setToken(r.token); await userStore.fetchUserInfo(); ElMessage.success('登录成功'); router.push('/') } catch {} finally { submitting.value = false } }
 onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 </script>
 
@@ -191,6 +300,52 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .sms-btn { flex-shrink: 0; min-width: 105px; height: 48px; border: 1px solid #d1e7dd; border-radius: 10px; background: #fefaf5; color: #5a4a42; font-size: 13px; cursor: pointer; transition: all 0.2s; padding: 0 10px; white-space: nowrap; }
 .sms-btn:hover:not(:disabled) { background: #f0e8dc; }
 .sms-btn:disabled { color: #b5a898; cursor: not-allowed; }
+
+.agree-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; font-size: 12.5px; }
+.agree-label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.agree-check { width: 14px; height: 14px; cursor: pointer; accent-color: #8ab8a0; }
+
+/* 历史账号下拉 */
+.history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #d1e7dd;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  margin-top: 2px;
+  overflow: hidden;
+}
+.history-title {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  color: #b5a898;
+}
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: #5a4a42;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.history-item:hover {
+  background: #f7f1e5;
+}
+.history-item i {
+  color: #b5a898;
+  font-size: 16px;
+}
+.agree-text { color: #a09080; }
+.agree-links { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+.agree-links a { color: #5a4a42; text-decoration: none; font-weight: 500; }
+.agree-links a:hover { text-decoration: underline; }
+.agree-sep { color: #d1e7dd; margin: 0 3px; }
 
 .foot-links { text-align: center; font-size: 13.5px; color: #a09080; margin-top: 14px; }
 .link { color: #5a4a42; font-weight: 500; text-decoration: none; }

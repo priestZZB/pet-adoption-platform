@@ -9,6 +9,7 @@ import com.pet.module.pet.service.PetCategoryService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class PetCategoryServiceImpl implements PetCategoryService {
     }
 
     @Override
+    @Transactional
     public void add(String name, Integer sortOrder) {
         PetCategory category = new PetCategory();
         category.setName(name);
@@ -37,10 +39,21 @@ public class PetCategoryServiceImpl implements PetCategoryService {
     }
 
     @Override
+    @Transactional
     public void update(Long id, String name, Integer sortOrder) {
         PetCategory category = petCategoryMapper.selectById(id);
         if (category == null) {
             throw new BusinessException(ResultCodeEnum.CATEGORY_NOT_FOUND);
+        }
+        Integer oldSort = category.getSortOrder();
+        if (!oldSort.equals(sortOrder)) {
+            if (sortOrder < oldSort) {
+                // 往前挪：中间的往后+1
+                petCategoryMapper.shiftRange(sortOrder, oldSort - 1, 1, id);
+            } else {
+                // 往后挪：中间的往前-1
+                petCategoryMapper.shiftRange(oldSort + 1, sortOrder, -1, id);
+            }
         }
         PetCategory update = new PetCategory();
         update.setId(id);
@@ -50,6 +63,7 @@ public class PetCategoryServiceImpl implements PetCategoryService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         if (petCategoryMapper.selectById(id) == null) {
             throw new BusinessException(ResultCodeEnum.CATEGORY_NOT_FOUND);

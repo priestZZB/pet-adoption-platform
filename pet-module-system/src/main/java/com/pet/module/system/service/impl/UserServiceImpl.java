@@ -184,6 +184,20 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
         }
 
+        // 如果手机号变了，需要验证短信验证码
+        if (dto.getPhone() != null && !dto.getPhone().equals(user.getPhone())) {
+            if (dto.getSmsCode() == null || dto.getSmsCode().isEmpty()) {
+                throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "修改手机号需要短信验证码");
+            }
+            if (!smsService.verifyCode(dto.getPhone(), dto.getSmsCode())) {
+                throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "短信验证码错误或已过期");
+            }
+            // 检查新手机号是否已被其他账号注册
+            if (userMapper.countByPhone(dto.getPhone()) > 0) {
+                throw new BusinessException(ResultCodeEnum.PHONE_EXISTS);
+            }
+        }
+
         SysUser update = new SysUser();
         update.setId(userId);
         update.setNickname(dto.getNickname());
@@ -305,6 +319,58 @@ public class UserServiceImpl implements UserService {
         update.setRealName(dto.getRealName());
         update.setIdCard(dto.getIdCard());
         update.setPhone(dto.getPhone());
+        update.setIsRealName(1);
+        userMapper.updateById(update);
+    }
+
+    @Override
+    public void checkIdCardAvailable(Long userId, String idCard) {
+        SysUser existingUser = userMapper.selectByIdCard(idCard);
+        if (existingUser != null && !existingUser.getId().equals(userId)) {
+            String boundUsername = maskUsername(existingUser.getUsername());
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST,
+                    "该身份证已被账号「" + boundUsername + "」绑定");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void realNameAuthDirect(Long userId, RealNameDto dto) {
+        // 检查身份证号是否已被其他账号绑定
+        checkIdCardAvailable(userId, dto.getIdCard());
+
+        // 调用第三方人脸比对
+        boolean verified;
+        String image = dto.getImage();
+        String imageUrl = dto.getImageUrl();
+
+        if (image != null && !image.isEmpty() && image.startsWith("http")) {
+            imageUrl = image;
+            image = null;
+        }
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            verified = realNameService.verifyWithImageUrl(dto.getRealName(), dto.getIdCard(), imageUrl);
+        } else if (image != null && !image.isEmpty()) {
+            verified = realNameService.verifyWithImage(dto.getRealName(), dto.getIdCard(), image);
+        } else {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请上传人脸图片");
+        }
+        if (!verified) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "人脸比对未通过，请确认姓名、身份证号与本人一致");
+        }
+
+        // 从数据库获取当前用户手机号（新流程不传手机号）
+        SysUser currentUser = userMapper.selectById(userId);
+        if (currentUser == null) {
+            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+
+        SysUser update = new SysUser();
+        update.setId(userId);
+        update.setRealName(dto.getRealName());
+        update.setIdCard(dto.getIdCard());
+        update.setPhone(currentUser.getPhone());  // 沿用注册时绑定的手机号
         update.setIsRealName(1);
         userMapper.updateById(update);
     }

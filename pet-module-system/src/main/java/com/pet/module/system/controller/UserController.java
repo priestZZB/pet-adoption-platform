@@ -6,6 +6,7 @@ import com.pet.framework.annotation.Log;
 import com.pet.framework.util.JwtUtils;
 import com.pet.module.system.model.dto.*;
 import com.pet.module.system.model.vo.UserInfoVo;
+import com.pet.module.system.service.RealNameService;
 import com.pet.module.system.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
@@ -31,6 +32,9 @@ public class UserController {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private RealNameService realNameService;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -172,12 +176,66 @@ public class UserController {
     /**
      * 实名认证
      */
+    /**
+     * 检查身份证号是否可绑定
+     */
+    @ApiOperation("检查身份证号是否可绑定")
+    @GetMapping("/idcard/check")
+    public Result<String> checkIdCard(HttpServletRequest request, @RequestParam String idCard) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        userService.checkIdCardAvailable(userId, idCard);
+        return Result.success("身份证号可用");
+    }
+
     @ApiOperation("实名认证")
     @PostMapping("/real-name")
     public Result<String> realName(HttpServletRequest request, @RequestBody RealNameDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
         userService.realNameAuth(userId, dto);
         return Result.success("实名认证成功");
+    }
+
+    /**
+     * 实名认证（免滑块验证，活体检测后直接调）
+     */
+    @ApiOperation("实名认证（免滑块）")
+    @PostMapping("/real-name/direct")
+    public Result<String> realNameDirect(HttpServletRequest request, @RequestBody RealNameDto dto) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        userService.realNameAuthDirect(userId, dto);
+        return Result.success("实名认证成功");
+    }
+
+    /**
+     * 获取活体检测H5页面
+     */
+    @ApiOperation("获取活体检测H5页面")
+    @PostMapping("/liveness/token")
+    public Result<Map<String, String>> livenessToken(@RequestBody Map<String, String> params) {
+        String returnUrl = params.get("returnUrl");
+        if (returnUrl == null || returnUrl.isEmpty()) {
+            return Result.error(400, "returnUrl不能为空");
+        }
+        Map<String, String> result = realNameService.getLivenessToken(returnUrl);
+        if (result.containsKey("error")) {
+            return Result.error(500, result.get("error"));
+        }
+        return Result.success(result);
+    }
+
+    /**
+     * 查询活体检测结果
+     */
+    @ApiOperation("查询活体检测结果")
+    @PostMapping("/liveness/result")
+    public Result<Map<String, Object>> livenessResult(@RequestBody Map<String, String> params) {
+        String orderNo = params.get("orderNo");
+        if (orderNo == null || orderNo.isEmpty()) {
+            return Result.error(400, "orderNo不能为空");
+        }
+        String hbId = params.getOrDefault("hbId", "");
+        Map<String, Object> result = realNameService.checkLivenessResult(orderNo, hbId);
+        return Result.success(result);
     }
 
     /**

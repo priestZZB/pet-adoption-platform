@@ -5,8 +5,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// 开发模式跳过滑块验证码，演示时改为 true
-const CAPTCHA_ENABLED = false
+// 开启滑块验证码
+const CAPTCHA_ENABLED = true
 
 const CAPTCHA_APP_ID = '193347059'
 const CAPTCHA_APP_SECRET = 'vzvaQXQjhqgQ7pDXb80NTadLU'

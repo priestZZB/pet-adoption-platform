@@ -34,6 +34,7 @@ const routes = [
       { path: 'user/profile',     component: () => import('@/views/user/UserProfile.vue'), meta: { requiresAuth: true } },
       { path: 'user/profile/edit', component: () => import('@/views/user/EditProfile.vue'), meta: { requiresAuth: true } },
       { path: 'user/password',     component: () => import('@/views/user/ChangePassword.vue'), meta: { requiresAuth: true } },
+      { path: 'user/phone',      component: () => import('@/views/user/ChangePhone.vue'), meta: { requiresAuth: true } },
       { path: 'user/real-name',    component: () => import('@/views/user/RealName.vue'), meta: { requiresAuth: true } },
       { path: 'user/favorites',   component: () => import('@/views/pet/PetFavorites.vue'), meta: { requiresAuth: true } },
       { path: 'user/orders/:id',  component: () => import('@/views/mall/OrderDetail.vue'), meta: { requiresAuth: true } },

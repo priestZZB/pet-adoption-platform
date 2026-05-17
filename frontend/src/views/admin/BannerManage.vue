@@ -6,13 +6,13 @@
     </div>
 
     <el-card>
-      <!-- 固定欢迎页 -->
+      <!-- 固定欢迎页（首页默认轮播） -->
       <div class="banner-row fixed">
-        <div class="banner-preview welcome-preview">
-          <span class="welcome-icon">🏠</span>
+        <div class="banner-preview">
+          <el-image src="/images/welcome.jpg" fit="cover" style="width:100%;height:100%;border-radius:4px" />
         </div>
         <div class="banner-info">
-          <span class="banner-title">欢迎来到有宠</span>
+          <span class="banner-title">以领养代替购买，让世间充满爱</span>
           <span class="banner-tag tag-fixed">固定</span>
         </div>
         <div class="banner-sort">—</div>

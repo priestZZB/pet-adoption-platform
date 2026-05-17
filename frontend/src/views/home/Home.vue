@@ -226,12 +226,10 @@ onUnmounted(cleanupSelectAutoClose)
 /* Banner */
 .banner-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto 24px;
-  aspect-ratio: 2279 / 1280;
-  border-radius: 12px;
+  aspect-ratio: 4579 / 915;
   overflow: hidden;
-  box-shadow: var(--yc-shadow-card);
 }
 .banner {
   height: 100% !important;

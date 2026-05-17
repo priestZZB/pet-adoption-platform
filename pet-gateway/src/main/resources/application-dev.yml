@@ -28,12 +28,16 @@ pet:
   upload:
     path: D:/data/pet-adoption/uploads
 
-# 开发环境关闭滑块验证码（演示时改为 true）
+# 开发环境开启滑块验证码
   captcha:
-    enabled: false
+    enabled: true
 
-# 开发环境：模拟短信验证码，控制台输出，不实际发送（演示时改为 false）
+# 开发环境：关闭模拟，走真实短信API
   sms:
+    mock: false
+
+# 开发环境：模拟实名认证（不消耗API次数）
+  realname:
     mock: true
 
 mybatis:

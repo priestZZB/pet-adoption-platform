@@ -19,10 +19,6 @@
           <el-input v-model="form.email" placeholder="请输入邮箱" maxlength="100" />
         </el-form-item>
 
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="20" />
-        </el-form-item>
-
         <el-form-item>
           <el-button class="save-btn" :loading="submitting" @click="handleSubmit">
             保存修改
@@ -48,8 +44,7 @@ const submitting = ref(false)
 
 const form = reactive({
   nickname: '',
-  email: '',
-  phone: ''
+  email: ''
 })
 
 const rules = {
@@ -57,11 +52,9 @@ const rules = {
 }
 
 onMounted(() => {
-  // 预填充当前用户信息
   if (userStore.userInfo) {
     form.nickname = userStore.userInfo.nickname || ''
     form.email = userStore.userInfo.email || ''
-    form.phone = userStore.userInfo.phone || ''
   }
 })
 
@@ -73,58 +66,22 @@ async function handleSubmit() {
   try {
     await updateUserInfo({
       nickname: form.nickname,
-      email: form.email,
-      phone: form.phone
+      email: form.email
     })
-    // 刷新用户信息
     await userStore.fetchUserInfo()
     ElMessage.success('资料已更新')
     router.push('/user/profile')
-  } catch {
-    // 请求拦截器统一处理
-  } finally {
-    submitting.value = false
-  }
+  } catch {}
+  finally { submitting.value = false }
 }
 </script>
 
 <style scoped>
-.edit-page {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 24px 0 40px;
-}
-.page-title {
-  font-size: 20px;
-  color: var(--yc-text-primary);
-  margin: 0 0 20px;
-}
-
-:deep(.el-card) {
-  border: 1px solid var(--yc-border);
-  border-radius: var(--yc-radius-card);
-  background: var(--yc-bg-card);
-}
-
-:deep(.save-btn) {
-  background: var(--yc-btn-primary);
-  border: 1px solid var(--yc-border);
-  color: var(--yc-btn-text);
-  border-radius: var(--yc-radius-btn);
-  font-weight: 500;
-}
-:deep(.save-btn:hover) {
-  background: var(--yc-btn-hover);
-  border-color: var(--yc-border-hover);
-  color: var(--yc-btn-text);
-}
-:deep(.cancel-btn) {
-  border: 1px solid var(--yc-border);
-  border-radius: var(--yc-radius-btn);
-  color: var(--yc-text-primary);
-}
-:deep(.cancel-btn:hover) {
-  border-color: var(--yc-border-hover);
-  color: var(--yc-accent);
-}
+.edit-page { max-width: 700px; margin: 0 auto; padding: 24px 0 40px; }
+.page-title { font-size: 20px; color: var(--yc-text-primary); margin: 0 0 20px; }
+:deep(.el-card) { border: 1px solid var(--yc-border); border-radius: var(--yc-radius-card); background: var(--yc-bg-card); }
+:deep(.save-btn) { background: var(--yc-btn-primary); border: 1px solid var(--yc-border); color: var(--yc-btn-text); border-radius: var(--yc-radius-btn); font-weight: 500; }
+:deep(.save-btn:hover) { background: var(--yc-btn-hover); border-color: var(--yc-border-hover); color: var(--yc-btn-text); }
+:deep(.cancel-btn) { border: 1px solid var(--yc-border); border-radius: var(--yc-radius-btn); color: var(--yc-text-primary); }
+:deep(.cancel-btn:hover) { border-color: var(--yc-border-hover); color: var(--yc-accent); }
 </style>

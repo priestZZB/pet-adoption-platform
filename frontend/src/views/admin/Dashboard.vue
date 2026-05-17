@@ -75,10 +75,11 @@
 
       <!-- ===== 欢迎卡片 ===== -->
       <el-card class="welcome-card" shadow="never">
-        <el-icon :size="24" color="#409EFF"><ChatDotSquare /></el-icon>
+        <img src="/images/logo.jpg" class="welcome-logo" />
         <div class="welcome-text">
-          <h4>欢迎回来，{{ userStore.userInfo?.nickname || '管理员' }}</h4>
-          <p>有宠 — 宠物领养救助管理平台 · 后台管理系统</p>
+          <h4 class="welcome-main">欢迎回来，{{ userStore.userInfo?.nickname || '管理员' }}</h4>
+          <p class="welcome-sub">以领养代替购买，让世间充满爱 ❤️</p>
+          <p class="welcome-desc">宠物领养救助管理平台 · 后台管理系统</p>
         </div>
       </el-card>
     </template>
@@ -337,5 +338,12 @@ onUnmounted(() => { stats.value = null })
   margin: 0;
   font-size: 13px;
   color: #909399;
+}
+.welcome-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 </style>

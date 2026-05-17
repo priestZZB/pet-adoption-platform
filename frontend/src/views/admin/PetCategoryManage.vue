@@ -72,13 +72,18 @@ function openDialog(row) {
     isEdit.value = false
     editId.value = null
     form.name = ''
-    form.sortOrder = 0
+    // 自动计算下一个未使用的排序号
+    const usedOrders = new Set(list.value.map(i => i.sortOrder))
+    let next = 1
+    while (usedOrders.has(next)) next++
+    form.sortOrder = next
   }
   dialogVisible.value = true
 }
 
 async function handleSave() {
   if (!form.name) { ElMessage.warning('请输入名称'); return }
+
   saving.value = true
   try {
     if (isEdit.value) {

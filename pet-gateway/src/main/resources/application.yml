@@ -92,7 +92,10 @@ pet:
   # ---- 第三方服务配置（敏感值在 application-secret.yml 中配置）----
   third-party:
     face:
-      url: "https://selfiev2.market.alicloudapi.com/face/verify_selfie_idnumber"
+      url: "https://kzfacev1.market.alicloudapi.com/api-mall/api/face_id_card_yi_suo/check"
+    liveness:
+      token-url: "https://kzlive.market.alicloudapi.com/api/liveness/h5/token"
+      result-url: "https://kzlive.market.alicloudapi.com/api/liveness/h5/result"
     captcha:
       verify-url: "https://lhxwyzmjk.market.alicloudapi.com/captcha/verification_code"
     sms:

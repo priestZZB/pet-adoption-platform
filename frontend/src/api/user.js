@@ -17,8 +17,16 @@ export const updateUserInfo = (data) => request.put('/user/info', data)
 export const changePassword = (data) => request.put('/user/password', data)
 // 找回密码（需smsCode）
 export const resetPassword = (data) => request.post('/user/password/reset', data)
+// 检查身份证号是否已被绑定
+export const checkIdCard = (idCard) => request.get('/user/idcard/check', { params: { idCard } })
 // 实名认证（支持人脸base64或URL）
 export const realNameAuth = (data) => request.post('/user/real-name', data)
+// 实名认证（免滑块验证，配活体检测用）
+export const realNameAuthDirect = (data) => request.post('/user/real-name/direct', data)
+// 获取活体检测H5页面
+export const livenessToken = (data) => request.post('/user/liveness/token', data)
+// 查询活体检测结果
+export const livenessResult = (data) => request.post('/user/liveness/result', data)
 // 申请成为志愿者
 export const volunteerApply = () => request.post('/user/volunteer/apply')
 // 查看志愿者申请进度
