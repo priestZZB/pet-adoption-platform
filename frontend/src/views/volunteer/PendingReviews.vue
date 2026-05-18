@@ -43,49 +43,16 @@
             <!-- 审核操作 -->
             <div class="pet-actions">
               <el-button
-                type="success"
+                class="review-go-btn"
                 size="small"
-                @click="openReview(pet.id, 'APPROVED')"
+                @click="$router.push('/volunteer/review/' + pet.id)"
               >
-                初审通过
-              </el-button>
-              <el-button
-                type="danger"
-                size="small"
-                @click="openReview(pet.id, 'REJECTED')"
-              >
-                打回
+                去审核
               </el-button>
             </div>
           </div>
         </el-card>
       </div>
-
-      <!-- 审核弹窗（打回需填原因） -->
-      <el-dialog v-model="reviewVisible" :title="reviewAction === 'APPROVED' ? '初审通过' : '初审打回'" width="400px">
-        <el-form>
-          <el-form-item v-if="reviewAction === 'REJECTED'" label="打回原因">
-            <el-input
-              v-model="reviewRemark"
-              type="textarea"
-              :rows="3"
-              placeholder="请填写打回原因（必填）"
-            />
-          </el-form-item>
-          <p v-else style="font-size:14px;color:#606266">确认初审通过该宠物？</p>
-        </el-form>
-        <template #footer>
-          <el-button class="review-cancel-btn" @click="reviewVisible = false">取消</el-button>
-          <el-button
-            class="review-confirm-btn"
-            :loading="reviewing"
-            :disabled="reviewAction === 'REJECTED' && !reviewRemark"
-            @click="confirmReview"
-          >
-            确认
-          </el-button>
-        </template>
-      </el-dialog>
     </template>
   </div>
 </template>
@@ -93,7 +60,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import request from '@/api/request'
 import { GENDER_MAP } from '@/utils/constants'
@@ -102,11 +68,6 @@ const router = useRouter()
 const activeTab = ref('pending')
 const list = ref([])
 const loading = ref(true)
-const reviewVisible = ref(false)
-const reviewAction = ref('')
-const reviewPetId = ref(null)
-const reviewRemark = ref('')
-const reviewing = ref(false)
 
 async function loadList() {
   loading.value = true
@@ -116,30 +77,6 @@ async function loadList() {
     list.value = []
   } finally {
     loading.value = false
-  }
-}
-
-function openReview(petId, action) {
-  reviewPetId.value = petId
-  reviewAction.value = action
-  reviewRemark.value = ''
-  reviewVisible.value = true
-}
-
-async function confirmReview() {
-  reviewing.value = true
-  try {
-    await request.post('/volunteer/pets/' + reviewPetId.value + '/review', {
-      action: reviewAction.value,
-      remark: reviewAction.value === 'REJECTED' ? reviewRemark.value : ''
-    })
-    ElMessage.success(reviewAction.value === 'APPROVED' ? '已通过初审' : '已打回')
-    reviewVisible.value = false
-    loadList()
-  } catch {
-    // 请求拦截器统一处理
-  } finally {
-    reviewing.value = false
   }
 }
 
@@ -157,6 +94,7 @@ onMounted(loadList)
   max-width: 800px;
   margin: 0 auto;
   padding: 24px 0 40px;
+  min-height: calc(100vh - 180px);
 }
 .loading-center {
   display: flex;
@@ -257,5 +195,27 @@ onMounted(loadList)
   background: var(--yc-btn-hover);
   border-color: var(--yc-border-hover);
   color: var(--yc-btn-text);
+}
+
+:deep(.review-go-btn) {
+  background: var(--yc-btn-primary);
+  border: 1px solid var(--yc-border);
+  color: var(--yc-btn-text);
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  width: 100%;
+}
+:deep(.review-go-btn:hover) {
+  background: var(--yc-btn-hover);
+  border-color: var(--yc-border-hover);
+  color: var(--yc-btn-text);
+}
+
+.pet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 100px;
 }
 </style>

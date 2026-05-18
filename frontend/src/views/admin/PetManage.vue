@@ -46,8 +46,8 @@
         <el-table-column prop="createdAt" label="发布时间" width="160" />
         <el-table-column label="操作" width="240">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'FIRST_PASS'" type="success" size="small" @click="handleFinal(row, 'APPROVED')">终审通过</el-button>
-            <el-button v-if="row.status === 'FIRST_PASS'" type="danger" size="small" @click="handleFinal(row, 'REJECTED')">终审打回</el-button>
+            <el-button v-if="row.status === 'FIRST_PASS'" type="warning" size="small" @click="$router.push('/admin/review/' + row.id)">去审核</el-button>
+            <el-button v-if="row.status === 'PENDING'" type="info" size="small" disabled>待初审</el-button>
             <el-button size="small" @click="handleStatus(row, row.status === 'OFFLINE' ? 'APPROVED' : 'OFFLINE')">
               {{ row.status === 'OFFLINE' ? '上架' : '下架' }}
             </el-button>
@@ -63,7 +63,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAllPets, updatePetStatus, finalReview } from '@/api/admin'
+import { getAllPets, updatePetStatus } from '@/api/admin'
 import { PET_STATUS } from '@/utils/constants'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
@@ -101,13 +101,6 @@ async function handleStatus(row, status) {
   await ElMessageBox.confirm(`确定${status === 'OFFLINE' ? '下架' : '上架'}该宠物？`, '提示')
   await updatePetStatus(row.id, status)
   ElMessage.success('操作成功')
-  loadList()
-}
-
-async function handleFinal(row, action) {
-  await ElMessageBox.confirm(`确定${action === 'APPROVED' ? '通过' : '打回'}终审？`, '提示')
-  await finalReview(row.id, { action })
-  ElMessage.success('终审完成')
   loadList()
 }
 

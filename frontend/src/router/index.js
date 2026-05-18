@@ -38,6 +38,8 @@ const routes = [
       { path: 'user/real-name',    component: () => import('@/views/user/RealName.vue'), meta: { requiresAuth: true } },
       { path: 'user/favorites',   component: () => import('@/views/pet/PetFavorites.vue'), meta: { requiresAuth: true } },
       { path: 'user/orders/:id',  component: () => import('@/views/mall/OrderDetail.vue'), meta: { requiresAuth: true } },
+      { path: 'user/chats',       component: () => import('@/views/chat/ChatList.vue'), meta: { requiresAuth: true } },
+      { path: 'user/chat',        component: () => import('@/views/chat/ChatDetail.vue'), meta: { requiresAuth: true } },
       { path: 'user/feedback',    component: () => import('@/views/user/MyFeedback.vue'), meta: { requiresAuth: true } },
       { path: 'user/adopt-applications', component: () => import('@/views/adopt/MyApplications.vue'), meta: { requiresAuth: true } },
       { path: 'user/volunteer-apply', component: () => import('@/views/user/ApplyVolunteer.vue'), meta: { requiresAuth: true } },
@@ -46,13 +48,17 @@ const routes = [
       { path: 'mall/checkout',     component: () => import('@/views/mall/Checkout.vue'), meta: { requiresAuth: true } },
       { path: 'adopt/exam',        component: () => import('@/views/adopt/ExamPage.vue'), meta: { requiresAuth: true } },
       { path: 'adopt/apply/:petId', component: () => import('@/views/adopt/AdoptApply.vue'), meta: { requiresAuth: true } },
+      { path: 'user/adopt-application/:id', component: () => import('@/views/adopt/ApplicationDetail.vue'), meta: { requiresAuth: true } },
       { path: 'donate/publish',    component: () => import('@/views/donate/PetPublish.vue'), meta: { requiresAuth: true, role: 'USER_ADOPTER' } },
       { path: 'donate/pets',       component: () => import('@/views/donate/MyDonateList.vue'), meta: { requiresAuth: true, role: 'USER_ADOPTER' } },
+      { path: 'donate/detail/:id', component: () => import('@/views/donate/DonorPetDetail.vue'), meta: { requiresAuth: true, role: 'USER_ADOPTER' } },
       { path: 'donate/pets/:id/applications', component: () => import('@/views/donate/DonateApplications.vue'), meta: { requiresAuth: true, role: 'USER_ADOPTER' } },
       { path: 'volunteer/pending',  component: () => import('@/views/volunteer/PendingReviews.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
       { path: 'volunteer/reviewed', component: () => import('@/views/volunteer/ReviewedHistory.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
+      { path: 'volunteer/review-history/:id', component: () => import('@/views/volunteer/ReviewHistoryDetail.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
       { path: 'volunteer/visits',   component: () => import('@/views/volunteer/VisitRecords.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
       { path: 'volunteer/visits/add', component: () => import('@/views/volunteer/AddVisit.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
+      { path: 'volunteer/review/:id', component: () => import('@/views/volunteer/PetReviewDetail.vue'), meta: { requiresAuth: true, role: 'VOLUNTEER' } },
     ]
   },
 
@@ -78,6 +84,7 @@ const routes = [
       { path: 'logs',               component: () => import('@/views/admin/LogManage.vue') },
       { path: 'ai-records',         component: () => import('@/views/admin/AIRecords.vue') },
       { path: 'banners',            component: () => import('@/views/admin/BannerManage.vue') },
+      { path: 'review/:id',         component: () => import('@/views/admin/PetReviewDetail.vue') },
     ]
   }
 ]

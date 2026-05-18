@@ -3,8 +3,15 @@
     <h3 class="page-title">申请成为送养人</h3>
 
     <el-card>
+      <!-- 管理员禁止申请 -->
+      <div v-if="userStore.hasRole('ADMIN')" class="result-content">
+        <el-icon :size="48" color="#909399"><InfoFilled /></el-icon>
+        <h3>管理员无需申请送养人</h3>
+        <p class="result-desc">你已是系统管理员，拥有最高管理权限，无需申请成为送养人</p>
+      </div>
+
       <!-- 未实名 -->
-      <div v-if="userStore.userInfo?.isRealName !== 1" class="result-content">
+      <div v-else-if="userStore.userInfo?.isRealName !== 1" class="result-content">
         <el-icon :size="48" color="#E6A23C"><WarningFilled /></el-icon>
         <h3>请先完成实名认证</h3>
         <p class="result-desc">申请成为送养人需要先进行实名认证</p>
@@ -65,7 +72,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { WarningFilled, UserFilled, Clock, CircleCheck, CircleCloseFilled } from '@element-plus/icons-vue'
+import { WarningFilled, UserFilled, Clock, CircleCheck, CircleCloseFilled, InfoFilled } from '@element-plus/icons-vue'
 import { donorApply, getDonorStatus } from '@/api/user'
 import { useUserStore } from '@/stores/user'
 

@@ -10,4 +10,9 @@ public interface PetReviewRecordMapper {
     List<PetReviewRecord> selectByPetId(Long petId);
 
     List<Long> selectReviewerPetIds(Long reviewerId);
+
+    /**
+     * 查询审核历史（已去重，每个宠物只取最新一条）
+     */
+    List<com.pet.module.pet.model.vo.ReviewHistoryVo> selectReviewHistoryByReviewer(Long reviewerId);
 }

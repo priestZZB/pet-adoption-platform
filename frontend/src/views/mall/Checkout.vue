@@ -69,7 +69,7 @@
           </div>
         </div>
         <div style="text-align:right;margin-top:16px">
-          <el-button class="back-cart-btn" @click="$router.back()">返回购物车</el-button>
+          <el-button class="back-cart-btn" @click="$router.push('/mall/cart')">返回购物车</el-button>
           <el-button
             class="submit-order-btn"
             size="large"

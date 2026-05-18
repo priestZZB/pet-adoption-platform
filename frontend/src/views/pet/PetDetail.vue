@@ -153,6 +153,14 @@
               {{ isFav ? '取消收藏' : '收藏' }}
             </el-button>
             <el-button
+              :icon="ChatDotSquare"
+              class="chat-btn"
+              :disabled="!userStore.isLogin || pet.userId === userStore.userInfo?.id"
+              @click="handleChat"
+            >
+              联系送养人
+            </el-button>
+            <el-button
               class="adopt-btn"
               :icon="Check"
               :disabled="pet.status !== 'APPROVED'"
@@ -177,7 +185,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading, CircleCheckFilled, RemoveFilled, Star, Check } from '@element-plus/icons-vue'
+import { Loading, CircleCheckFilled, RemoveFilled, Star, Check, ChatDotSquare } from '@element-plus/icons-vue'
 import { getPetDetail, favorite, unfavorite } from '@/api/pet'
 import { getExamHistory } from '@/api/adopt'
 import { GENDER_MAP, PET_STATUS } from '@/utils/constants'
@@ -291,6 +299,19 @@ function handleThumbnailClick(idx) {
   if (carouselRef.value) {
     carouselRef.value.setActiveItem(idx)
   }
+}
+
+function handleChat() {
+  if (!userStore.isLogin) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  if (pet.value.userId === userStore.userInfo?.id) {
+    ElMessage.info('这是你发布的宠物')
+    return
+  }
+  router.push('/user/chat?petId=' + pet.value.id + '&otherUserId=' + pet.value.userId + '&petName=' + encodeURIComponent(pet.value.name || '') + '&otherName=' + encodeURIComponent(pet.value.userNickname || ''))
 }
 
 onMounted(loadDetail)
@@ -433,6 +454,16 @@ onMounted(loadDetail)
 }
 .action-bar :deep(.el-button--default:hover) {
   border-color: var(--yc-border-hover);
+  color: var(--yc-accent);
+}
+.action-bar :deep(.chat-btn) {
+  flex: 1;
+  border: 1px solid var(--yc-border);
+  color: var(--yc-text-primary);
+  border-radius: var(--yc-radius-btn);
+}
+.action-bar :deep(.chat-btn:hover) {
+  border-color: var(--yc-accent);
   color: var(--yc-accent);
 }
 .action-bar :deep(.adopt-btn) {

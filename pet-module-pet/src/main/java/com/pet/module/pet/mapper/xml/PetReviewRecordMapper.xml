@@ -29,4 +29,24 @@
     <select id="selectReviewerPetIds" resultType="java.lang.Long">
         SELECT DISTINCT pet_id FROM pet_review_record WHERE reviewer_id = #{reviewerId}
     </select>
+
+    <select id="selectReviewHistoryByReviewer" resultType="com.pet.module.pet.model.vo.ReviewHistoryVo">
+        SELECT
+            r.id AS reviewId,
+            p.id AS petId,
+            p.name,
+            (SELECT pi.image_url FROM pet_image pi WHERE pi.pet_id = p.id ORDER BY pi.sort_order ASC LIMIT 1) AS coverImage,
+            c.name AS categoryName,
+            p.age,
+            p.gender,
+            r.action AS myAction,
+            r.remark AS myRemark,
+            r.review_type AS reviewType,
+            r.created_at AS reviewedAt
+        FROM pet_review_record r
+                 JOIN pet_info p ON r.pet_id = p.id
+                 LEFT JOIN pet_category c ON p.category_id = c.id
+        WHERE r.reviewer_id = #{reviewerId}
+        ORDER BY r.created_at DESC
+    </select>
 </mapper>

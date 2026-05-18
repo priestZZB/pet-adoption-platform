@@ -2,9 +2,13 @@ package com.pet.module.pet.service.impl;
 
 import com.pet.common.enums.ResultCodeEnum;
 import com.pet.common.exception.BusinessException;
+import com.pet.module.pet.mapper.PetCategoryMapper;
 import com.pet.module.pet.mapper.PetFavoriteMapper;
 import com.pet.module.pet.mapper.PetImageMapper;
 import com.pet.module.pet.mapper.PetInfoMapper;
+import com.pet.module.pet.model.entity.PetCategory;
+import com.pet.module.system.mapper.UserMapper;
+import com.pet.module.system.model.entity.SysUser;
 import com.pet.module.pet.model.entity.PetFavorite;
 import com.pet.module.pet.model.entity.PetImage;
 import com.pet.module.pet.model.entity.PetInfo;
@@ -30,6 +34,12 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
 
     @Autowired
     private PetImageMapper petImageMapper;
+
+    @Autowired
+    private PetCategoryMapper petCategoryMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     @CacheEvict(cacheNames = "pet", allEntries = true)
@@ -64,9 +74,21 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
             if (pet == null) return null;
             PetListVo vo = new PetListVo();
             BeanUtils.copyProperties(pet, vo);
+            // 封面图
             List<PetImage> images = petImageMapper.selectByPetId(pet.getId());
             if (!images.isEmpty()) {
                 vo.setCoverImage(images.get(0).getImageUrl());
+            }
+            // 分类名称
+            PetCategory category = petCategoryMapper.selectById(pet.getCategoryId());
+            if (category != null) {
+                vo.setCategoryName(category.getName());
+            }
+            // 送养人信息
+            SysUser user = userMapper.selectById(pet.getUserId());
+            if (user != null) {
+                vo.setUserNickname(user.getNickname());
+                vo.setUserAvatar(user.getAvatar());
             }
             return vo;
         }).filter(v -> v != null).collect(Collectors.toList());

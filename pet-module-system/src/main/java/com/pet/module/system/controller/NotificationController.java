@@ -68,4 +68,36 @@ public class NotificationController {
         notificationMapper.markAllAsRead(userId);
         return Result.success("已全部标记");
     }
+
+    /**
+     * 删除单条通知
+     */
+    @ApiOperation("删除通知")
+    @DeleteMapping("/{id}")
+    public Result<String> delete(@PathVariable Long id) {
+        notificationMapper.deleteById(id);
+        return Result.success("已删除");
+    }
+
+    /**
+     * 一键删除已读通知
+     */
+    @ApiOperation("一键删除已读")
+    @DeleteMapping("/read-all")
+    public Result<String> deleteAllRead(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        notificationMapper.deleteAllReadByUserId(userId);
+        return Result.success("已删除所有已读通知");
+    }
+
+    /**
+     * 一键删除所有通知
+     */
+    @ApiOperation("一键删除全部")
+    @DeleteMapping("/all")
+    public Result<String> deleteAll(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        notificationMapper.deleteAllByUserId(userId);
+        return Result.success("已清空所有通知");
+    }
 }

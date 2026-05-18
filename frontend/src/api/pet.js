@@ -18,6 +18,8 @@ export const publishPet = (data) => request.post('/donate/pets', data)
 export const updatePet = (id, data) => request.put('/donate/pets/' + id, data)
 // 下架宠物
 export const offlinePet = (id) => request.put('/donate/pets/' + id + '/offline')
+// 撤回送养（仅未审核可撤回）
+export const withdrawPet = (id) => request.put('/donate/pets/' + id + '/withdraw')
 // 我发布的宠物列表
 export const getMyPets = () => request.get('/donate/pets')
 // 查看领养申请列表

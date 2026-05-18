@@ -34,6 +34,39 @@ import Footer from '@/components/Footer.vue'
 const router = useRouter()
 
 function goBack() {
+  const path = router.currentRoute.value.path
+
+  // ===== 精确匹配首页级别的 =====
+  if (path === '/user/chats') { router.push('/'); return }
+  if (path === '/user/adopt-applications') { router.push('/'); return }
+  if (path === '/volunteer/pending') { router.push('/'); return }
+  if (path === '/volunteer/reviewed') { router.push('/'); return }
+  if (path === '/volunteer/visits') { router.push('/'); return }
+  if (path === '/donate/pets') { router.push('/'); return }
+  if (path === '/donate/publish') { router.push('/donate/pets'); return }
+
+  // ===== 子页面 → 父页面 =====
+  // 聊天
+  if (path === '/user/chat') { router.push('/user/chats'); return }
+  // 志愿者子页
+  if (path.startsWith('/volunteer/review/')) { router.push('/volunteer/pending'); return }
+  if (path.startsWith('/volunteer/review-history/')) { router.push('/volunteer/reviewed'); return }
+  if (path.startsWith('/volunteer/visits/')) { router.push('/volunteer/pending'); return }
+  // 送养人子页
+  if (path.startsWith('/donate/detail/')) { router.push('/donate/pets'); return }
+  if (path.startsWith('/donate/pets/')) { router.push('/donate/pets'); return }
+  // 领养子页
+  if (path.startsWith('/user/adopt-application/')) { router.push('/user/adopt-applications'); return }
+  // 用户子页（所有 /user/* 没有匹配到的）
+  if (path.startsWith('/user/')) { router.push('/'); return }
+  // 领养考试/申请
+  if (path.startsWith('/adopt/')) { router.push('/'); return }
+  // 宠物详情
+  if (path.startsWith('/pets/')) { router.push('/'); return }
+  // 商城
+  if (path.startsWith('/mall/')) { router.push('/mall'); return }
+
+  // 兜底
   router.back()
 }
 </script>

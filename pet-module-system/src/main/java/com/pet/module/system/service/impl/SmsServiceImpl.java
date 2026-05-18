@@ -40,7 +40,10 @@ public class SmsServiceImpl implements SmsService {
     @Value("${pet.third-party.sms.sign-id}")
     private String signId;
 
-    /** 开发模式：不调用真实短信API，控制台输出验证码 */
+    /**
+     * mock=true  → 模拟模式：不调真实短信API，控制台输出验证码
+     * mock=false → 真实模式：调三网106短信API发送验证码
+     */
     @Value("${pet.sms.mock:true}")
     private boolean smsMock;
 

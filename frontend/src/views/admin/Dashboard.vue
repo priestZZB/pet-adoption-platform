@@ -36,7 +36,7 @@
             <el-tag v-if="pendingTotal > 0" type="danger" size="small" effect="dark">
               {{ pendingTotal }} 项待处理
             </el-tag>
-            <el-tag v-else type="success" size="small" effect="plain">一切就绪 🎉</el-tag>
+            <el-tag v-else type="success" size="small" effect="plain">暂无待办</el-tag>
           </div>
         </template>
 
@@ -69,7 +69,7 @@
 
         <div v-else class="todo-empty">
           <el-icon :size="48" color="#67C23A"><CircleCheck /></el-icon>
-          <p>所有事项已处理完毕，做得好！</p>
+          <p>所有事项已处理完毕！</p>
         </div>
       </el-card>
 
@@ -123,9 +123,6 @@ const pendingTotal = computed(() => stats.value?.pending?.total ?? 0)
 
 // 5 类待办明细配置
 const pendingDefs = [
-  { key: 'petFirstReview', label: '个宠物待初审',
-    color: '#409EFF', btnType: 'primary', btnText: '前往初审',
-    link: '/admin/pets' },
   { key: 'petFinalReview', label: '个宠物待终审',
     color: '#67C23A', btnType: 'success', btnText: '前往终审',
     link: '/admin/pets' },

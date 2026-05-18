@@ -9,7 +9,10 @@ import com.pet.module.pet.model.dto.PetReviewDto;
 import com.pet.module.pet.model.entity.PetInfo;
 import com.pet.module.pet.model.entity.PetReviewRecord;
 import com.pet.module.pet.service.PetReviewService;
+import com.pet.module.system.mapper.UserRoleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,9 @@ public class PetReviewServiceImpl implements PetReviewService {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+
     @Override
     @Transactional
     @CacheEvict(cacheNames = "pet", allEntries = true)
@@ -38,19 +44,19 @@ public class PetReviewServiceImpl implements PetReviewService {
         if (!"PENDING".equals(pet.getStatus())) {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "该宠物当前状态不可初审");
         }
-
-        // 更新宠物状态
-        PetInfo update = new PetInfo();
-        update.setId(petId);
-        if ("APPROVED".equals(dto.getAction())) {
-            update.setStatus("FIRST_PASS");  // 初审通过 → 待终审
-        } else if ("REJECTED".equals(dto.getAction())) {
-            update.setStatus("REJECTED");
-            update.setReviewRemark(dto.getRemark());
-        } else {
-            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "审核操作无效");
+        // 禁止审核自己发布的宠物
+        if (pet.getUserId().equals(reviewerId)) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "不能审核自己发布的宠物");
         }
-        petInfoMapper.updateById(update);
+
+        // 使用乐观锁更新状态（仅当 status = 'PENDING' 时更新）
+        String newStatus = "APPROVED".equals(dto.getAction()) ? "FIRST_PASS" : "REJECTED";
+        String remark = "REJECTED".equals(dto.getAction()) ? dto.getRemark() : null;
+        int rows = petInfoMapper.updateStatusIfPending(petId, newStatus, "PENDING", remark);
+        if (rows == 0) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST,
+                    "该宠物已被其他志愿者审核，请刷新后查看");
+        }
 
         // 记录审核记录
         PetReviewRecord record = new PetReviewRecord();
@@ -69,6 +75,15 @@ public class PetReviewServiceImpl implements PetReviewService {
                     "宠物初审通过",
                     "你发布的" + petName + "已通过初审，等待管理员终审",
                     petId));
+            // 通知所有管理员：有宠物待终审
+            List<Long> adminIds = userRoleMapper.selectUserIdsByRoleCode("ADMIN");
+            for (Long adminId : adminIds) {
+                eventPublisher.publishEvent(new NotificationEvent(
+                        adminId, "PET_REVIEW",
+                        "新宠物待终审",
+                        petName + "已通过初审，请尽快终审",
+                        petId));
+            }
         } else if ("REJECTED".equals(dto.getAction())) {
             String reason = dto.getRemark() != null ? dto.getRemark() : "信息不符合要求";
             eventPublisher.publishEvent(new NotificationEvent(
@@ -91,17 +106,14 @@ public class PetReviewServiceImpl implements PetReviewService {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "该宠物尚未通过初审或非待终审状态");
         }
 
-        PetInfo update = new PetInfo();
-        update.setId(petId);
-        if ("APPROVED".equals(dto.getAction())) {
-            update.setStatus("APPROVED");  // 终审通过 → 完全通过可展示
-        } else if ("REJECTED".equals(dto.getAction())) {
-            update.setStatus("REJECTED");
-            update.setReviewRemark(dto.getRemark());
-        } else {
-            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "审核操作无效");
+        // 使用乐观锁：仅当 status = 'FIRST_PASS' 时更新
+        String newStatus = "APPROVED".equals(dto.getAction()) ? "APPROVED" : "REJECTED";
+        String remark = "REJECTED".equals(dto.getAction()) ? dto.getRemark() : null;
+        int rows = petInfoMapper.updateStatusIfPending(petId, newStatus, "FIRST_PASS", remark);
+        if (rows == 0) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST,
+                    "该宠物状态已变更，请刷新后重试");
         }
-        petInfoMapper.updateById(update);
 
         PetReviewRecord record = new PetReviewRecord();
         record.setPetId(petId);

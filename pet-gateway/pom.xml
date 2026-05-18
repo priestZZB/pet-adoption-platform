@@ -60,6 +60,11 @@
             <artifactId>pet-module-ai</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>top.priest</groupId>
+            <artifactId>pet-module-chat</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
         <!-- ========== Spring Boot Starters ========== -->
         <dependency>

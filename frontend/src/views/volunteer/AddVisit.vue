@@ -183,9 +183,10 @@ onUnmounted(cleanupSelectAutoClose)
 
 <style scoped>
 .add-visit-page {
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 24px 0 40px;
+  min-height: calc(100vh - 180px);
 }
 .submit-card {
   margin-top: 4px;

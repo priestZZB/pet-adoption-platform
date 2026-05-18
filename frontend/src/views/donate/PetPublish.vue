@@ -138,7 +138,7 @@
           <el-button class="publish-submit-btn" :loading="submitting" @click="handleSubmit">
             提交发布
           </el-button>
-          <el-button class="publish-cancel-btn" @click="$router.back()">取消</el-button>
+          <el-button class="publish-cancel-btn" @click="$router.push('/donate/pets')">取消</el-button>
         </el-form-item>
       </el-form>
     </el-card>

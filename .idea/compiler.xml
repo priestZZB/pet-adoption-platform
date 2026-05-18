@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="pet-framework" />
         <module name="pet-module-pet" />
+        <module name="pet-module-chat" />
         <module name="pet-module-ai" />
         <module name="pet-module-system" />
         <module name="pet-common" />

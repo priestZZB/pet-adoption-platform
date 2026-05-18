@@ -1,6 +1,5 @@
 ﻿<template>
   <div class="applications-page">
-    <el-page-header :icon="ArrowLeft" title="返回我的发布" @back="$router.push('/donate/pets')" />
     <h3 class="page-title">领养申请列表</h3>
 
     <div v-if="loading" class="loading-center">
@@ -75,14 +74,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, Loading } from '@element-plus/icons-vue'
+import { Loading } from '@element-plus/icons-vue'
 import { getPetApplications, reviewApplication } from '@/api/pet'
 import { APPLY_STATUS } from '@/utils/constants'
 
 const route = useRoute()
-const router = useRouter()
 const list = ref([])
 const loading = ref(true)
 const reviewing = ref(null)

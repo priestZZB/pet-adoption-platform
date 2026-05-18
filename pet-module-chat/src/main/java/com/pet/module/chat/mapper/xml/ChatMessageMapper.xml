@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.chat.mapper.ChatMessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.chat.model.entity.ChatMessage">
+        <id column="id" property="id"/>
+        <result column="sender_id" property="senderId"/>
+        <result column="receiver_id" property="receiverId"/>
+        <result column="pet_id" property="petId"/>
+        <result column="content" property="content"/>
+        <result column="is_read" property="isRead"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, sender_id, receiver_id, pet_id, content, is_read, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO chat_message (sender_id, receiver_id, pet_id, content)
+        VALUES (#{senderId}, #{receiverId}, #{petId}, #{content})
+    </insert>
+
+    <select id="selectConversation" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM chat_message
+        WHERE pet_id = #{petId}
+          AND ((sender_id = #{userId1} AND receiver_id = #{userId2})
+            OR (sender_id = #{userId2} AND receiver_id = #{userId1}))
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="selectMyConversations" resultType="com.pet.module.chat.model.entity.ChatMessage">
+        SELECT m.*
+        FROM chat_message m
+        WHERE m.id IN (
+            SELECT MAX(m2.id)
+            FROM chat_message m2
+            WHERE m2.sender_id = #{userId} OR m2.receiver_id = #{userId}
+            GROUP BY m2.pet_id,
+                     CASE WHEN m2.sender_id = #{userId} THEN m2.receiver_id ELSE m2.sender_id END
+        )
+        ORDER BY m.created_at DESC
+    </select>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM chat_message
+        WHERE receiver_id = #{userId} AND is_read = 0
+    </select>
+
+    <update id="markAsRead">
+        UPDATE chat_message SET is_read = 1
+        WHERE pet_id = #{petId}
+          AND receiver_id = #{receiverId}
+          AND sender_id = #{senderId}
+          AND is_read = 0
+    </update>
+</mapper>

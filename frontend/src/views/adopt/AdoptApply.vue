@@ -76,7 +76,7 @@
             >
               提交申请
             </el-button>
-            <el-button class="cancel-adopt-btn" @click="$router.back()">取消</el-button>
+            <el-button class="cancel-adopt-btn" @click="$router.push('/user/adopt-applications')">取消</el-button>
           </el-form-item>
         </el-form>
       </el-card>
@@ -168,9 +168,7 @@ onMounted(async () => {
       { confirmButtonText: '去认证', cancelButtonText: '取消', type: 'warning' }
     ).then(() => {
       router.push('/user/real-name')
-    }).catch(() => {
-      router.back()
-    })
+    }).catch(() => {})
     return
   }
 
@@ -185,9 +183,7 @@ onMounted(async () => {
         { confirmButtonText: '去考试', cancelButtonText: '取消', type: 'warning' }
       ).then(() => {
         router.push('/adopt/exam')
-      }).catch(() => {
-        router.back()
-      })
+      }).catch(() => {})
       return
     }
   } catch {

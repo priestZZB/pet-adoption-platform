@@ -160,6 +160,19 @@ async function handleAssignRole(row, roleIds) {
     loadList()
     return
   }
+  // 查找ADMIN/VOLUNTEER/DONOR对应的角色ID
+  const adminRole = roleOptions.value.find(r => r.roleCode === 'ADMIN')
+  const volunteerRole = roleOptions.value.find(r => r.roleCode === 'VOLUNTEER')
+  const donorRole = roleOptions.value.find(r => r.roleCode === 'USER_ADOPTER')
+  const hasAdmin = adminRole && roleIds.includes(adminRole.id)
+  const hasVolunteer = volunteerRole && roleIds.includes(volunteerRole.id)
+  const hasDonor = donorRole && roleIds.includes(donorRole.id)
+
+  if (hasAdmin && (hasVolunteer || hasDonor)) {
+    ElMessage.warning('管理员不能同时兼任志愿者或送养人')
+    loadList()
+    return
+  }
   try {
     await assignRole(row.id, roleIds)
     ElMessage.success('角色修改成功')

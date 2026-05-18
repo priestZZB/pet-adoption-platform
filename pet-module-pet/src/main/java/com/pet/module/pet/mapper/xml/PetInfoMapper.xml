@@ -53,6 +53,15 @@
         WHERE id = #{id}
     </update>
 
+    <!-- 乐观锁更新：仅当 status 等于期待值时更新，返回影响行数 -->
+    <update id="updateStatusIfPending">
+        UPDATE pet_info
+        SET status = #{newStatus},
+            review_remark = #{reviewRemark}
+        WHERE id = #{id}
+          AND status = #{expectStatus}
+    </update>
+
     <delete id="deleteById">DELETE FROM pet_info WHERE id = #{id}</delete>
 
     <select id="selectById" resultMap="BaseResultMap">

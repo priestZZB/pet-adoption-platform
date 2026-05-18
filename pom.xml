@@ -21,6 +21,7 @@
         <module>pet-module-adopt</module>
         <module>pet-module-mall</module>
         <module>pet-module-volunteer</module>
+        <module>pet-module-chat</module>
         <module>pet-module-ai</module>
         <module>pet-gateway</module>
 

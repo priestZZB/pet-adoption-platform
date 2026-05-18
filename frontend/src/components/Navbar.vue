@@ -32,6 +32,13 @@
     </el-menu>
 
     <div class="user-section">
+      <!-- 聊天入口 -->
+      <div v-if="userStore.isLogin" class="chat-entry" @click="$router.push('/user/chats')">
+        <el-badge :value="chatUnread" :hidden="chatUnread === 0" :max="99" :show-zero="false" class="chat-badge">
+          <el-icon :size="22" class="chat-icon"><ChatDotSquare /></el-icon>
+        </el-badge>
+      </div>
+
       <!-- 通知铃铛 -->
       <div v-if="userStore.isLogin" class="notification-bell" ref="notifRef">
         <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="99" class="notif-badge">
@@ -41,7 +48,11 @@
           <div v-if="notifOpen" class="notif-dropdown">
             <div class="notif-header">
               <span class="notif-title">消息通知</span>
-              <span v-if="unreadCount > 0" class="notif-mark-all" @click.stop="handleMarkAll">全部已读</span>
+              <span class="notif-actions">
+                <span v-if="unreadCount > 0" class="notif-mark-all" @click.stop="handleMarkAll">全部已读</span>
+                <span class="notif-sep" v-if="unreadCount > 0">|</span>
+                <span class="notif-delete-all" @click.stop="handleDeleteAllRead">删除已读</span>
+              </span>
             </div>
             <div v-if="notifList.length === 0" class="notif-empty">暂无通知</div>
             <div
@@ -57,6 +68,7 @@
                 <div class="notif-content-text">{{ n.content }}</div>
                 <div class="notif-time">{{ formatTime(n.createdAt) }}</div>
               </div>
+              <span class="notif-del-btn" @click.stop="handleDeleteOne(n)">✕</span>
             </div>
           </div>
         </transition>
@@ -74,10 +86,7 @@
               <div class="dropdown-item" @click.stop="goPage('/user/profile')">个人中心</div>
               <div class="dropdown-item" @click.stop="goPage('/adopt/exam')">领养考试</div>
               <div class="dropdown-item" v-if="userStore.isDonor" @click.stop="goPage('/donate/pets')">我的发布</div>
-              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/pending')">待审核宠物</div>
-              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/reviewed')">审核历史</div>
-              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/visits/add')">去走访</div>
-              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/visits')">走访记录</div>
+              <div class="dropdown-item" v-if="userStore.isVolunteer" @click.stop="goPage('/volunteer/pending')">审核工作</div>
               <div class="dropdown-item" v-if="userStore.isAdmin" @click.stop="goPage('/admin')">后台管理</div>
               <div class="dropdown-divider"></div>
               <div class="dropdown-item dropdown-item-danger" @click.stop="handleLogout">退出登录</div>
@@ -98,7 +107,8 @@ import { ref, computed, onMounted, onUnmounted } from "vue"
 import { useUserStore } from "@/stores/user"
 import { useRouter, useRoute } from "vue-router"
 import { ElMessage } from "element-plus"
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from "@/api/notification"
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAllReadNotifications, deleteAllNotifications } from "@/api/notification"
+import { getChatUnreadCount } from "@/api/chat"
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -111,6 +121,7 @@ const notifOpen = ref(false)
 const notifRef = ref(null)
 const notifList = ref([])
 const unreadCount = ref(0)
+const chatUnread = ref(0)
 
 // 当前路由对应的高亮菜单
 const activeMenu = computed(() => route.path)
@@ -166,6 +177,11 @@ async function loadNotifications() {
     ])
     notifList.value = (notifs || []).slice(0, 20)
     unreadCount.value = countData?.count ?? 0
+    // 加载聊天未读
+    try {
+      const chatData = await getChatUnreadCount()
+      chatUnread.value = chatData?.count ?? 0
+    } catch { chatUnread.value = 0 }
   } catch {
     // ignore
   }
@@ -199,6 +215,31 @@ async function handleMarkAll() {
   } catch { /* ignore */ }
 }
 
+async function handleDeleteOne(n) {
+  console.log('delete:', n.id)
+  try {
+    const res = await deleteNotification(n.id)
+    console.log('delete result:', res)
+    const idx = notifList.value.indexOf(n)
+    if (idx !== -1) notifList.value.splice(idx, 1)
+    ElMessage.success('已删除')
+  } catch (e) {
+    console.error('delete error:', e)
+    ElMessage.error('删除失败')
+  }
+}
+
+async function handleDeleteAllRead() {
+  try {
+    await deleteAllReadNotifications()
+    const before = notifList.value.length
+    notifList.value = notifList.value.filter(n => n.isRead === 0)
+    const deleted = before - notifList.value.length
+    if (deleted > 0) ElMessage.success('已删除 ' + deleted + ' 条通知')
+    else ElMessage.info('没有已读通知')
+  } catch { /* ignore */ }
+}
+
 function formatTime(t) {
   if (!t) return ''
   const d = new Date(t)
@@ -220,6 +261,7 @@ onMounted(() => {
   // 登录后初始加载通知数
   if (userStore.isLogin) {
     getUnreadCount().then(d => { unreadCount.value = d?.count ?? 0 }).catch(() => {})
+    getChatUnreadCount().then(d => { chatUnread.value = d?.count ?? 0 }).catch(() => {})
   }
 })
 onUnmounted(() => {
@@ -333,6 +375,24 @@ onUnmounted(() => {
 .bell-icon:hover {
   color: #409EFF;
 }
+
+.chat-entry {
+  position: relative;
+  margin-right: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.chat-icon {
+  color: #606266;
+  transition: color 0.2s;
+}
+.chat-icon:hover {
+  color: #409EFF;
+}
+.chat-badge :deep(.el-badge__content) {
+  background: #F56C6C;
+}
 .notif-dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -367,8 +427,25 @@ onUnmounted(() => {
   color: #409EFF;
   cursor: pointer;
 }
-.notif-mark-all:hover {
-  color: #66b1ff;
+.notif-mark-all:hover { color: #66b1ff; }
+
+.notif-delete-all {
+  font-size: 12px;
+  color: #c0c4cc;
+  cursor: pointer;
+}
+.notif-delete-all:hover { color: #F56C6C; }
+.notif-delete-all.danger:hover { color: #F56C6C; font-weight: 600; }
+
+.notif-sep {
+  font-size: 12px;
+  color: #dcdfe6;
+}
+
+.notif-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .notif-empty {
   text-align: center;
@@ -377,6 +454,7 @@ onUnmounted(() => {
   color: #c0c4cc;
 }
 .notif-item {
+  position: relative;
   display: flex;
   gap: 8px;
   padding: 12px 16px;
@@ -431,6 +509,15 @@ onUnmounted(() => {
   color: #c0c4cc;
   margin-top: 4px;
 }
+
+.notif-del-btn {
+  position: absolute; top: 4px; right: 6px;
+  font-size: 13px; color: #c0c4cc;
+  cursor: pointer; line-height: 1;
+  padding: 2px 4px; border-radius: 3px;
+  user-select: none;
+}
+.notif-del-btn:hover { color: #fff; background: #F56C6C; }
 
 /* 暖色登录/注册按钮 */
 :deep(.nav-login-btn) {

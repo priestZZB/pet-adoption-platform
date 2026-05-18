@@ -10,6 +10,15 @@ public interface PetInfoMapper {
 
     int updateById(PetInfo petInfo);
 
+    /**
+     * 乐观锁更新：仅当 status = #{expectStatus} 时更新
+     * 返回 0 表示竞态条件触发（他人已修改），用于防并发审核
+     */
+    int updateStatusIfPending(@Param("id") Long id,
+                               @Param("newStatus") String newStatus,
+                               @Param("expectStatus") String expectStatus,
+                               @Param("reviewRemark") String reviewRemark);
+
     int deleteById(Long id);
 
     PetInfo selectById(Long id);

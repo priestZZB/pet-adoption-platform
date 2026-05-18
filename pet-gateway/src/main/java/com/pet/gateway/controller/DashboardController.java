@@ -53,12 +53,10 @@ public class DashboardController {
         // 各类待审核
         int volunteerPending = userMapper.countByVolunteerStatus("PENDING");
         int donorPending = userMapper.countByDonorStatus("PENDING");
-        int petFirstReview = petInfoMapper.countByStatus("PENDING");
         int petFinalReview = petInfoMapper.countByStatus("FIRST_PASS");
         int adoptPending = adoptApplicationMapper.countByStatus("PENDING");
 
-        int pendingTotal = volunteerPending + donorPending + petFirstReview
-                          + petFinalReview + adoptPending;
+        int pendingTotal = volunteerPending + donorPending + petFinalReview + adoptPending;
 
         stats.put("userCount", userCount);
         stats.put("petCount", petCount);
@@ -70,7 +68,6 @@ public class DashboardController {
         Map<String, Integer> pending = new HashMap<>();
         pending.put("volunteerApplies", volunteerPending);
         pending.put("donorApplies", donorPending);
-        pending.put("petFirstReview", petFirstReview);
         pending.put("petFinalReview", petFinalReview);
         pending.put("adoptApplications", adoptPending);
         pending.put("total", pendingTotal);

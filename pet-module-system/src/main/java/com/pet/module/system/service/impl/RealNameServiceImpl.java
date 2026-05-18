@@ -37,8 +37,11 @@ public class RealNameServiceImpl implements RealNameService {
     @Value("${pet.third-party.liveness.result-url}")
     private String livenessResultUrl;
 
-    /** 开发模式：模拟实名认证，不调真实API */
-    @Value("${pet.realname.mock:false}")
+    /**
+     * mock=true  → 模拟模式：不调真实API，校验数据库即返回通过
+     * mock=false → 真实模式：调杭州快证签人脸比对API进行实名认证
+     */
+    @Value("${pet.realname.mock:true}")
     private boolean mockMode;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -124,15 +127,15 @@ public class RealNameServiceImpl implements RealNameService {
 
         // 检查 success 和 code
         if (responseBody.contains("\"success\":true") || responseBody.contains("\"success\": true")) {
-            // 解析 resultCode
-            String resultCode = extractJsonValue(responseBody, "resultCode");
+            // 解析 resultCode（从 data 对象提取，避免取到根级别的同名key）
+            String resultCode = extractJsonValueFromData(responseBody, "resultCode");
             if (resultCode != null && resultCode.equals("1001")) {
                 log.info("人脸比对通过: resultCode=1001 (同一人)");
                 return true;
             }
             if (resultCode != null && resultCode.equals("1002")) {
                 // 不确定时看 score（>= 0.45 通过）
-                String scoreStr = extractJsonValue(responseBody, "score");
+                String scoreStr = extractJsonValueFromData(responseBody, "score");
                 if (scoreStr != null) {
                     try {
                         double score = Double.parseDouble(scoreStr);
@@ -141,11 +144,18 @@ public class RealNameServiceImpl implements RealNameService {
                     } catch (NumberFormatException ignored) {}
                 }
             }
+            // 失败（1003/1004）：从 data 取真实错误原因
+            // 根级别的"msg"是"成功"，data里的"msg"才是原因（如"身份证号码姓名不一致"）
+            if (resultCode != null) {
+                String dataMsg = extractJsonValueFromData(responseBody, "msg");
+                log.warn("人脸比对未通过: resultCode={}, reason={}", resultCode, dataMsg != null ? dataMsg : "未知");
+                return false;
+            }
         }
 
-        // 错误信息打印
-        String msg = extractJsonValue(responseBody, "msg");
-        log.warn("人脸比对未通过: {}", msg != null ? msg : responseBody);
+        // success=false：直接从根节点取错误信息
+        String rootMsg = extractJsonValue(responseBody, "msg");
+        log.warn("人脸比对请求失败: {}", rootMsg != null ? rootMsg : responseBody);
         return false;
     }
 

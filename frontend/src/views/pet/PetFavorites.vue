@@ -106,7 +106,7 @@ onMounted(loadFavorites)
 
 <style scoped>
 .favorites-page {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 24px 0 40px;
 }
@@ -126,8 +126,8 @@ onMounted(loadFavorites)
 
 .pet-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 }
 .pet-card {
   transition: transform 0.2s;
@@ -159,29 +159,29 @@ onMounted(loadFavorites)
 }
 .pet-info {
   padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .pet-name {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 16px;
   color: var(--yc-text-primary);
 }
 .pet-meta {
   font-size: 13px;
   color: var(--yc-text-secondary);
-  margin-bottom: 10px;
 }
 .dot {
   margin: 0 4px;
 }
+
+/* 去掉footer，取消收藏直接放在右下 */
 .card-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
 }
-.donor {
-  font-size: 12px;
-  color: var(--yc-text-tertiary);
-}
+.donor { display: none; }
 
 /* 取消收藏按钮暖色 */
 :deep(.unfav-btn) {

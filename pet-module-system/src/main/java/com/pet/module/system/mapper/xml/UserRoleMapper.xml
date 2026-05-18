@@ -39,4 +39,11 @@
     <delete id="deleteByUserIdAndRoleId">
         DELETE FROM sys_user_role WHERE user_id = #{userId} AND role_id = #{roleId}
     </delete>
+
+    <select id="selectUserIdsByRoleCode" resultType="long">
+        SELECT ur.user_id
+        FROM sys_user_role ur
+                 JOIN sys_role r ON ur.role_id = r.id
+        WHERE r.role_code = #{roleCode}
+    </select>
 </mapper>

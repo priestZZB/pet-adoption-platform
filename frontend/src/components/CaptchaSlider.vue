@@ -5,8 +5,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// 开启滑块验证码
-const CAPTCHA_ENABLED = true
+/**
+ * 滑块验证码开关
+ * CAPTCHA_MOCK = true  → 模拟模式（不弹窗，直接返回模拟数据）
+ * CAPTCHA_MOCK = false → 真实模式（加载怜花SDK，弹窗验证）
+ *
+ * 开发时设 true，上线前改 false（或对接后端配置）
+ */
+const CAPTCHA_MOCK = true
 
 const CAPTCHA_APP_ID = '193347059'
 const CAPTCHA_APP_SECRET = 'vzvaQXQjhqgQ7pDXb80NTadLU'
@@ -32,7 +38,11 @@ function loadSDK() {
   })
 }
 
-onMounted(async () => { await loadSDK() })
+onMounted(async () => {
+  if (!CAPTCHA_MOCK) {
+    await loadSDK()
+  }
+})
 onUnmounted(() => { captchaInstance = null })
 
 /** 计算 captchaSign：sha256(captchaAppId + captchaAppSecret + ticket + randstr) */
@@ -47,12 +57,13 @@ async function computeSign(ticket, randstr) {
 
 /**
  * 弹出滑块验证码，返回 Promise
+ * mock=true 时不加载 SDK、不弹窗，直接返回模拟数据
  * @returns {Promise<{ticket: string, randstr: string, captchaSign: string}>}
  */
 async function showCaptcha() {
-  // 开发模式直接跳过，演示时改 CAPTCHA_ENABLED = true
-  if (!CAPTCHA_ENABLED) {
-    return { ticket: 'dev', randstr: 'dev', captchaSign: 'dev' }
+  // mock=true：模拟模式，直接跳过
+  if (CAPTCHA_MOCK) {
+    return { ticket: 'dev_mock', randstr: 'dev_mock', captchaSign: 'dev_mock' }
   }
 
   return new Promise((resolve, reject) => {

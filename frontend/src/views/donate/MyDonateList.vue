@@ -50,13 +50,19 @@
             </div>
 
             <div class="pet-actions">
+              <el-button size="small" @click="$router.push('/donate/detail/' + pet.id)">查看详情</el-button>
+              <el-button size="small" @click="openEdit(pet.id)">编辑</el-button>
               <el-button size="small" @click="$router.push('/donate/pets/' + pet.id + '/applications')">查看申请</el-button>
 
               <el-button v-if="pet.status === 'ADOPTED'" size="small" disabled type="info">已被领养</el-button>
 
-              <el-button v-else-if="pet.status === 'OFFLINE'" size="small" type="primary" @click="openEdit(pet.id)">重新上架</el-button>
+              <el-button v-else-if="pet.status === 'REJECTED' || pet.status === 'OFFLINE'" size="small" type="primary" @click="openEdit(pet.id)">重新上架</el-button>
 
-              <el-button v-else size="small" @click="handleOffline(pet.id)">下架</el-button>
+              <el-button v-else-if="pet.status === 'PENDING'" size="small" class="withdraw-btn" @click="handleWithdraw(pet.id)">撤回</el-button>
+
+              <el-button v-else-if="pet.status === 'FIRST_PASS'" size="small" type="info" disabled>审核中</el-button>
+
+              <el-button v-else-if="pet.status === 'APPROVED'" size="small" @click="handleOffline(pet.id)">下架</el-button>
             </div>
           </div>
         </el-card>
@@ -66,6 +72,17 @@
     <!-- 重新上架编辑弹窗 -->
     <el-dialog v-model="editVisible" title="重新上架" width="600px">
       <el-form :model="editForm" label-width="100px" size="large">
+        <el-form-item label="健康证明">
+          <el-upload
+            :before-upload="handleHealthCertUpload"
+            accept="image/*"
+            list-type="picture-card"
+            :file-list="healthCertFileList"
+            :on-remove="handleHealthCertRemove"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
         <el-form-item label="宠物分类" required>
           <el-select
             v-model="editForm.categoryId"
@@ -109,6 +126,21 @@
         <el-form-item label="送养原因" required>
           <el-input v-model="editForm.reason" type="textarea" :rows="2" maxlength="500" show-word-limit />
         </el-form-item>
+        <el-form-item label="宠物照片" prop="images">
+          <div class="multi-upload-wrap">
+            <el-upload
+              :file-list="imageFileList"
+              :before-upload="handleImageUpload"
+              :on-remove="handleImageRemove"
+              list-type="picture-card"
+              accept="image/*"
+              multiple
+            >
+              <el-icon><Plus /></el-icon>
+            </el-upload>
+            <p class="upload-tip">至少上传3张照片，第1张作为封面</p>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button class="dialog-cancel-btn" @click="editVisible = false">取消</el-button>
@@ -121,8 +153,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue'
-import { getCategories, getMyPets, getPetDetail, offlinePet, updatePet } from '@/api/pet'
+import { Loading, Plus } from '@element-plus/icons-vue'
+import { getCategories, getMyPets, getPetDetail, offlinePet, withdrawPet, updatePet } from '@/api/pet'
+import { uploadFile, uploadFiles } from '@/api/file'
 import { PET_STATUS, GENDER_MAP } from '@/utils/constants'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
@@ -137,8 +170,11 @@ const editPetId = ref(null)
 const editForm = ref({
   categoryId: null, name: '', age: '', gender: 'male',
   isNeutered: 0, isVaccinated: 0,
-  personality: '', habit: '', reason: ''
+  healthCert: '', personality: '', habit: '', reason: ''
 })
+const healthCertFileList = ref([])
+const imageFileList = ref([])
+const imageUrlList = ref([])
 
 const filteredList = computed(() => {
   if (!statusFilter.value) return list.value
@@ -171,13 +207,58 @@ async function openEdit(petId) {
       gender: detail.gender || 'male',
       isNeutered: detail.isNeutered || 0,
       isVaccinated: detail.isVaccinated || 0,
+      healthCert: detail.healthCert || '',
       personality: detail.personality || '',
       habit: detail.habit || '',
       reason: detail.reason || ''
     }
+    // 加载现有健康证和图片
+    healthCertFileList.value = detail.healthCert ? [{ name: 'health-cert', url: detail.healthCert }] : []
+    const existingImages = detail.images || []
+    imageUrlList.value = [...existingImages]
+    imageFileList.value = existingImages.map((url, i) => ({
+      name: 'image-' + i,
+      url: url
+    }))
     editVisible.value = true
   } catch {
     ElMessage.error('获取宠物信息失败')
+  }
+}
+
+async function handleHealthCertUpload(file) {
+  try {
+    const res = await uploadFile(file, 'pet')
+    editForm.value.healthCert = res.url
+    healthCertFileList.value = [{ name: file.name, url: res.url }]
+  } catch {
+    ElMessage.error('健康证上传失败')
+  }
+  return false
+}
+
+function handleHealthCertRemove() {
+  healthCertFileList.value = []
+  editForm.value.healthCert = ''
+}
+
+async function handleImageUpload(file) {
+  try {
+    const res = await uploadFiles([file], 'pet')
+    const url = res.urls[0]
+    imageUrlList.value.push(url)
+    imageFileList.value.push({ name: file.name, url })
+  } catch {
+    ElMessage.error('图片上传失败')
+  }
+  return false
+}
+
+function handleImageRemove(file) {
+  const idx = imageFileList.value.findIndex(f => f.url === file.url || f.uid === file.uid)
+  if (idx !== -1) {
+    imageFileList.value.splice(idx, 1)
+    imageUrlList.value.splice(idx, 1)
   }
 }
 
@@ -186,9 +267,14 @@ async function handleEditSubmit() {
     ElMessage.warning('请填写完整信息')
     return
   }
+  if (imageUrlList.value.length < 3) {
+    ElMessage.warning('请至少上传3张宠物照片')
+    return
+  }
   editSaving.value = true
   try {
-    await updatePet(editPetId.value, editForm.value)
+    const submitData = { ...editForm.value, images: imageUrlList.value }
+    await updatePet(editPetId.value, submitData)
     ElMessage.success('已提交审核')
     editVisible.value = false
     loadList()
@@ -205,6 +291,24 @@ async function handleOffline(petId) {
     loadList()
   } catch {
     // 取消或失败
+  }
+}
+
+async function handleWithdraw(petId) {
+  try {
+    await ElMessageBox.confirm(
+      '确定撤回该送养申请？撤回后需重新提交审核。',
+      '撤回确认',
+      { confirmButtonText: '确认撤回', cancelButtonText: '取消', type: 'warning' }
+    )
+    await withdrawPet(petId)
+    ElMessage.success('已撤回，请重新提交审核')
+    loadList()
+  } catch (e) {
+    // ElMessageBox 取消不处理
+    if (e?.response?.data?.msg) {
+      ElMessage.warning(e.response.data.msg)
+    }
   }
 }
 
@@ -228,9 +332,11 @@ onUnmounted(cleanupSelectAutoClose)
 .pet-header h4 { margin: 0; font-size: 16px; color: var(--yc-text-primary); }
 .pet-meta { margin: 0; font-size: 13px; color: var(--yc-text-secondary); }
 
-.pet-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; width: 110px; }
+.pet-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; width: 120px; }
 .pet-actions .el-button { width: 100%; }
 .pet-actions .el-button + .el-button { margin-left: 0; }
+.withdraw-btn { border-color: var(--yc-border) !important; color: var(--yc-text-primary) !important; }
+.withdraw-btn:hover { border-color: var(--yc-border-hover) !important; color: var(--yc-accent) !important; }
 
 /* 卡片暖色 */
 :deep(.pet-card) {
@@ -285,5 +391,16 @@ onUnmounted(cleanupSelectAutoClose)
   background: var(--yc-btn-hover);
   border-color: var(--yc-border-hover);
   color: var(--yc-btn-text);
+}
+
+
+
+.multi-upload-wrap {
+  width: 100%;
+}
+.upload-tip {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
 }
 </style>

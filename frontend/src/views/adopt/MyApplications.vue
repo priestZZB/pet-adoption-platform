@@ -47,47 +47,12 @@
             </div>
 
             <!-- 操作 -->
-            <el-button class="detail-btn" @click="showDetail(item)">
+            <el-button class="detail-btn" @click="$router.push('/user/adopt-application/' + item.id)">
               查看详情
             </el-button>
           </div>
         </el-card>
       </div>
-
-      <!-- 申请详情弹窗 -->
-      <el-dialog v-model="dialogVisible" title="申请详情" width="500px">
-        <div v-if="currentApp" class="dialog-body">
-          <div class="detail-row">
-            <span class="label">宠物</span>
-            <span>{{ currentApp.petName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">申请时间</span>
-            <span>{{ currentApp.createdAt }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">状态</span>
-            <el-tag
-              :type="APPLY_STATUS[currentApp.status]?.type || 'info'"
-            >
-              {{ APPLY_STATUS[currentApp.status]?.label || currentApp.status }}
-            </el-tag>
-          </div>
-          <el-divider />
-          <div class="detail-row">
-            <span class="label">居住环境</span>
-            <p>{{ currentApp.livingEnv }}</p>
-          </div>
-          <div class="detail-row" v-if="currentApp.petExp">
-            <span class="label">养宠经验</span>
-            <p>{{ currentApp.petExp }}</p>
-          </div>
-          <div class="detail-row">
-            <span class="label">领养承诺</span>
-            <p>{{ currentApp.commitment }}</p>
-          </div>
-        </div>
-      </el-dialog>
     </template>
   </div>
 </template>
@@ -95,13 +60,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
-import { getMyApplications, getApplicationDetail } from '@/api/adopt'
+import { getMyApplications } from '@/api/adopt'
 import { APPLY_STATUS } from '@/utils/constants'
 
 const list = ref([])
 const loading = ref(true)
-const dialogVisible = ref(false)
-const currentApp = ref(null)
 
 async function loadList() {
   loading.value = true
@@ -111,15 +74,6 @@ async function loadList() {
     list.value = []
   } finally {
     loading.value = false
-  }
-}
-
-async function showDetail(item) {
-  try {
-    currentApp.value = await getApplicationDetail(item.id)
-    dialogVisible.value = true
-  } catch {
-    // 请求拦截器统一处理
   }
 }
 
@@ -215,28 +169,10 @@ onMounted(loadList)
   color: var(--yc-btn-text);
 }
 
-/* 弹窗详情 */
-.dialog-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.detail-row {
-  display: flex;
-  gap: 12px;
-}
 .detail-row .label {
   width: 80px;
   flex-shrink: 0;
   font-size: 14px;
   color: var(--yc-text-tertiary);
-}
-.detail-row span,
-.detail-row p {
-  font-size: 14px;
-  color: var(--yc-text-primary);
-  margin: 0;
-  line-height: 1.6;
-  white-space: pre-wrap;
 }
 </style>

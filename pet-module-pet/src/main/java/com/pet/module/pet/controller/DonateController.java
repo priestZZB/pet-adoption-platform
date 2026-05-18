@@ -6,6 +6,7 @@ import com.pet.framework.annotation.RequireRole;
 import com.pet.module.pet.model.dto.PetPublishDto;
 import com.pet.module.pet.model.dto.PetUpdateDto;
 import com.pet.module.pet.model.vo.PetListVo;
+import com.pet.module.pet.model.vo.PetTimelineEvent;
 import com.pet.module.pet.service.PetService;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
@@ -70,6 +71,17 @@ public class DonateController {
     }
 
     /**
+     * 撤回送养（仅未被志愿者审核时可撤回）
+     */
+    @ApiOperation("撤回送养")
+    @PutMapping("/pets/{id}/withdraw")
+    public Result<String> withdraw(HttpServletRequest request, @PathVariable Long id) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        petService.withdraw(userId, id);
+        return Result.success("已撤回，重新提交审核");
+    }
+
+    /**
      * 我发布的宠物列表
      */
     @ApiOperation("我发布的宠物列表")
@@ -77,5 +89,14 @@ public class DonateController {
     public Result<List<PetListVo>> myPets(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
         return Result.success(petService.getUserPets(userId));
+    }
+
+    /**
+     * 宠物事件时间线（送养人详情页用）
+     */
+    @ApiOperation("宠物事件时间线")
+    @GetMapping("/pets/{id}/timeline")
+    public Result<List<PetTimelineEvent>> timeline(@PathVariable Long id) {
+        return Result.success(petService.getPetTimeline(id));
     }
 }

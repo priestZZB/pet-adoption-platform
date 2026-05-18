@@ -3,6 +3,7 @@ package com.pet.module.system.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.framework.util.JwtUtils;
 import com.pet.module.system.mapper.RoleMapper;
@@ -20,6 +21,7 @@ import com.pet.module.system.service.SmsService;
 import com.pet.module.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private RealNameService realNameService;
@@ -424,6 +429,17 @@ public class UserServiceImpl implements UserService {
         update.setId(userId);
         update.setVolunteerStatus("PENDING");
         userMapper.updateById(update);
+
+        // 通知所有管理员：有新的志愿者申请
+        String applicantName = user.getNickname() != null ? user.getNickname() : user.getUsername();
+        List<Long> adminIds = userRoleMapper.selectUserIdsByRoleCode("ADMIN");
+        for (Long adminId : adminIds) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    adminId, "VOLUNTEER_APPLY",
+                    "新志愿者申请",
+                    applicantName + "申请成为志愿者，请尽快审核",
+                    userId));
+        }
     }
 
     @Override
@@ -454,6 +470,17 @@ public class UserServiceImpl implements UserService {
         update.setId(userId);
         update.setDonorStatus("PENDING");
         userMapper.updateById(update);
+
+        // 通知所有管理员：有新的送养人申请
+        String applicantName = user.getNickname() != null ? user.getNickname() : user.getUsername();
+        List<Long> adminIds = userRoleMapper.selectUserIdsByRoleCode("ADMIN");
+        for (Long adminId : adminIds) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    adminId, "DONOR_APPLY",
+                    "新送养人申请",
+                    applicantName + "申请成为送养人，请尽快审核",
+                    userId));
+        }
     }
 
     @Override

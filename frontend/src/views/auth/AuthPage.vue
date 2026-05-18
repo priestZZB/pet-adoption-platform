@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import request from '@/api/request'
@@ -223,6 +223,8 @@ function hideHistoryDelay() {
 }
 function selectHistory(username) {
   loginForm.username = username
+  // 选择了已记住的用户名 → 自动勾选「记住我」
+  rememberMe.value = true
   historyVisible.value = false
   // 自动聚焦到密码框
   setTimeout(() => {
@@ -230,6 +232,19 @@ function selectHistory(username) {
     if (pwInput) pwInput.focus()
   }, 100)
 }
+
+// 监听「记住我」取消 → 从历史中删除当前用户名
+watch(rememberMe, (val) => {
+  if (!val && loginForm.username) {
+    const username = loginForm.username
+    loadHistory()
+    const filtered = historyList.value.filter(h => h !== username)
+    if (filtered.length !== historyList.value.length) {
+      historyList.value = filtered
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(filtered))
+    }
+  }
+})
 const phoneRules = { phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }, { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }], smsCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }, { len: 6, message: '6位数字', trigger: 'blur' }] }
 const validPhone = computed(() => /^1[3-9]\d{9}$/.test(phoneForm.phone))
 async function handleSendSms() { if (smsSending.value || smsCountdown.value > 0) return; if (!validPhone.value) { ElMessage.warning('请输入正确手机号'); return }; try { const c = await captchaRef.value.showCaptcha(); smsSending.value = true; await sendSmsCode({ phone: phoneForm.phone, type: 'login', ...c }); ElMessage.success('验证码已发送'); smsCountdown.value = 60; smsTimer = setInterval(() => { smsCountdown.value--; if (smsCountdown.value <= 0) { clearInterval(smsTimer); smsTimer = null } }, 1000) } catch {} finally { smsSending.value = false } }

@@ -6,6 +6,8 @@ import com.pet.framework.annotation.Log;
 import com.pet.framework.util.JwtUtils;
 import com.pet.module.system.model.dto.*;
 import com.pet.module.system.model.vo.UserInfoVo;
+import com.pet.module.system.mapper.UserMapper;
+import com.pet.module.system.model.entity.SysUser;
 import com.pet.module.system.service.RealNameService;
 import com.pet.module.system.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -39,9 +41,27 @@ public class UserController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private UserMapper userMapper;
+
     /**
      * 预生成用户名（注册页面加载时调用）
      */
+    @ApiOperation("获取用户公开信息")
+    @GetMapping("/public/{id}")
+    public Result<Map<String, Object>> getPublicUser(@PathVariable Long id) {
+        SysUser user = userMapper.selectById(id);
+        if (user == null) {
+            throw new com.pet.common.exception.BusinessException(com.pet.common.enums.ResultCodeEnum.USER_NOT_FOUND);
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", user.getId());
+        data.put("username", user.getUsername());
+        data.put("nickname", user.getNickname());
+        data.put("avatar", user.getAvatar());
+        return Result.success(data);
+    }
+
     @ApiOperation("预生成用户名")
     @GetMapping("/generate-username")
     public Result<Map<String, String>> generateUsername() {

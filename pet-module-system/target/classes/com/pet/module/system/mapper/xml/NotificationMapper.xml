@@ -42,4 +42,16 @@
     <update id="markAllAsRead">
         UPDATE sys_notification SET is_read = 1 WHERE user_id = #{userId} AND is_read = 0
     </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_notification WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteAllReadByUserId">
+        DELETE FROM sys_notification WHERE user_id = #{userId} AND is_read = 1
+    </delete>
+
+    <delete id="deleteAllByUserId">
+        DELETE FROM sys_notification WHERE user_id = #{userId}
+    </delete>
 </mapper>
