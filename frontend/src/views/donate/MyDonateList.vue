@@ -304,12 +304,7 @@ async function handleWithdraw(petId) {
     await withdrawPet(petId)
     ElMessage.success('已撤回，请重新提交审核')
     loadList()
-  } catch (e) {
-    // ElMessageBox 取消不处理
-    if (e?.response?.data?.msg) {
-      ElMessage.warning(e.response.data.msg)
-    }
-  }
+  } catch (e) { /* 拦截器已弹提示 */ }
 }
 
 onMounted(() => { loadCategories(); loadList() })

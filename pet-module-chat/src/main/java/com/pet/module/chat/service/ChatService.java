@@ -29,4 +29,9 @@ public interface ChatService {
      * 标记已读
      */
     void markAsRead(Long petId, Long senderId, Long receiverId);
+
+    /**
+     * 删除会话（软删除发送者的消息）
+     */
+    void deleteConversation(Long petId, Long userId, Long otherUserId);
 }

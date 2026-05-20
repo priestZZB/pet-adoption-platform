@@ -49,19 +49,25 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 1. 没有 Token 的请求直接放行（有 @RequireRole 的方法在后面拦截）
+        // 1. 获取 Token（优先 Authorization Header，其次 query param token）
         String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            // 检查方法/类上是否有 @RequireRole，有则要求登录
-            HandlerMethod hm = (HandlerMethod) handler;
-            RequireRole requireRole = hm.getMethodAnnotation(RequireRole.class);
-            if (requireRole == null) {
-                requireRole = hm.getBeanType().getAnnotation(RequireRole.class);
+            // 尝试从 query param 获取 token（支持 SSE 等无法设置 Header 的场景）
+            String queryToken = request.getParameter("token");
+            if (queryToken != null && !queryToken.isEmpty()) {
+                authHeader = BEARER_PREFIX + queryToken;
+            } else {
+                // 检查方法/类上是否有 @RequireRole，有则要求登录
+                HandlerMethod hm = (HandlerMethod) handler;
+                RequireRole requireRole = hm.getMethodAnnotation(RequireRole.class);
+                if (requireRole == null) {
+                    requireRole = hm.getBeanType().getAnnotation(RequireRole.class);
+                }
+                if (requireRole != null) {
+                    throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
+                }
+                return true;
             }
-            if (requireRole != null) {
-                throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
-            }
-            return true;
         }
         String token = authHeader.substring(BEARER_PREFIX.length());
 

@@ -52,10 +52,10 @@ public class AdminController {
     @ApiOperation("禁用/启用用户")
     @PutMapping("/user/{id}/status")
     public Result<String> toggleStatus(HttpServletRequest request, @PathVariable Long id) {
-        userService.toggleUserStatus(id);
-        String userId = request.getAttribute("userId").toString();
+        Long operatorId = Long.valueOf(request.getAttribute("userId").toString());
+        userService.toggleUserStatus(operatorId, id);
         operationLogService.addLog(
-                Long.valueOf(userId), null,
+                operatorId, null,
                 "用户管理", "切换用户状态: id=" + id,
                 request.getRemoteAddr()
         );

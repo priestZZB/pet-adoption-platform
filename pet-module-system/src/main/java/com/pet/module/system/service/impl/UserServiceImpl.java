@@ -408,19 +408,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void toggleUserStatus(Long userId) {
-        SysUser user = userMapper.selectById(userId);
+    public void toggleUserStatus(Long operatorId, Long targetUserId) {
+        // 禁止管理员禁用自己
+        if (operatorId != null && operatorId.equals(targetUserId)) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "不可禁用或启用自己的账号");
+        }
+
+        SysUser user = userMapper.selectById(targetUserId);
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
         }
         SysUser update = new SysUser();
-        update.setId(userId);
+        update.setId(targetUserId);
         update.setStatus(user.getStatus() == 0 ? 1 : 0);
         userMapper.updateById(update);
 
         // 管理员启用用户时，清除违禁记录
         if (user.getStatus() == 0) {
-            redisTemplate.delete("chat:violations:" + userId);
+            redisTemplate.delete("chat:violations:" + targetUserId);
         }
     }
 

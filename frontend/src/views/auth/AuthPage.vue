@@ -210,7 +210,20 @@ onMounted(() => {
   loadBanners(); loadNotices(); loadHistory()
   const u = route.query.username
   if (u) { loginForm.username = u }
+  showLoginReason()
 })
+
+// 监听路由参数变化（已在登录页时被重定向过来也能显示）
+watch(() => route.query.reason, (nv) => {
+  if (nv) showLoginReason()
+})
+
+function showLoginReason() {
+  const reason = route.query.reason
+  if (reason) {
+    ElMessage.warning(decodeURIComponent(reason))
+  }
+}
 
 const loginFormRef = ref(null); const phoneFormRef = ref(null)
 const loginTab = ref('username'); const submitting = ref(false); const smsSending = ref(false); const smsCountdown = ref(0)
@@ -285,19 +298,19 @@ const validPhone = computed(() => /^1[3-9]\d{9}$/.test(phoneForm.phone))
 async function handleSendSms() {
   if (smsSending.value || smsCountdown.value > 0) return
   if (!validPhone.value) { ElMessage.warning('请输入正确手机号'); return }
-  try { const c = await captchaRef.value.showCaptcha(); smsSending.value = true; await sendSmsCode({ phone: phoneForm.phone, type: 'login', ...c }); ElMessage.success('验证码已发送'); smsCountdown.value = 60; smsTimer = setInterval(() => { smsCountdown.value--; if (smsCountdown.value <= 0) { clearInterval(smsTimer); smsTimer = null } }, 1000) } catch {} finally { smsSending.value = false }
+  try { const c = await captchaRef.value.showCaptcha(); smsSending.value = true; await sendSmsCode({ phone: phoneForm.phone, type: 'login', ...c }); ElMessage.success('验证码已发送'); smsCountdown.value = 60; smsTimer = setInterval(() => { smsCountdown.value--; if (smsCountdown.value <= 0) { clearInterval(smsTimer); smsTimer = null } }, 1000) } catch (e) {} finally { smsSending.value = false }
 }
 
 async function handleLogin() {
   const v = await loginFormRef.value.validate().catch(() => false); if (!v) return
   if (!agreed.value) { ElMessage.warning('请先阅读并同意相关协议'); return }
-  try { const c = await captchaRef.value.showCaptcha(); submitting.value = true; const r = await login({ username: loginForm.username, password: loginForm.password, ...c }); userStore.setToken(r.token); await userStore.fetchUserInfo(); if (rememberMe.value) saveHistory(loginForm.username); ElMessage.success('登录成功'); router.push('/') } catch {} finally { submitting.value = false }
+  try { const c = await captchaRef.value.showCaptcha(); submitting.value = true; const r = await login({ username: loginForm.username, password: loginForm.password, ...c }); userStore.setToken(r.token); await userStore.fetchUserInfo(); if (rememberMe.value) saveHistory(loginForm.username); ElMessage.success('登录成功'); router.push('/') } catch (e) {} finally { submitting.value = false }
 }
 
 async function handlePhoneLogin() {
   const v = await phoneFormRef.value.validate().catch(() => false); if (!v) return
   if (!agreed.value) { ElMessage.warning('请先阅读并同意相关协议'); return }
-  submitting.value = true; try { const r = await phoneLogin({ phone: phoneForm.phone, smsCode: phoneForm.smsCode }); userStore.setToken(r.token); await userStore.fetchUserInfo(); if (rememberMe.value) saveHistory(phoneForm.phone); ElMessage.success('登录成功'); router.push('/') } catch {} finally { submitting.value = false }
+  submitting.value = true; try { const r = await phoneLogin({ phone: phoneForm.phone, smsCode: phoneForm.smsCode }); userStore.setToken(r.token); await userStore.fetchUserInfo(); if (rememberMe.value) saveHistory(phoneForm.phone); ElMessage.success('登录成功'); router.push('/') } catch (e) {} finally { submitting.value = false }
 }
 
 onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })

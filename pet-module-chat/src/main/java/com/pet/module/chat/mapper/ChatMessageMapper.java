@@ -32,4 +32,11 @@ public interface ChatMessageMapper {
     int markAsRead(@Param("petId") Long petId,
                    @Param("senderId") Long senderId,
                    @Param("receiverId") Long receiverId);
+
+    /**
+     * 删除双方之间的会话消息
+     */
+    int deleteByParticipants(@Param("petId") Long petId,
+                             @Param("userId1") Long userId1,
+                             @Param("userId2") Long userId2);
 }

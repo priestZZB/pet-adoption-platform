@@ -110,6 +110,8 @@ import { ElMessage } from "element-plus"
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAllReadNotifications, deleteAllNotifications } from "@/api/notification"
 import { getChatUnreadCount } from "@/api/chat"
 import { getMyOrders } from "@/api/mall"
+import { useChatSSE } from "@/composables/useChatSSE"
+import { useChatWebSocket } from "@/composables/useChatWebSocket"
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -123,6 +125,8 @@ const notifRef = ref(null)
 const notifList = ref([])
 const unreadCount = ref(0)
 const chatUnread = ref(0)
+const { connect: sseConnect, disconnect: sseDisconnect } = useChatSSE()
+const { connect: wsConnect, disconnect: wsDisconnect } = useChatWebSocket()
 
 // 当前路由对应的高亮菜单
 const activeMenu = computed(() => route.path)
@@ -228,10 +232,7 @@ async function handleDeleteOne(n) {
     const idx = notifList.value.indexOf(n)
     if (idx !== -1) notifList.value.splice(idx, 1)
     ElMessage.success('已删除')
-  } catch (e) {
-    console.error('delete error:', e)
-    ElMessage.error('删除失败')
-  }
+  } catch (e) {}
 }
 
 async function handleDeleteAllRead() {
@@ -261,6 +262,8 @@ function handleClickOutside(e) {
   }
 }
 
+let chatUnreadTimer = null
+
 onMounted(() => {
   document.addEventListener("click", handleClickOutside)
   // 登录后初始加载通知数 + 物流检测
@@ -268,10 +271,35 @@ onMounted(() => {
     getUnreadCount().then(d => { unreadCount.value = d?.count ?? 0 }).catch(() => {})
     getChatUnreadCount().then(d => { chatUnread.value = d?.count ?? 0 }).catch(() => {})
     getMyOrders({ status: 'SHIPPED' }).catch(() => {})
+    // WebSocket + SSE 实时未读更新 + 通知推送
+    const wsHandler = {
+      onUnreadCount(count) {
+        chatUnread.value = count
+      },
+      onNewMessage() {
+        getChatUnreadCount().then(d => { chatUnread.value = d?.count ?? 0 }).catch(() => {})
+      },
+      onNewNotification() {
+        getNotifications().then(d => { notifList.value = (d || []).slice(0, 20) }).catch(() => {})
+        getUnreadCount().then(d => { unreadCount.value = d?.count ?? 0 }).catch(() => {})
+      },
+      onConversationUpdate() {
+        getChatUnreadCount().then(d => { chatUnread.value = d?.count ?? 0 }).catch(() => {})
+      }
+    }
+    wsConnect(wsHandler)
+    sseConnect(wsHandler)
+
+    // 定时轮询聊天未读数兜底
+    chatUnreadTimer = setInterval(() => {
+      getChatUnreadCount().then(d => { chatUnread.value = d?.count ?? 0 }).catch(() => {})
+    }, 8000)
   }
 })
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside)
+  sseDisconnect()
+  if (chatUnreadTimer) clearInterval(chatUnreadTimer)
 })
 </script>
 

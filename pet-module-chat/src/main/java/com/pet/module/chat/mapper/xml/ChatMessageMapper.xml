@@ -57,4 +57,11 @@
           AND sender_id = #{senderId}
           AND is_read = 0
     </update>
+
+    <delete id="deleteByParticipants">
+        DELETE FROM chat_message
+        WHERE pet_id = #{petId}
+          AND ((sender_id = #{userId1} AND receiver_id = #{userId2})
+            OR (sender_id = #{userId2} AND receiver_id = #{userId1}))
+    </delete>
 </mapper>

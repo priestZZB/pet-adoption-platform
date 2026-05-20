@@ -77,7 +77,6 @@ const routes = [
       { path: 'pet-categories',     component: () => import('@/views/admin/PetCategoryManage.vue') },
       { path: 'pets',               component: () => import('@/views/admin/PetManage.vue') },
       { path: 'questions',          component: () => import('@/views/admin/QuestionManage.vue') },
-      { path: 'adopt-applications', component: () => import('@/views/admin/AdoptManage.vue') },
       { path: 'mall-categories',    component: () => import('@/views/admin/MallCategoryManage.vue') },
       { path: 'mall-products',      component: () => import('@/views/admin/ProductManage.vue') },
       { path: 'mall-orders',        component: () => import('@/views/admin/OrderManage.vue') },

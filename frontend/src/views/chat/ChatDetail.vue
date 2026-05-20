@@ -39,7 +39,7 @@
         <div class="header-info">
           <div class="header-title">{{ petName }}</div>
           <div class="header-meta">{{ petCategory }} · {{ petAge }} · {{ petGender }}</div>
-          <div class="header-sub">与 {{ otherName }} 的交流</div>
+          <div class="header-sub"><span class="online-dot" :class="{ 'on': otherOnline }"></span>{{ otherName }} {{ otherOnline ? '在线' : '离线' }}</div>
         </div>
       </div>
 
@@ -48,7 +48,18 @@
         <div v-if="msgLoading" class="loading-center"><el-icon class="is-loading" :size="24"><Loading /></el-icon></div>
         <template v-else>
           <div v-for="msg in messages" :key="msg.id" class="msg-group">
-            <!-- 对方消息：左对齐 -->
+            <!-- 对方正在输入... -->
+        <div v-if="otherTyping && messages.length > 0" class="msg-row msg-left">
+          <el-avatar :size="32" :src="otherAvatar" class="msg-avatar">{{ otherName[0] }}</el-avatar>
+          <div class="msg-body">
+            <div class="msg-bubble bubble-other typing-bubble">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+        </div>
+        <!-- 对方消息：左对齐 -->
             <div v-if="msg.senderId !== myId" class="msg-row msg-left">
               <el-avatar :size="32" :src="otherAvatar" class="msg-avatar">{{ otherName[0] }}</el-avatar>
               <div class="msg-body">
@@ -104,7 +115,7 @@
               <el-icon><ArrowDown /></el-icon>
             </div>
           </transition>
-          <el-input v-model="inputText" placeholder="输入消息..." :rows="2" type="textarea" resize="none" @keyup.enter.prevent="handleSend" />
+          <el-input v-model="inputText" placeholder="输入消息..." type="textarea" :autosize="{ minRows: 1, maxRows: 6 }" resize="none" @keyup.enter.prevent="handleSend" @input="onTyping" />
           <div class="input-toolbar">
             <el-upload
               :show-file-list="false"
@@ -129,14 +140,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading, Picture, Close, ArrowDown, ChatDotSquare } from '@element-plus/icons-vue'
-import { getConversation, sendMessage, markChatAsRead, getConversations } from '@/api/chat'
+import { getConversation, sendMessage, markChatAsRead, getConversations, getOnlineUsers } from '@/api/chat'
 import { uploadFile } from '@/api/file'
 import { useUserStore } from '@/stores/user'
 import request from '@/api/request'
+import { useChatSSE } from '@/composables/useChatSSE'
+import { useChatWebSocket } from '@/composables/useChatWebSocket'
 
 const route = useRoute()
 const router = useRouter()
@@ -170,6 +183,11 @@ const pendingImage = ref(null)
 const previewPendingVisible = ref(false)
 const showScrollBtn = ref(false)
 const msgContainer = ref(null)
+const otherTyping = ref(false)
+const otherOnline = ref(false)
+let typingTimer = null
+const { connect: sseConnect, disconnect: sseDisconnect } = useChatSSE()
+const { connect: wsConnect, disconnect: wsDisconnect, sendTyping, checkOnline } = useChatWebSocket()
 
 async function loadConversations() {
   convLoading.value = true
@@ -215,9 +233,9 @@ async function switchConversation(item) {
   await loadDetail()
 }
 
-async function loadDetail() {
+async function loadDetail(silent) {
   if (!petId.value || !otherUserId.value) return
-  msgLoading.value = true
+  if (!silent) msgLoading.value = true
   try {
     try {
       const u = await request.get('/user/public/' + otherUserId.value)
@@ -238,8 +256,8 @@ async function loadDetail() {
     scrollToBottom()
     // 等图片加载后再次滚动（el-image 异步加载）
     setTimeout(scrollToBottom, 300)
-  } catch { messages.value = [] }
-  finally { msgLoading.value = false }
+  } catch { if (!silent) messages.value = [] }
+  finally { if (!silent) msgLoading.value = false }
 }
 
 async function handleBeforeUpload(file) {
@@ -261,10 +279,7 @@ async function handleSend() {
   const img = pendingImage.value
   if (!text && !img) return
 
-  if (text && containsSensitive(text)) {
-    ElMessage.warning('消息包含联系方式或导流内容，请删除后重试')
-    return
-  }
+
 
   const params = { receiverId: otherUserId.value, petId: petId.value }
   if (text) params.content = text
@@ -275,7 +290,8 @@ async function handleSend() {
     await sendMessage(params)
     inputText.value = ''
     pendingImage.value = null
-    await loadDetail()
+    await loadDetail(true)
+    nextTick(() => { scrollToBottom(); setTimeout(scrollToBottom, 300) })
   } catch (e) {
     const errMsg = e?.message || '发送失败'
     // 拦截器已弹提示，这里不再重复弹
@@ -389,6 +405,19 @@ function onScroll() {
   showScrollBtn.value = diff > 120
 }
 
+// 静默刷新当前对话
+function refreshConversation() {
+  if (!petId.value || !otherUserId.value) return
+  getConversation({ petId: petId.value, otherUserId: otherUserId.value })
+    .then(msgs => { messages.value = msgs; nextTick(() => { scrollToBottom(); setTimeout(scrollToBottom, 300) }) })
+    .catch(() => {})
+}
+
+// WebSocket 事件
+function onTyping() {
+  if (otherUserId.value) sendTyping(otherUserId.value)
+}
+
 function formatTime(t) {
   if (!t) return ''
   return t.substring(0, 16).replace('T', ' ')
@@ -409,9 +438,58 @@ onMounted(async () => {
     await loadDetail()
     try { await markChatAsRead({ petId: qPetId, otherUserId: qOtherUserId }) } catch {}
   } else if (conversations.value.length > 0) {
-    // 默认选中第一个会话
     await switchConversation(conversations.value[0])
   }
+
+  // WS + SSE 实时
+  const h = {
+    onNewMessage(msg) {
+      if (msg.petId === petId.value &&
+          (msg.senderId === otherUserId.value || msg.receiverId === otherUserId.value)) {
+        refreshConversation()
+        markChatAsRead({ petId: petId.value, otherUserId: otherUserId.value }).catch(() => {})
+      } else { loadConversations() }
+    },
+    onUnreadCount() {},
+    onTyping(senderId) {
+      if (senderId === otherUserId.value) {
+        otherTyping.value = true
+        clearTimeout(typingTimer)
+        typingTimer = setTimeout(() => { otherTyping.value = false }, 3000)
+      }
+    },
+    onOnlineStatus(userId, online) {
+      if (userId === otherUserId.value) otherOnline.value = online
+    }
+  }
+  wsConnect(h)
+  sseConnect(h)
+  if (otherUserId.value) checkOnline(otherUserId.value)
+
+  // 定时轮询兜底 + 标记已读
+  pollTimer = setInterval(() => {
+    refreshConversation()
+    if (petId.value && otherUserId.value) {
+      markChatAsRead({ petId: petId.value, otherUserId: otherUserId.value }).catch(() => {})
+    }
+  }, 2000)
+
+  // 定时查询在线状态兜底（每10秒）
+  setInterval(() => {
+    if (otherUserId.value) {
+      getOnlineUsers().then(ids => {
+        otherOnline.value = Array.isArray(ids) && ids.includes(Number(otherUserId.value))
+      }).catch(() => {})
+    }
+  }, 10000)
+})
+
+let pollTimer = null
+
+onUnmounted(() => {
+  wsDisconnect()
+  sseDisconnect()
+  if (pollTimer) clearInterval(pollTimer)
 })
 </script>
 
@@ -464,7 +542,7 @@ onMounted(async () => {
   gap: 10px;
   padding: 12px 16px;
   cursor: pointer;
-  border-bottom: 1px solid var(--yc-border-light, #f0f0f0);
+  border-bottom: 1px solid var(--yc-border);
   transition: background 0.15s;
 }
 .conv-item:hover {
@@ -544,7 +622,9 @@ onMounted(async () => {
 .header-info { flex: 1; min-width: 0; }
 .header-title { font-size: 16px; font-weight: 600; color: var(--yc-text-primary); }
 .header-meta { font-size: 12px; color: var(--yc-text-secondary); margin-top: 1px; }
-.header-sub { font-size: 11px; color: var(--yc-text-tertiary); margin-top: 1px; }
+.header-sub { font-size: 11px; color: var(--yc-text-tertiary); margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+.online-dot { width: 7px; height: 7px; border-radius: 50%; background: #c0c4cc; flex-shrink: 0; }
+.online-dot.on { background: #67C23A; }
 
 /* 消息列表 */
 .msg-container {
@@ -690,5 +770,21 @@ onMounted(async () => {
 .upload-img-btn:hover {
   color: var(--yc-accent);
   background: transparent;
+}
+.typing-bubble {
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px 16px !important;
+}
+.typing-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--yc-text-tertiary);
+  animation: tb 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tb {
+  0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
 }
 </style>

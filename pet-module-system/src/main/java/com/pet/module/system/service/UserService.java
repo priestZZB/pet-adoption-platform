@@ -41,7 +41,7 @@ public interface UserService {
 
     List<UserListVo> getUserList(String keyword, int page, int size);
 
-    void toggleUserStatus(Long userId);
+    void toggleUserStatus(Long operatorId, Long targetUserId);
 
     void volunteerApply(Long userId);
 

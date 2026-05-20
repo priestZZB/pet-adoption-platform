@@ -40,7 +40,8 @@ request.interceptors.response.use(
     if (code === 401 || code === 4031) {
       ElMessage.error(msg || '登录已过期')
       removeToken()
-      router.push('/login')
+      const reason = encodeURIComponent(msg || '账号已被禁用')
+      router.push('/login?reason=' + reason)
       return Promise.reject(new Error(msg))
     }
     ElMessage.error(msg || '操作失败')

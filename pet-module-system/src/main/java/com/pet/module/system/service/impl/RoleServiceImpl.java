@@ -12,6 +12,7 @@ import com.pet.module.system.model.entity.SysUserRole;
 import com.pet.module.system.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     public List<SysRole> getAllRoles() {
@@ -94,6 +98,46 @@ public class RoleServiceImpl implements RoleService {
             if (r == null) continue;
             if ("USER_ADOPTER".equals(r.getRoleCode())) hasDonor = true;
             if ("VOLUNTEER".equals(r.getRoleCode())) hasVolunteer = true;
+        }
+
+        // 查询当前用户状态
+        SysUser cur = userMapper.selectById(userId);
+
+        // 如果取消了送养人角色，同步下架其发布的宠物 + 发通知
+        if (!hasDonor && cur != null && "APPROVED".equals(cur.getDonorStatus())) {
+            jdbcTemplate.update("UPDATE pet_info SET status = 'OFFLINE' WHERE user_id = ?", userId);
+            eventPublisher.publishEvent(new NotificationEvent(
+                    userId, "DONOR_REMOVED",
+                    "送养人身份已取消",
+                    "管理员已取消你的送养人身份，你发布的宠物已下架",
+                    userId));
+        }
+
+        // 如果取消了志愿者角色，发通知
+        if (!hasVolunteer && cur != null && "APPROVED".equals(cur.getVolunteerStatus())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    userId, "VOLUNTEER_REMOVED",
+                    "志愿者身份已取消",
+                    "管理员已取消你的志愿者身份",
+                    userId));
+        }
+
+        // 如果新增了送养人角色，发通知
+        if (hasDonor && cur != null && !"APPROVED".equals(cur.getDonorStatus())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    userId, "DONOR_ADDED",
+                    "送养人身份已开通",
+                    "管理员已为你开通送养人身份，现在可以发布送养宠物了",
+                    userId));
+        }
+
+        // 如果新增了志愿者角色，发通知
+        if (hasVolunteer && cur != null && !"APPROVED".equals(cur.getVolunteerStatus())) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    userId, "VOLUNTEER_ADDED",
+                    "志愿者身份已开通",
+                    "管理员已为你开通志愿者身份，现在可以参与审核和走访了",
+                    userId));
         }
 
         SysUser update = new SysUser();

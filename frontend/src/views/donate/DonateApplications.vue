@@ -27,6 +27,14 @@
             >
               {{ APPLY_STATUS[item.status]?.label || item.status }}
             </el-tag>
+            <el-button
+              size="small"
+              class="chat-btn"
+              :icon="ChatDotSquare"
+              @click.stop="handleChat(item)"
+            >
+              联系
+            </el-button>
           </div>
 
           <el-divider style="margin:12px 0" />
@@ -74,13 +82,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, ChatDotSquare } from '@element-plus/icons-vue'
 import { getPetApplications, reviewApplication } from '@/api/pet'
 import { APPLY_STATUS } from '@/utils/constants'
 
 const route = useRoute()
+const router = useRouter()
 const list = ref([])
 const loading = ref(true)
 const reviewing = ref(null)
@@ -109,6 +118,18 @@ async function handleReview(appId, action) {
   } finally {
     reviewing.value = null
   }
+}
+
+function handleChat(item) {
+  const petId = route.params.id
+  const userId = item.userId
+  if (!petId || !userId) return
+  const petName = route.query.petName || ''
+  const otherName = item.userNickname || ''
+  router.push('/user/chat?petId=' + petId
+    + '&otherUserId=' + userId
+    + '&petName=' + encodeURIComponent(petName)
+    + '&otherName=' + encodeURIComponent(otherName))
 }
 
 onMounted(loadList)
@@ -199,5 +220,15 @@ onMounted(loadList)
   gap: 12px;
   justify-content: flex-end;
   margin-top: 12px;
+}
+.chat-btn {
+  flex-shrink: 0;
+  border-radius: var(--yc-radius-btn);
+  color: var(--yc-accent);
+  border-color: var(--yc-accent);
+}
+.chat-btn:hover {
+  background: var(--yc-accent);
+  color: #fff;
 }
 </style>
