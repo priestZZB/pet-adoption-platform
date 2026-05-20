@@ -25,7 +25,7 @@
           <div class="order-header">
             <span class="order-no">订单号：{{ order.orderNo }}</span>
             <el-tag :type="ORDER_STATUS[order.status]?.type || 'info'" size="small">
-              {{ ORDER_STATUS[order.status]?.label || order.status }}
+              {{ order.status === 'SHIPPED' && order.logisticsStatus ? order.logisticsStatus : (ORDER_STATUS[order.status]?.label || order.status) }}
             </el-tag>
           </div>
 

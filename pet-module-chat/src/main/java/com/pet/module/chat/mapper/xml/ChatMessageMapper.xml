@@ -9,17 +9,18 @@
         <result column="receiver_id" property="receiverId"/>
         <result column="pet_id" property="petId"/>
         <result column="content" property="content"/>
+        <result column="image_url" property="imageUrl"/>
         <result column="is_read" property="isRead"/>
         <result column="created_at" property="createdAt"/>
     </resultMap>
 
     <sql id="BaseColumns">
-        id, sender_id, receiver_id, pet_id, content, is_read, created_at
+        id, sender_id, receiver_id, pet_id, content, image_url, is_read, created_at
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO chat_message (sender_id, receiver_id, pet_id, content)
-        VALUES (#{senderId}, #{receiverId}, #{petId}, #{content})
+        INSERT INTO chat_message (sender_id, receiver_id, pet_id, content, image_url)
+        VALUES (#{senderId}, #{receiverId}, #{petId}, #{content}, #{imageUrl})
     </insert>
 
     <select id="selectConversation" resultMap="BaseResultMap">

@@ -69,8 +69,12 @@ onMounted(async () => {
 })
 
 // 监听登录状态变化（用户在页面内登录时触发）
-watch(() => userStore.token, (newToken) => {
-  if (newToken && userStore.userInfo) {
+watch(() => userStore.token, async (newToken) => {
+  if (newToken) {
+    // 确保 userInfo 已加载
+    if (!userStore.userInfo) {
+      await userStore.fetchUserInfo()
+    }
     checkUnread()
   }
 })

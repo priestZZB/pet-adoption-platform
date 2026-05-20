@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="checkout-page">
     <h3 class="page-title">确认订单</h3>
 
@@ -9,28 +9,36 @@
     <template v-else-if="cartList.length > 0">
       <!-- 收货信息 -->
       <el-card class="section-card">
-        <template #header><span>收货信息</span></template>
-        <el-form
-          ref="formRef"
-          :model="receiver"
-          :rules="rules"
-          label-width="80px"
-        >
-          <el-form-item label="收货人" prop="receiverName">
-            <el-input v-model="receiver.receiverName" placeholder="请输入收货人姓名" />
-          </el-form-item>
-          <el-form-item label="手机号" prop="receiverPhone">
-            <el-input v-model="receiver.receiverPhone" placeholder="请输入收货人手机号" maxlength="11" />
-          </el-form-item>
-          <el-form-item label="收货地址" prop="receiverAddress">
-            <el-input
-              v-model="receiver.receiverAddress"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入详细收货地址"
-            />
-          </el-form-item>
-        </el-form>
+        <template #header>
+          <div class="section-header">
+            <span>收货信息</span>
+            <el-button class="select-addr-btn" size="small" @click="goSelectAddress">选择收货地址</el-button>
+          </div>
+        </template>
+
+        <div v-if="receiverName" class="addr-display">
+          <div class="addr-top">
+            <span class="addr-name">{{ receiverName }}</span>
+            <span class="addr-phone">{{ receiverPhone }}</span>
+          </div>
+          <p class="addr-detail">{{ receiverAddress }}</p>
+          <!-- 保留隐藏表单用于校验 -->
+          <el-form ref="formRef" :model="formData" :rules="rules" label-width="0" class="hidden-form">
+            <el-form-item prop="receiverName">
+              <el-input v-model="formData.receiverName" style="display:none" />
+            </el-form-item>
+            <el-form-item prop="receiverPhone">
+              <el-input v-model="formData.receiverPhone" style="display:none" />
+            </el-form-item>
+            <el-form-item prop="receiverAddress">
+              <el-input v-model="formData.receiverAddress" style="display:none" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div v-else class="addr-empty">
+          <p>请选择收货地址</p>
+          <el-button class="go-select-btn" @click="goSelectAddress">去选择</el-button>
+        </div>
       </el-card>
 
       <!-- 商品清单 -->
@@ -93,12 +101,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
-import { getCart, createOrder } from '@/api/mall'
+import { getCart, createOrder, getDefaultAddress } from '@/api/mall'
 
+const route = useRoute()
 const router = useRouter()
 const formRef = ref(null)
 const submitting = ref(false)
@@ -106,19 +115,23 @@ const loading = ref(true)
 
 const cartList = ref([])
 
-const receiver = ref({
-  receiverName: '',
-  receiverPhone: '',
-  receiverAddress: ''
-})
+// 收货地址 - 从 query 或默认地址加载
+const addressId = ref(null)
+const receiverName = ref('')
+const receiverPhone = ref('')
+const receiverAddress = ref('')
+
+// 隐藏表单数据用于校验
+const formData = computed(() => ({
+  receiverName: receiverName.value,
+  receiverPhone: receiverPhone.value,
+  receiverAddress: receiverAddress.value
+}))
 
 const rules = {
-  receiverName: [{ required: true, message: '请输入收货人姓名', trigger: 'blur' }],
-  receiverPhone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
-  ],
-  receiverAddress: [{ required: true, message: '请输入收货地址', trigger: 'blur' }]
+  receiverName: [{ required: true, message: '请选择收货地址', trigger: 'change' }],
+  receiverPhone: [{ required: true, message: '请选择收货地址', trigger: 'change' }],
+  receiverAddress: [{ required: true, message: '请选择收货地址', trigger: 'change' }]
 }
 
 const totalAmount = computed(() => {
@@ -126,6 +139,35 @@ const totalAmount = computed(() => {
     .reduce((sum, i) => sum + parseFloat(i.subtotal || 0), 0)
     .toFixed(2)
 })
+
+function goSelectAddress() {
+  router.push('/mall/address-select?mode=select')
+}
+
+// 从 route.query 获取选中的地址
+function loadAddressFromQuery() {
+  if (route.query.addressId) {
+    addressId.value = Number(route.query.addressId)
+    receiverName.value = route.query.receiverName || ''
+    receiverPhone.value = route.query.receiverPhone || ''
+    receiverAddress.value = route.query.receiverAddress || ''
+  }
+}
+
+// 自动加载默认地址
+async function loadDefaultAddress() {
+  try {
+    const addr = await getDefaultAddress()
+    if (addr) {
+      addressId.value = addr.id
+      receiverName.value = addr.receiverName
+      receiverPhone.value = addr.receiverPhone
+      receiverAddress.value = addr.receiverAddress
+    }
+  } catch {
+    // 没有默认地址也没关系
+  }
+}
 
 async function loadCart() {
   loading.value = true
@@ -139,15 +181,18 @@ async function loadCart() {
 }
 
 async function handleSubmit() {
-  const valid = await formRef.value.validate().catch(() => false)
-  if (!valid) return
+  if (!receiverName.value || !receiverPhone.value || !receiverAddress.value) {
+    ElMessage.warning('请先选择收货地址')
+    return
+  }
 
   submitting.value = true
   try {
     const order = await createOrder({
-      receiverName: receiver.value.receiverName,
-      receiverPhone: receiver.value.receiverPhone,
-      receiverAddress: receiver.value.receiverAddress
+      addressId: addressId.value,
+      receiverName: receiverName.value,
+      receiverPhone: receiverPhone.value,
+      receiverAddress: receiverAddress.value
     })
     ElMessage.success('订单提交成功')
     router.push('/mall/pay/' + order.id)
@@ -158,7 +203,24 @@ async function handleSubmit() {
   }
 }
 
-onMounted(loadCart)
+// 监听路由 query 变化（从地址选择页返回时）
+watch(
+  () => route.query,
+  () => {
+    if (route.query.addressId) {
+      loadAddressFromQuery()
+    }
+  }
+)
+
+onMounted(async () => {
+  await loadCart()
+  if (route.query.addressId) {
+    loadAddressFromQuery()
+  } else {
+    await loadDefaultAddress()
+  }
+})
 </script>
 
 <style scoped>
@@ -186,6 +248,65 @@ onMounted(loadCart)
   border: 1px solid var(--yc-border);
   border-radius: var(--yc-radius-card);
   background: var(--yc-bg-card);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.select-addr-btn {
+  border: 1px solid #c19a6b;
+  color: #c19a6b;
+  border-radius: 8px;
+}
+.select-addr-btn:hover {
+  background: #fff5e8;
+}
+
+.addr-display {
+  padding: 4px 0;
+}
+.addr-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.addr-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+.addr-phone {
+  font-size: 14px;
+  color: #666;
+}
+.addr-detail {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+}
+
+.addr-empty {
+  text-align: center;
+  padding: 20px 0;
+  color: #999;
+}
+.go-select-btn {
+  background: #c19a6b;
+  border: 1px solid #c19a6b;
+  color: #fff;
+  border-radius: 12px;
+}
+.go-select-btn:hover {
+  background: #b0895a;
+  border-color: #b0895a;
+}
+
+.hidden-form {
+  display: none;
 }
 
 .order-items {

@@ -228,7 +228,7 @@ onUnmounted(cleanupSelectAutoClose)
   width: 100%;
   max-width: 100%;
   margin: 0 auto 24px;
-  aspect-ratio: 4579 / 915;
+  aspect-ratio: 3 / 1;
   overflow: hidden;
 }
 .banner {

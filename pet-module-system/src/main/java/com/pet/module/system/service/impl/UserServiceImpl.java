@@ -22,6 +22,7 @@ import com.pet.module.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Autowired
     private RealNameService realNameService;
@@ -413,6 +417,11 @@ public class UserServiceImpl implements UserService {
         update.setId(userId);
         update.setStatus(user.getStatus() == 0 ? 1 : 0);
         userMapper.updateById(update);
+
+        // 管理员启用用户时，清除违禁记录
+        if (user.getStatus() == 0) {
+            redisTemplate.delete("chat:violations:" + userId);
+        }
     }
 
     @Override

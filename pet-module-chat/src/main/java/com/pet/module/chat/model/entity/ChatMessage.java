@@ -12,7 +12,8 @@ public class ChatMessage {
     private Long receiverId;
     private Long petId;
     private String content;
-    private Integer isRead;    // 0未读 1已读
+    private String imageUrl;
+    private Integer isRead;
     private LocalDateTime createdAt;
 
     public Long getId() { return id; }
@@ -25,6 +26,8 @@ public class ChatMessage {
     public void setPetId(Long petId) { this.petId = petId; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Integer getIsRead() { return isRead; }
     public void setIsRead(Integer isRead) { this.isRead = isRead; }
     public LocalDateTime getCreatedAt() { return createdAt; }

@@ -16,6 +16,8 @@ import com.pet.module.mall.model.entity.MallOrderItem;
 import com.pet.module.mall.model.entity.MallProduct;
 import com.pet.module.mall.model.vo.CartVo;
 import com.pet.module.mall.model.vo.OrderVo;
+import com.pet.module.mall.model.entity.ShippingAddress;
+import com.pet.module.mall.mapper.ShippingAddressMapper;
 import com.pet.module.mall.service.CartService;
 import com.pet.module.mall.service.OrderService;
 import com.pet.module.mall.service.ProductService;
@@ -43,6 +45,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private MallProductMapper mallProductMapper;
+
+    @Autowired
+    private ShippingAddressMapper shippingAddressMapper;
 
     @Autowired
     private CartService cartService;
@@ -80,6 +85,25 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "购物车为空");
         }
 
+        // 如果传了 addressId，从收货地址表填充收货信息
+        String receiverName = dto.getReceiverName();
+        String receiverPhone = dto.getReceiverPhone();
+        String receiverAddress = dto.getReceiverAddress();
+
+        if (dto.getAddressId() != null) {
+            ShippingAddress addr = shippingAddressMapper.selectById(dto.getAddressId());
+            if (addr == null || !addr.getUserId().equals(userId)) {
+                throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "收货地址不存在");
+            }
+            receiverName = addr.getReceiverName();
+            receiverPhone = addr.getReceiverPhone();
+            receiverAddress = addr.getReceiverAddress();
+        }
+
+        if (receiverName == null || receiverPhone == null || receiverAddress == null) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "请填写收货信息");
+        }
+
         // 计算总金额
         BigDecimal total = BigDecimal.ZERO;
         List<MallOrderItem> items = new ArrayList<>();
@@ -108,9 +132,9 @@ public class OrderServiceImpl implements OrderService {
         order.setUserId(userId);
         order.setTotalAmount(total);
         order.setStatus("PENDING_PAY");
-        order.setReceiverName(dto.getReceiverName());
-        order.setReceiverPhone(dto.getReceiverPhone());
-        order.setReceiverAddress(dto.getReceiverAddress());
+        order.setReceiverName(receiverName);
+        order.setReceiverPhone(receiverPhone);
+        order.setReceiverAddress(receiverAddress);
         mallOrderMapper.insert(order);
 
         // 保存订单项
@@ -149,6 +173,52 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException(ResultCodeEnum.ORDER_NOT_FOUND);
         }
+        return convertToVo(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderVo buyNow(Long userId, Long productId, Integer quantity) {
+        MallProduct product = mallProductMapper.selectById(productId);
+        if (product == null || product.getStatus() == 0) {
+            throw new BusinessException(ResultCodeEnum.PRODUCT_NOT_FOUND, "商品不存在或已下架");
+        }
+        if (product.getStock() < quantity) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "库存不足");
+        }
+
+        BigDecimal total = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+
+        // 创建订单（收货信息暂空，用户在订单详情补充）
+        MallOrder order = new MallOrder();
+        order.setOrderNo(IdGenerator.generateOrderNo());
+        order.setUserId(userId);
+        order.setTotalAmount(total);
+        order.setStatus("PENDING_PAY");
+        order.setReceiverName("待补充");
+        order.setReceiverPhone("待补充");
+        order.setReceiverAddress("待补充");
+        mallOrderMapper.insert(order);
+
+        // 保存订单项
+        MallOrderItem item = new MallOrderItem();
+        item.setOrderId(order.getId());
+        item.setProductId(product.getId());
+        item.setProductName(product.getName());
+        item.setProductImage(product.getImage());
+        item.setQuantity(quantity);
+        item.setPrice(product.getPrice());
+        mallOrderItemMapper.insert(item);
+
+        // 扣减库存
+        MallProduct prodUpdate = new MallProduct();
+        prodUpdate.setId(product.getId());
+        prodUpdate.setStock(product.getStock() - quantity);
+        mallProductMapper.updateById(prodUpdate);
+
+        // 清除商品缓存
+        productService.evictProductCache();
+
         return convertToVo(order);
     }
 
@@ -323,6 +393,9 @@ public class OrderServiceImpl implements OrderService {
             vo.setLogisticsStatus(computeLogisticsStatus(order));
         }
 
+        // 检查物流状态是否有进展，有则发送站内通知
+        checkAndNotifyLogistics(order);
+
         List<MallOrderItem> items = mallOrderItemMapper.selectByOrderId(order.getId());
         List<OrderVo.OrderItemVo> itemVos = items.stream().map(item -> {
             OrderVo.OrderItemVo itemVo = new OrderVo.OrderItemVo();
@@ -332,5 +405,54 @@ public class OrderServiceImpl implements OrderService {
         vo.setItems(itemVos);
 
         return vo;
+    }
+
+    /**
+     * 检查物流状态进展，状态变化时发送站内通知并更新DB记录
+     * 物流顺序：已发货 → 已揽件 → 运输中 → 派送中 → 已送达
+     */
+    private static final List<String> LOGISTICS_ORDER = Arrays.asList("已发货", "已揽件", "运输中", "派送中", "已送达");
+
+    private void checkAndNotifyLogistics(MallOrder order) {
+        // 只有已发货状态需要检查
+        if (!"SHIPPED".equals(order.getStatus())) return;
+        // 无物流时间线则不处理
+        if (order.getLogisticsTimeline() == null) return;
+
+        String currentStatus = computeLogisticsStatus(order);
+        String storedStatus = order.getLogisticsStatus();
+
+        int currentIdx = LOGISTICS_ORDER.indexOf(currentStatus);
+        int storedIdx = LOGISTICS_ORDER.indexOf(storedStatus);
+
+        // 如果物流有进步（新的状态 > 旧的状态），发送通知并更新DB
+        if (currentIdx > storedIdx) {
+            MallOrder update = new MallOrder();
+            update.setId(order.getId());
+            update.setLogisticsStatus(currentStatus);
+            mallOrderMapper.updateById(update);
+
+            // 根据状态发通知
+            String title = "物流更新";
+            String content;
+            switch (currentStatus) {
+                case "已揽件":
+                    content = "您的订单 " + order.getOrderNo() + " 已揽件，正在运往中转站";
+                    break;
+                case "运输中":
+                    content = "您的订单 " + order.getOrderNo() + " 正在运输中，请耐心等待";
+                    break;
+                case "派送中":
+                    content = "您的订单 " + order.getOrderNo() + " 正在派送中，即将送达";
+                    break;
+                case "已送达":
+                    content = "您的订单 " + order.getOrderNo() + " 已送达，请及时确认收货";
+                    break;
+                default:
+                    content = "您的订单 " + order.getOrderNo() + " 物流状态更新为：" + currentStatus;
+            }
+            eventPublisher.publishEvent(new NotificationEvent(
+                    order.getUserId(), "ORDER_STATUS", title, content, order.getId()));
+        }
     }
 }

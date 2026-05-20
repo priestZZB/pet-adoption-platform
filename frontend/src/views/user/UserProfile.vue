@@ -97,6 +97,10 @@
           <el-icon :size="24" color="#409EFF"><Tickets /></el-icon>
           <span>我的订单</span>
         </div>
+        <div class="menu-item" @click="$router.push('/mall/addresses')">
+          <el-icon :size="24" color="#E6A23C"><Location /></el-icon>
+          <span>收货地址</span>
+        </div>
         <div class="menu-item" @click="$router.push('/user/adopt-applications')">
           <el-icon :size="24" color="#67C23A"><Select /></el-icon>
           <span>我的领养</span>

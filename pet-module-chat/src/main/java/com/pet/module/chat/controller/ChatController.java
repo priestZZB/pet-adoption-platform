@@ -28,9 +28,13 @@ public class ChatController {
     public Result<Map<String, Object>> send(HttpServletRequest request,
                                             @RequestParam Long receiverId,
                                             @RequestParam Long petId,
-                                            @RequestParam String content) {
+                                            @RequestParam(required = false) String content,
+                                            @RequestParam(required = false) String imageUrl) {
         Long senderId = Long.valueOf(request.getAttribute("userId").toString());
-        Long msgId = chatService.sendMessage(senderId, receiverId, petId, content);
+        if ((content == null || content.trim().isEmpty()) && (imageUrl == null || imageUrl.isEmpty())) {
+            return Result.error(com.pet.common.enums.ResultCodeEnum.BAD_REQUEST, "请输入内容或上传图片");
+        }
+        Long msgId = chatService.sendMessage(senderId, receiverId, petId, content, imageUrl);
         Map<String, Object> data = new HashMap<>();
         data.put("id", msgId);
         return Result.success(data);

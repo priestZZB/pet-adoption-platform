@@ -30,6 +30,9 @@ public class AIServiceImpl implements AIService {
     @Value("${pet.ai.api-key:sk-demo}")
     private String apiKey;
 
+    @Value("${pet.ai.mock:true}")
+    private boolean aiMock;
+
     @Value("${pet.ai.model:deepseek-chat}")
     private String model;
 
@@ -147,6 +150,9 @@ public class AIServiceImpl implements AIService {
     @Override
     @Transactional
     public ChatVo chat(Long userId, ChatDto dto) {
+        if (aiMock) {
+            throw new BusinessException(ResultCodeEnum.AI_SERVICE_ERROR, "AI功能正在维护中，请关注平台公告");
+        }
         String question = dto.getQuestion();
         if (question == null || question.trim().isEmpty()) {
             throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "问题不能为空");

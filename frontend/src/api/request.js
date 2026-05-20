@@ -37,11 +37,13 @@ request.interceptors.response.use(
     if (code === 200) {
       return data   // 统一返回 data，业务代码直接取
     }
-    ElMessage.error(msg || '操作失败')
-    if (code === 401) {
+    if (code === 401 || code === 4031) {
+      ElMessage.error(msg || '登录已过期')
       removeToken()
       router.push('/login')
+      return Promise.reject(new Error(msg))
     }
+    ElMessage.error(msg || '操作失败')
     return Promise.reject(new Error(msg))
   },
   error => {

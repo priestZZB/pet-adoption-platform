@@ -3,6 +3,7 @@ package com.pet.module.ai.mapper;
 import com.pet.module.ai.model.entity.AIConversation;
 import com.pet.module.ai.model.vo.SessionVo;
 
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AIConversationMapper {
@@ -19,7 +20,7 @@ public interface AIConversationMapper {
 
     int deleteByUserId(Long userId);
 
-    int deleteBySessionId(String sessionId, Long userId);
+    int deleteBySessionId(@Param("sessionId") String sessionId, @Param("userId") Long userId);
 
     List<SessionVo> selectAllSessions();
 

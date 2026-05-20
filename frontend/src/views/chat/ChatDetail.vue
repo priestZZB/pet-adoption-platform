@@ -23,7 +23,10 @@
                 <span class="msg-author">{{ otherName }}</span>
                 <span class="msg-time">{{ formatTime(msg.createdAt) }}</span>
               </div>
-              <div class="msg-bubble bubble-other">{{ msg.content }}</div>
+              <div v-if="msg.imageUrl" class="msg-bubble bubble-other" style="padding:4px">
+                <el-image :src="msg.imageUrl" fit="cover" style="max-width:200px;max-height:200px;border-radius:12px;cursor:pointer;display:block" :preview-src-list="[msg.imageUrl]" preview-teleported />
+              </div>
+              <div v-if="msg.content" class="msg-bubble bubble-other">{{ msg.content }}</div>
             </div>
           </div>
           <!-- 我的消息：右对齐 -->
@@ -33,7 +36,10 @@
                 <span class="msg-time">{{ formatTime(msg.createdAt) }}</span>
                 <span class="msg-author">我</span>
               </div>
-              <div class="msg-bubble bubble-self">{{ msg.content }}</div>
+              <div v-if="msg.imageUrl" class="msg-bubble bubble-self" style="padding:4px">
+                <el-image :src="msg.imageUrl" fit="cover" style="max-width:200px;max-height:200px;border-radius:12px;cursor:pointer;display:block" :preview-src-list="[msg.imageUrl]" preview-teleported />
+              </div>
+              <div v-if="msg.content" class="msg-bubble bubble-self">{{ msg.content }}</div>
             </div>
             <el-avatar :size="32" :src="myAvatar" class="msg-avatar">{{ myName[0] }}</el-avatar>
           </div>
@@ -43,7 +49,19 @@
 
     <!-- 输入 -->
     <div class="msg-input-bar">
-      <el-input v-model="inputText" placeholder="输入消息..." :rows="2" type="textarea" resize="none" @keyup.enter.prevent="handleSend" />
+      <div class="input-area">
+        <el-input v-model="inputText" placeholder="输入消息..." :rows="2" type="textarea" resize="none" @keyup.enter.prevent="handleSend" />
+        <div class="input-toolbar">
+          <el-upload
+            :show-file-list="false"
+            :before-upload="handleImageUpload"
+            accept="image/*"
+            class="img-upload-btn"
+          >
+            <el-button class="upload-img-btn" size="small" :icon="Picture" />
+          </el-upload>
+        </div>
+      </div>
       <el-button type="primary" :loading="sending" @click="handleSend" style="height:52px;border-radius:10px;flex-shrink:0;min-width:80px">发送</el-button>
     </div>
   </div>
@@ -53,8 +71,9 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, Picture } from '@element-plus/icons-vue'
 import { getConversation, sendMessage, markChatAsRead } from '@/api/chat'
+import { uploadFile } from '@/api/file'
 import { useUserStore } from '@/stores/user'
 import request from '@/api/request'
 
@@ -78,18 +97,17 @@ const messages = ref([])
 const loading = ref(true)
 const sending = ref(false)
 const inputText = ref('')
+const pendingImage = ref(null)
 const msgContainer = ref(null)
 
 async function loadDetail() {
   loading.value = true
   try {
-    // 加载对方信息
     try {
       const u = await request.get('/user/public/' + otherUserId.value)
       otherName.value = u?.nickname || u?.username || '用户'
       otherAvatar.value = u?.avatar || ''
     } catch {}
-    // 加载宠物信息
     try {
       const p = await request.get('/pets/' + petId.value)
       petName.value = p?.name || petName.value
@@ -98,7 +116,6 @@ async function loadDetail() {
       petAge.value = p?.age || ''
       petGender.value = (p?.gender === 'male' ? '公' : p?.gender === 'female' ? '母' : p?.gender) || ''
     } catch {}
-    // 加载消息
     messages.value = await getConversation({ petId: petId.value, otherUserId: otherUserId.value })
     await nextTick()
     scrollToBottom()
@@ -106,16 +123,57 @@ async function loadDetail() {
   finally { loading.value = false }
 }
 
+async function handleImageUpload(file) {
+  try {
+    const res = await uploadFile(file)
+    if (res && res.url) {
+      pendingImage.value = res.url
+      ElMessage.success('图片已上传，点击发送')
+    }
+  } catch {
+    ElMessage.error('图片上传失败')
+  }
+  return false
+}
+
 async function handleSend() {
   const text = inputText.value.trim()
-  if (!text) return
+  const img = pendingImage.value
+  if (!text && !img) return
+
+  if (text && containsSensitive(text)) {
+    ElMessage.warning('消息包含联系方式等违规内容，请删除后重试')
+    return
+  }
+
+  const params = { receiverId: otherUserId.value, petId: petId.value }
+  if (text) params.content = text
+  if (img) params.imageUrl = img
+
   sending.value = true
   try {
-    await sendMessage({ receiverId: otherUserId.value, petId: petId.value, content: text })
+    await sendMessage(params)
     inputText.value = ''
+    pendingImage.value = null
     await loadDetail()
-  } catch { ElMessage.error('发送失败') }
+  } catch (e) {
+    const errMsg = e?.message || '发送失败'
+    // 拦截器已弹提示，这里不再重复弹
+  }
   finally { sending.value = false }
+}
+
+function containsSensitive(text) {
+  const patterns = [
+    /1[3-9]\d{9}/,
+    /微信[：: ]?\S+/,
+    /[Ww][Xx][_\-a-zA-Z0-9]{6,}/,
+    /[qQ][qQ][：:]?\d{5,}/,
+    /https?:\/\//,
+    /www\.[a-zA-Z0-9.-]+\.(com|cn|top|xyz|net|org)/,
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+  ]
+  return patterns.some(p => p.test(text))
 }
 
 function scrollToBottom() {
@@ -191,12 +249,35 @@ onMounted(async () => {
   border-bottom-left-radius: 4px;
 }
 
-/* 输入 */
+/* 输入区 */
 .msg-input-bar {
-  display: flex; gap: 10px; align-items: center;
+  display: flex; gap: 10px; align-items: stretch;
   padding: 10px 0; flex-shrink: 0;
   border-top: 1px solid var(--yc-border);
   margin-top: 8px;
 }
+.input-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .msg-input-bar :deep(.el-textarea__inner) { border-radius: 10px; resize: none; }
+
+.input-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 4px;
+}
+.upload-img-btn {
+  border: none;
+  font-size: 18px;
+  color: #909399;
+  padding: 4px;
+}
+.upload-img-btn:hover {
+  color: var(--yc-accent);
+  background: transparent;
+}
 </style>

@@ -39,4 +39,10 @@
     <select id="selectAll" resultMap="BaseResultMap">
         SELECT <include refid="BaseColumns"/> FROM banner ORDER BY sort_order ASC, id ASC
     </select>
+
+    <update id="shiftRange">
+        UPDATE banner SET sort_order = sort_order + #{step}
+        WHERE sort_order BETWEEN #{from} AND #{to}
+        <if test="excludeId != null">AND id != #{excludeId}</if>
+    </update>
 </mapper>

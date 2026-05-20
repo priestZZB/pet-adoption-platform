@@ -5,10 +5,13 @@ package com.pet.module.mall.model.dto;
  */
 public class CheckoutDto {
 
+    private Long addressId;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
 
+    public Long getAddressId() { return addressId; }
+    public void setAddressId(Long addressId) { this.addressId = addressId; }
     public String getReceiverName() { return receiverName; }
     public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
     public String getReceiverPhone() { return receiverPhone; }

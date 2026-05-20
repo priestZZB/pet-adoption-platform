@@ -9,6 +9,11 @@ public interface OrderService {
 
     OrderVo create(Long userId, CheckoutDto dto);
 
+    /**
+     * 立即购买（直接传入商品ID和数量，不走购物车）
+     */
+    OrderVo buyNow(Long userId, Long productId, Integer quantity);
+
     List<OrderVo> getUserOrders(Long userId, String status);
 
     OrderVo getOrderDetail(Long id);

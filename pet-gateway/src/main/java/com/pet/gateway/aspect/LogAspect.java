@@ -1,6 +1,7 @@
 package com.pet.gateway.aspect;
 
 import com.pet.framework.annotation.Log;
+import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.service.OperationLogService;
 import io.swagger.annotations.ApiOperation;
 import org.aspectj.lang.JoinPoint;
@@ -35,6 +36,9 @@ public class LogAspect {
 
     @Autowired
     private OperationLogService operationLogService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @AfterReturning(
             pointcut = "within(@com.pet.framework.annotation.Log *) && " +
@@ -72,14 +76,25 @@ public class LogAspect {
         // 6. 获取客户端 IP
         String ip = getClientIp(request);
 
-        // 7. 写入数据库（不影响主业务，失败只打 warn）
+        // 7. 查询用户名
+        String username = null;
         try {
-            operationLogService.addLog(userId, null, module, action, ip);
+            com.pet.module.system.model.entity.SysUser user = userMapper.selectById(userId);
+            if (user != null) {
+                username = user.getUsername();
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(LogAspect.class).warn("查询用户名失败", e);
+        }
+
+        // 8. 写入数据库（不影响主业务，失败只打 warn）
+        try {
+            operationLogService.addLog(userId, username, module, action, ip);
         } catch (Exception e) {
             LoggerFactory.getLogger(LogAspect.class).warn("操作日志写入数据库失败", e);
         }
 
-        // 8. 写入文件
+        // 9. 写入文件
         operationLog.info("[{}] userId={} role={} {} ip={}", module, userId, role, action, ip);
     }
 

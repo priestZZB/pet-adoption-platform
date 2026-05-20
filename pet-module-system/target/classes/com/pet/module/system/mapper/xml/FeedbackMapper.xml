@@ -46,4 +46,8 @@
     <select id="selectPending" resultMap="BaseResultMap">
         SELECT <include refid="BaseColumns"/> FROM sys_feedback WHERE status = 0 ORDER BY created_at DESC
     </select>
+
+    <select id="countPending" resultType="int">
+        SELECT COUNT(*) FROM sys_feedback WHERE status = 0
+    </select>
 </mapper>

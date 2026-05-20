@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="detail-page">
     <div v-if="loading" class="loading-center">
       <el-icon class="is-loading" :size="32"><Loading /></el-icon>
@@ -12,12 +12,12 @@
         <el-steps :active="stepActive" align-center finish-status="success">
           <el-step title="提交订单" />
           <el-step title="支付完成" />
-          <el-step title="已发货" />
-          <el-step title="确认收货" />
+          <el-step :title="step3Title" />
+          <el-step :title="step4Title" />
         </el-steps>
         <div class="step-status">
           <el-tag :type="ORDER_STATUS[order.status]?.type || 'info'" size="large">
-            {{ ORDER_STATUS[order.status]?.label || order.status }}
+            {{ displayStatus }}
           </el-tag>
         </div>
       </el-card>
@@ -153,13 +153,43 @@ const STATUS_STEP_MAP = {
   PENDING_PAY: 0,
   PAID: 1,
   SHIPPED: 2,
-  RECEIVED: 3
+  RECEIVED: 4
 }
 
 const stepActive = computed(() => {
   if (!order.value) return 0
   if (order.value.status === 'CANCELLED') return -1
+  // 已发货：第3步亮绿（物流状态只影响标题，不改变步数）
+  if (order.value.status === 'SHIPPED') return 2
+  // 已收货：全部变绿（active >= step数）
+  if (order.value.status === 'RECEIVED') return 4
   return STATUS_STEP_MAP[order.value.status] ?? 0
+})
+
+// 第3步标题：动态显示当前物流状态
+const step3Title = computed(() => {
+  if (!order.value) return '已发货'
+  if (order.value.status === 'SHIPPED' && order.value.logisticsStatus) {
+    return order.value.logisticsStatus
+  }
+  if (order.value.status === 'RECEIVED') return '已送达'
+  return '已发货'
+})
+
+// 第4步标题
+const step4Title = computed(() => {
+  if (!order.value) return '确认收货'
+  if (order.value.status === 'RECEIVED') return '已收货'
+  return '确认收货'
+})
+
+// 显示的当前状态文字
+const displayStatus = computed(() => {
+  if (!order.value) return ''
+  if (order.value.status === 'SHIPPED' && order.value.logisticsStatus) {
+    return order.value.logisticsStatus
+  }
+  return ORDER_STATUS[order.value.status]?.label || order.value.status
 })
 
 async function loadDetail() {
@@ -189,8 +219,14 @@ async function handleCancel() {
 }
 
 async function handleReceive() {
+  let confirmMsg
+  if (order.value.logisticsStatus && order.value.logisticsStatus !== '已送达') {
+    confirmMsg = '当前物流状态：' + order.value.logisticsStatus + '，您还未收到货，确认收货吗？'
+  } else {
+    confirmMsg = '请确保包装无破损、商品无误后再确认收货，确认收货吗？'
+  }
   try {
-    await ElMessageBox.confirm('确认已收到商品？', '提示')
+    await ElMessageBox.confirm(confirmMsg, '提示')
     await receiveOrder(order.value.id)
     ElMessage.success('已确认收货')
     loadDetail()

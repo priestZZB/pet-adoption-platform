@@ -134,7 +134,10 @@ const pendingDefs = [
     link: '/admin/donor' },
   { key: 'adoptApplications', label: '个领养申请待审核',
     color: '#909399', btnType: 'info', btnText: '前往查看',
-    link: '/admin/adopt' }
+    link: '/admin/adopt' },
+  { key: 'feedbackPending', label: '条意见反馈待回复',
+    color: '#409EFF', btnType: 'primary', btnText: '前往回复',
+    link: '/admin/feedback' }
 ]
 
 // 由 pendingDefs 和 stats 动态生成待办列表

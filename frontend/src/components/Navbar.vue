@@ -109,6 +109,7 @@ import { useRouter, useRoute } from "vue-router"
 import { ElMessage } from "element-plus"
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAllReadNotifications, deleteAllNotifications } from "@/api/notification"
 import { getChatUnreadCount } from "@/api/chat"
+import { getMyOrders } from "@/api/mall"
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -182,6 +183,10 @@ async function loadNotifications() {
       const chatData = await getChatUnreadCount()
       chatUnread.value = chatData?.count ?? 0
     } catch { chatUnread.value = 0 }
+    // 后台触发物流状态检测（查待收货订单，触发 checkAndNotifyLogistics）
+    try {
+      await getMyOrders({ status: 'SHIPPED' })
+    } catch { /* ignore */ }
   } catch {
     // ignore
   }
@@ -189,7 +194,7 @@ async function loadNotifications() {
 
 function toggleNotif() {
   notifOpen.value = !notifOpen.value
-  if (notifOpen.value && notifList.value.length === 0) {
+  if (notifOpen.value) {
     loadNotifications()
   }
 }
@@ -258,10 +263,11 @@ function handleClickOutside(e) {
 
 onMounted(() => {
   document.addEventListener("click", handleClickOutside)
-  // 登录后初始加载通知数
+  // 登录后初始加载通知数 + 物流检测
   if (userStore.isLogin) {
     getUnreadCount().then(d => { unreadCount.value = d?.count ?? 0 }).catch(() => {})
     getChatUnreadCount().then(d => { chatUnread.value = d?.count ?? 0 }).catch(() => {})
+    getMyOrders({ status: 'SHIPPED' }).catch(() => {})
   }
 })
 onUnmounted(() => {

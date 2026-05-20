@@ -33,6 +33,11 @@ public interface UserMapper {
 
     List<SysUser> selectDonorApplies();
 
+    /**
+     * 查询所有管理员用户ID
+     */
+    List<Long> selectAdminUserIds();
+
     // ========== Dashboard 统计 ==========
     int countAll();
 

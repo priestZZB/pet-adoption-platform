@@ -52,6 +52,14 @@ pet:
   realname:
     mock: true        # true=模拟通过(校验DB) | false=调人脸比对API
 
+  # AI智能咨询
+  ai:
+    mock: false        # true=提示维护中 | false=使用真实API
+
+  # 聊天违禁限制
+  chat:
+    violation-limit: 3   # 累计违规几次后自动封号
+
 mybatis:
   configuration:
     # 开发环境打印 SQL

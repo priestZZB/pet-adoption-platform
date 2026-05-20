@@ -23,6 +23,11 @@ public interface AdoptApplicationMapper {
      */
     int countActiveByUserAndPet(@Param("userId") Long userId, @Param("petId") Long petId);
 
+    /**
+     * 统计用户对该宠物的已通过领养申请数
+     */
+    int countApproved(@Param("userId") Long userId, @Param("petId") Long petId);
+
     // ========== Dashboard 统计 ==========
     int countAll();
 

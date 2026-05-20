@@ -8,7 +8,7 @@ public interface ChatService {
     /**
      * 发送消息
      */
-    Long sendMessage(Long senderId, Long receiverId, Long petId, String content);
+    Long sendMessage(Long senderId, Long receiverId, Long petId, String content, String imageUrl);
 
     /**
      * 获取某个会话的消息列表

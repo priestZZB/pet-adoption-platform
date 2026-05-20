@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Log("商城订单")
 @Api(tags = "商城-订单（用户）")
@@ -30,6 +32,23 @@ public class OrderController {
     public Result<OrderVo> create(HttpServletRequest request, @RequestBody CheckoutDto dto) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
         return Result.success(orderService.create(userId, dto));
+    }
+
+    /**
+     * 立即购买（不走购物车，直接传入商品ID和数量）
+     */
+    @ApiOperation("立即购买")
+    @PostMapping("/buy-now")
+    public Result<Map<String, Object>> buyNow(HttpServletRequest request, @RequestBody Map<String, Object> params) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        Long productId = Long.valueOf(params.get("productId").toString());
+        Integer quantity = Integer.valueOf(params.get("quantity").toString());
+        OrderVo order = orderService.buyNow(userId, productId, quantity);
+        Map<String, Object> result = new HashMap<>();
+        result.put("orderId", order.getId());
+        result.put("orderNo", order.getOrderNo());
+        result.put("totalAmount", order.getTotalAmount());
+        return Result.success(result);
     }
 
     /**

@@ -71,15 +71,27 @@
                 size="large"
               />
             </div>
-            <el-button
-              class="add-cart-btn"
-              size="large"
-              :icon="ShoppingCart"
-              :disabled="product.stock <= 0"
-              @click="handleAddCart"
-            >
-              加入购物车
-            </el-button>
+            <div class="btn-wrap">
+              <el-button
+                class="buy-now-btn"
+                size="large"
+                :disabled="product.stock <= 0"
+                @click="handleBuyNow"
+              >
+                立即购买
+              </el-button>
+            </div>
+            <div class="btn-wrap">
+              <el-button
+                class="add-cart-btn"
+                size="large"
+                :icon="ShoppingCart"
+                :disabled="product.stock <= 0"
+                @click="handleAddCart"
+              >
+                加入购物车
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -140,6 +152,22 @@ async function handleAddCart() {
   try {
     await addToCart({ productId: product.value.id, quantity: quantity.value })
     ElMessage.success('已加入购物车')
+  } catch {
+    // 请求拦截器统一处理
+  }
+}
+
+async function handleBuyNow() {
+  if (!userStore.isLogin) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
+  try {
+    // 先加入购物车，然后跳转结算页（跟购物车点结算同一页面）
+    await addToCart({ productId: product.value.id, quantity: quantity.value })
+    router.push('/mall/checkout')
   } catch {
     // 请求拦截器统一处理
   }
@@ -234,17 +262,39 @@ onMounted(loadDetail)
 
 .action-row {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
 }
 .quantity-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+.btn-wrap {
+  width: 100%;
+}
+.btn-wrap :deep(.el-button) {
+  width: 100%;
+}
 .quantity-wrapper .label {
   font-size: 14px;
   color: var(--yc-text-tertiary);
+}
+
+/* 立即购买按钮 */
+:deep(.buy-now-btn) {
+  background: #c19a6b;
+  border: 1px solid #c19a6b;
+  color: #fff;
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+  padding: 12px 24px;
+  font-size: 15px;
+}
+:deep(.buy-now-btn:hover) {
+  background: #b0895a;
+  border-color: #b0895a;
+  color: #fff;
 }
 
 /* 加入购物车按钮暖色 */
@@ -254,7 +304,7 @@ onMounted(loadDetail)
   color: var(--yc-btn-text);
   border-radius: var(--yc-radius-btn);
   font-weight: 500;
-  padding: 12px 28px;
+  padding: 12px 24px;
   font-size: 15px;
 }
 :deep(.add-cart-btn:hover) {

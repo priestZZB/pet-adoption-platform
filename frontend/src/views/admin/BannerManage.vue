@@ -108,7 +108,11 @@ function openDialog(row) {
     Object.assign(form, { imageUrl: row.imageUrl, title: row.title || '', sortOrder: row.sortOrder || 0 })
   } else {
     isEdit.value = false; editId.value = null
-    Object.assign(form, { imageUrl: '', title: '', sortOrder: 0 })
+    // 自动计算下一个未使用的排序号
+    const usedOrders = new Set(list.value.map(i => i.sortOrder))
+    let next = 1
+    while (usedOrders.has(next)) next++
+    Object.assign(form, { imageUrl: '', title: '', sortOrder: next })
   }
   dialogVisible.value = true
 }

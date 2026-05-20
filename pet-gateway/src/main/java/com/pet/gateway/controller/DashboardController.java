@@ -3,6 +3,7 @@ package com.pet.gateway.controller;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
+import com.pet.module.system.mapper.FeedbackMapper;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.pet.mapper.PetInfoMapper;
 import com.pet.module.adopt.mapper.AdoptApplicationMapper;
@@ -39,6 +40,9 @@ public class DashboardController {
     @Autowired
     private MallOrderMapper mallOrderMapper;
 
+    @Autowired
+    private FeedbackMapper feedbackMapper;
+
     @ApiOperation("控制台统计数据")
     @GetMapping("/dashboard/stats")
     public Result<Map<String, Object>> dashboardStats() {
@@ -55,8 +59,9 @@ public class DashboardController {
         int donorPending = userMapper.countByDonorStatus("PENDING");
         int petFinalReview = petInfoMapper.countByStatus("FIRST_PASS");
         int adoptPending = adoptApplicationMapper.countByStatus("PENDING");
+        int feedbackPending = feedbackMapper.countPending();
 
-        int pendingTotal = volunteerPending + donorPending + petFinalReview + adoptPending;
+        int pendingTotal = volunteerPending + donorPending + petFinalReview + adoptPending + feedbackPending;
 
         stats.put("userCount", userCount);
         stats.put("petCount", petCount);
@@ -70,6 +75,7 @@ public class DashboardController {
         pending.put("donorApplies", donorPending);
         pending.put("petFinalReview", petFinalReview);
         pending.put("adoptApplications", adoptPending);
+        pending.put("feedbackPending", feedbackPending);
         pending.put("total", pendingTotal);
         stats.put("pending", pending);
 

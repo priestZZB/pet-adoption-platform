@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * JWT 认证拦截器
@@ -81,6 +82,18 @@ public class AuthInterceptor implements HandlerInterceptor {
             if (Boolean.TRUE.equals(isBlacklisted)) {
                 throw new UnauthorizedException(ResultCodeEnum.TOKEN_INVALID);
             }
+        }
+
+        // 检查用户是否被管理员禁用
+        Long uid = Long.valueOf(claims.getSubject());
+        Integer userStatus = jdbcTemplate.queryForObject(
+                "SELECT status FROM sys_user WHERE id = ?", Integer.class, uid);
+        if (userStatus != null && userStatus == 0) {
+            // 把该用户的token也加入黑名单，强制退出
+            if (jti != null) {
+                redisTemplate.opsForValue().set(BLACKLIST_PREFIX + jti, "1", 24, TimeUnit.HOURS);
+            }
+            throw new UnauthorizedException(ResultCodeEnum.USER_DISABLED);
         }
 
         // 3. 用户信息存入 request

@@ -65,4 +65,9 @@
     <select id="countByStatus" resultType="int">
         SELECT COUNT(*) FROM adopt_application WHERE status = #{status}
     </select>
+
+    <select id="countApproved" resultType="int">
+        SELECT COUNT(*) FROM adopt_application
+        WHERE user_id = #{userId} AND pet_id = #{petId} AND status = 'APPROVED'
+    </select>
 </mapper>

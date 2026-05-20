@@ -52,7 +52,7 @@
         </el-tab-pane>
 
         <!-- Tab 2：手机号+短信验证码登录 -->
-        <el-tab-pane label="手机号登录" name="phone">
+        <el-tab-pane label="短信登录" name="phone">
           <el-form
             ref="phoneFormRef"
             :model="phoneForm"

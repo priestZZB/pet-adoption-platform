@@ -16,4 +16,6 @@ public interface FeedbackMapper {
     List<SysFeedback> selectAll();
 
     List<SysFeedback> selectPending();
+
+    int countPending();
 }
