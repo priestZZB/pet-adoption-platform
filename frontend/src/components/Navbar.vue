@@ -299,6 +299,7 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside)
   sseDisconnect()
+  wsDisconnect()
   if (chatUnreadTimer) clearInterval(chatUnreadTimer)
 })
 </script>

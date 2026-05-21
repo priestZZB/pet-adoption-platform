@@ -7,10 +7,16 @@ import { useUserStore } from '@/stores/user'
 
 const BASE_URL = ''
 
+// SSE 重连最大次数和基础间隔
+const MAX_RETRIES = 50
+const BASE_DELAY = 3000
+
 export function useChatSSE() {
   const userStore = useUserStore()
   const eventSource = ref(null)
   const connected = ref(false)
+  let retryCount = 0
+  let retryTimer = null
 
   /**
    * 建立 SSE 连接
@@ -18,6 +24,7 @@ export function useChatSSE() {
    * @param {Function} handlers.onNewMessage - 新消息回调 (msg)
    * @param {Function} handlers.onUnreadCount - 未读更新回调 (count)
    * @param {Function} handlers.onConversationUpdate - 会话更新回调
+   * @param {Function|boolean} handlers.onReconnect - false 禁止重连，或函数回调
    */
   function connect(handlers = {}) {
     if (!userStore.isLogin || !userStore.token) return
@@ -27,7 +34,10 @@ export function useChatSSE() {
     const url = `${BASE_URL}/api/chat/sse/subscribe?token=${encodeURIComponent(userStore.token)}`
     const esWithToken = new EventSource(url)
 
-    esWithToken.onopen = () => { connected.value = true }
+    esWithToken.onopen = () => {
+      connected.value = true
+      retryCount = 0  // 连接成功后重置重试计数
+    }
 
     esWithToken.addEventListener('new-message', (e) => {
       try {
@@ -60,13 +70,30 @@ export function useChatSSE() {
 
     esWithToken.onerror = () => {
       connected.value = false
-      // 自动重连
-      setTimeout(() => {
-        if (handlers.onReconnect !== false) connect(handlers)
-      }, 3000)
+      retryCount++
+      // 调用者可通过 onReconnect === false 禁用自动重连
+      if (handlers.onReconnect === false) return
+      // 超过最大重试次数后停止
+      if (retryCount > MAX_RETRIES) return
+      // 指数退避：3s → 4.5s → 6.75s → ... 最大60s
+      const delay = Math.min(BASE_DELAY * Math.pow(1.5, Math.min(retryCount - 1, 10)), 60000)
+      retryTimer = setTimeout(() => connect(handlers), delay)
     }
 
     eventSource.value = esWithToken
+  }
+
+  function disconnect() {
+    if (retryTimer) {
+      clearTimeout(retryTimer)
+      retryTimer = null
+    }
+    retryCount = 0
+    if (eventSource.value) {
+      eventSource.value.close()
+      eventSource.value = null
+    }
+    connected.value = false
   }
 
   function disconnect() {

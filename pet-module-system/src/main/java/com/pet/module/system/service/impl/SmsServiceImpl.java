@@ -19,12 +19,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * 短信服务实现 — 调用第三方三网106短信API
  * 验证码存储于 Redis，有效期 5 分钟
+ * 同一手机号发送间隔限制，防止短信轰炸
  */
 @Slf4j
 @Service
 public class SmsServiceImpl implements SmsService {
 
     private static final String SMS_CODE_PREFIX = "sms:code:";
+    private static final String SMS_RATE_PREFIX = "sms:rate:";
     private static final int CODE_EXPIRE_MINUTES = 5;
     private static final int CODE_LENGTH = 6;
 
@@ -47,6 +49,12 @@ public class SmsServiceImpl implements SmsService {
     @Value("${pet.sms.mock:true}")
     private boolean smsMock;
 
+    /**
+     * 同一手机号发送验证码的最小间隔（秒），默认60秒
+     */
+    @Value("${pet.sms.rate-limit-seconds:60}")
+    private int rateLimitSeconds;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -54,17 +62,27 @@ public class SmsServiceImpl implements SmsService {
 
     @Override
     public String sendCode(String phone) {
-        // 1. 生成6位随机验证码
+        // 1. 检查发送频率限制，防止短信轰炸
+        String rateKey = SMS_RATE_PREFIX + phone;
+        String lastSend = redisTemplate.opsForValue().get(rateKey);
+        if (lastSend != null) {
+            long remainingTtl = redisTemplate.getExpire(rateKey, TimeUnit.SECONDS);
+            if (remainingTtl > 0) {
+                throw new BusinessException(ResultCodeEnum.PARAM_INVALID,
+                        "发送过于频繁，请" + remainingTtl + "秒后重试");
+            }
+        }
+
+        // 2. 生成6位随机验证码
         String code = RandomUtil.randomNumbers(CODE_LENGTH);
 
-        // 2. 开发模式：跳过真实短信发送，控制台输出验证码
+        // 3. 开发模式：跳过真实短信发送，控制台输出验证码
         if (smsMock) {
             log.info("========== 📱 短信验证码（模拟）==========");
             log.info("手机号: {}", phone);
             log.info("验证码: {}", code);
             log.info("有效期: {}分钟", CODE_EXPIRE_MINUTES);
             log.info("========================================");
-            // 控制台额外输出，方便一眼看到
             System.out.println("\n========== 📱 短信验证码（模拟）==========");
             System.out.println("手机号: " + phone);
             System.out.println("验证码: " + code);
@@ -113,7 +131,10 @@ public class SmsServiceImpl implements SmsService {
             }
         }
 
-        // 3. 验证码存入 Redis，5分钟有效
+        // 4. 记录发送时间到Redis，用于频率限制
+        redisTemplate.opsForValue().set(rateKey, "1", rateLimitSeconds, TimeUnit.SECONDS);
+
+        // 5. 验证码存入 Redis，5分钟有效
         redisTemplate.opsForValue().set(
                 SMS_CODE_PREFIX + phone,
                 code,

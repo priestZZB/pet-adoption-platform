@@ -21,6 +21,7 @@ import com.pet.module.system.service.SmsService;
 import com.pet.module.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -61,6 +62,65 @@ public class UserServiceImpl implements UserService {
     private CaptchaService captchaService;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+    // ====== 登录安全：失败次数限制 ======
+    private static final String LOGIN_FAIL_PREFIX = "login:fail:";
+    private static final String LOGIN_LOCK_PREFIX = "login:lock:";
+
+    @Value("${pet.login.max-attempts:5}")
+    private int maxAttempts;
+
+    @Value("${pet.login.lock-minutes:15}")
+    private int lockMinutes;
+
+    /**
+     * 检查账号是否被锁定，如锁定则抛出异常并提示剩余时间
+     */
+    private void checkAccountLocked(String username) {
+        String lockKey = LOGIN_LOCK_PREFIX + username;
+        String lockValue = redisTemplate.opsForValue().get(lockKey);
+        if (lockValue != null) {
+            long remainingTtl = redisTemplate.getExpire(lockKey, java.util.concurrent.TimeUnit.SECONDS);
+            throw new BusinessException(ResultCodeEnum.ACCOUNT_LOCKED,
+                    "登录失败次数过多，账号已被锁定，请" + remainingTtl + "秒后重试");
+        }
+    }
+
+    /**
+     * 记录登录失败次数，达到阈值则锁定账号
+     */
+    private void recordLoginFailure(String username) {
+        String failKey = LOGIN_FAIL_PREFIX + username;
+        long count = redisTemplate.opsForValue().increment(failKey);
+
+        if (count == 1) {
+            // 第一次失败时设置过期时间（与锁定时间一致）
+            redisTemplate.expire(failKey, lockMinutes, java.util.concurrent.TimeUnit.MINUTES);
+        }
+
+        if (count >= maxAttempts) {
+            // 达到阈值，锁定账号
+            String lockKey = LOGIN_LOCK_PREFIX + username;
+            redisTemplate.opsForValue().set(lockKey, "1", lockMinutes, java.util.concurrent.TimeUnit.MINUTES);
+            // 清除失败计数
+            redisTemplate.delete(failKey);
+            throw new BusinessException(ResultCodeEnum.ACCOUNT_LOCKED,
+                    "登录失败次数过多，账号已被锁定" + lockMinutes + "分钟，请稍后重试");
+        }
+
+        // 返回剩余尝试次数
+        long remaining = maxAttempts - count;
+        throw new BusinessException(ResultCodeEnum.PASSWORD_INCORRECT,
+                "密码错误，还剩" + remaining + "次尝试机会");
+    }
+
+    /**
+     * 登录成功后清除失败记录
+     */
+    private void clearLoginFailures(String username) {
+        redisTemplate.delete(LOGIN_FAIL_PREFIX + username);
+        redisTemplate.delete(LOGIN_LOCK_PREFIX + username);
+    }
 
     @Override
     @Transactional
@@ -115,18 +175,33 @@ public class UserServiceImpl implements UserService {
 
         // 支持用户名或手机号登录
         SysUser user = userMapper.selectByUsername(dto.getUsername());
+        String loginIdentity = dto.getUsername();
         if (user == null) {
             user = userMapper.selectByPhone(dto.getUsername());
+            if (user != null) {
+                loginIdentity = user.getUsername();
+            }
+        } else {
+            loginIdentity = user.getUsername();
         }
+
+        // 检查账号是否被锁定
+        checkAccountLocked(loginIdentity);
+
         if (user == null) {
-            throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "用户不存在，请先注册");
+            // 用户不存在时记录失败，防止枚举用户名
+            recordLoginFailure(loginIdentity);
         }
         if (user.getStatus() == 0) {
             throw new BusinessException(ResultCodeEnum.USER_DISABLED);
         }
         if (!encoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new BusinessException(ResultCodeEnum.PASSWORD_INCORRECT);
+            // 密码错误，记录失败次数
+            recordLoginFailure(loginIdentity);
         }
+
+        // 登录成功，清除失败记录
+        clearLoginFailures(loginIdentity);
 
         List<String> roles = userRoleMapper.selectRoleCodesByUserId(user.getId());
         String role = roles.isEmpty() ? "USER" : roles.get(0);

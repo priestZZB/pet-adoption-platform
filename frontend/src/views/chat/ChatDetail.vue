@@ -475,7 +475,7 @@ onMounted(async () => {
   }, 2000)
 
   // 定时查询在线状态兜底（每10秒）
-  setInterval(() => {
+  const onlinePollTimer = setInterval(() => {
     if (otherUserId.value) {
       getOnlineUsers().then(ids => {
         otherOnline.value = Array.isArray(ids) && ids.includes(Number(otherUserId.value))
@@ -485,11 +485,13 @@ onMounted(async () => {
 })
 
 let pollTimer = null
+let onlinePollTimer = null
 
 onUnmounted(() => {
   wsDisconnect()
   sseDisconnect()
   if (pollTimer) clearInterval(pollTimer)
+  if (onlinePollTimer) clearInterval(onlinePollTimer)
 })
 </script>
 

@@ -27,6 +27,7 @@ public enum ResultCodeEnum {
     // 401 系列 — 认证
     TOKEN_INVALID(4011, "Token无效"),
     TOKEN_EXPIRED(4012, "Token已过期"),
+    ACCOUNT_LOCKED(4013, "账号已被锁定"),
 
     // 403 系列 — 权限
     USER_DISABLED(4031, "账号已被禁用"),

@@ -77,8 +77,23 @@ logging:
     com.pet: debug
     org.springframework: warn
 
-# ---- 项目自定义配置 ----
+# ---- CORS 跨域配置 ----
 pet:
+  cors:
+    # 允许的前端来源域名，多个用逗号分隔，生产环境请替换为实际域名
+    # 例如: http://localhost:3000,http://localhost:3001,https://your-domain.com
+    allowed-origins: "*"
+
+  # ---- 短信验证码 ----
+  sms:
+    mock: true                        # true=模拟模式，false=真实发送
+    rate-limit-seconds: 60             # 同一手机号发送间隔（秒）
+
+  # ---- 登录安全 ----
+  login:
+    max-attempts: 5                   # 最大连续失败次数
+    lock-minutes: 15                  # 锁定时间（分钟）
+
   ai:
     # api-key 在 application-secret.yml 中配置（不提交到Git）
     model: "deepseek-chat"

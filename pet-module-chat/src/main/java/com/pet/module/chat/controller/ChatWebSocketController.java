@@ -55,10 +55,12 @@ public class ChatWebSocketController {
         if (userIdObj == null) return;
 
         Long userId = Long.valueOf(userIdObj.toString());
-        onlineUsers.add(userId);
+        // Set.add() 返回 true 表示之前不在集合中（确实新增了）
+        boolean isNewUser = onlineUsers.add(userId);
 
-        // 广播在线用户列表
-        broadcastOnlineStatus();
+        if (isNewUser) {
+            broadcastOnlineStatus(userId, true);
+        }
     }
 
     /**
@@ -73,7 +75,7 @@ public class ChatWebSocketController {
         Long userId = Long.valueOf(userIdObj.toString());
         onlineUsers.remove(userId);
 
-        broadcastOnlineStatus();
+        broadcastOnlineStatus(userId, false);
     }
 
     /**
@@ -94,10 +96,19 @@ public class ChatWebSocketController {
                 "{\"userId\":" + checkUserId + ",\"online\":" + online + "}");
     }
 
-    private void broadcastOnlineStatus() {
-        // 推送给所有在线用户（实际可优化为只推送给相关用户）
-        // 当前简化为通过 SSE 推送给所有连接的用户
-        // 完整的广播逻辑后续可优化
+    /**
+     * 向所有在线用户广播某用户的在线/离线状态
+     * @param userId 状态变化的用户ID
+     * @param online true=上线 false=离线
+     */
+    private void broadcastOnlineStatus(Long userId, boolean online) {
+        String data = "{\"userId\":" + userId + ",\"online\":" + online + "}";
+        for (Long uid : onlineUsers) {
+            if (!uid.equals(userId)) {
+                messagingTemplate.convertAndSendToUser(
+                        uid.toString(), "/queue/online", data);
+            }
+        }
     }
 
     /** 获取在线用户列表 */
