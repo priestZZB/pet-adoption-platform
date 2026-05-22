@@ -20,7 +20,6 @@ const routes = [
       { path: 'notices/:id', component: () => import('@/views/notice/NoticeDetail.vue') },
       { path: 'ai',         component: () => import('@/views/ai/AIChat.vue'), meta: { requiresAuth: true } },
       { path: 'user/orders',      component: () => import('@/views/mall/MyOrders.vue'), meta: { requiresAuth: true } },
-      { path: 'user/reviews',     component: () => import('@/views/mall/MyReviews.vue'), meta: { requiresAuth: true } },
       { path: 'mall/cart',         component: () => import('@/views/mall/Cart.vue'), meta: { requiresAuth: true } },
     ]
   },
@@ -43,6 +42,7 @@ const routes = [
       { path: 'user/chats',       component: () => import('@/views/chat/ChatList.vue'), meta: { requiresAuth: true } },
       { path: 'user/chat',        component: () => import('@/views/chat/ChatDetail.vue'), meta: { requiresAuth: true } },
       { path: 'user/feedback',    component: () => import('@/views/user/MyFeedback.vue'), meta: { requiresAuth: true } },
+      { path: 'user/reviews',    component: () => import('@/views/mall/MyReviews.vue'), meta: { requiresAuth: true } },
       { path: 'user/adopt-applications', component: () => import('@/views/adopt/MyApplications.vue'), meta: { requiresAuth: true } },
       { path: 'user/volunteer-apply', component: () => import('@/views/user/ApplyVolunteer.vue'), meta: { requiresAuth: true } },
       { path: 'user/donor-apply',    component: () => import('@/views/user/ApplyDonor.vue'), meta: { requiresAuth: true } },
@@ -94,12 +94,39 @@ const routes = [
 
 const router = createRouter({ history: createWebHistory(), routes })
 
-// 路由守卫：未登录 → 跳登录 | 无权限 → 跳403
+// 路由守卫：未登录 → 跳登录 | 管理员限制 | 角色权限
 router.beforeEach(async (to, from) => {
   const token = getToken()
   if (to.meta.requiresAuth && !token) {
     return '/login'
   }
+
+  // 管理员限制：不能访问用户操作页面，只能预览首页/商城/宠物/公告和后台
+  if (token && to.path !== '/login' && to.path !== '/register' && to.path !== '/reset-password') {
+    const userStore = useUserStore()
+    if (!userStore.userInfo) {
+      await userStore.fetchUserInfo()
+    }
+    if (userStore.isAdmin) {
+      const path = to.path
+      // 允许管理员访问的路径（预览类 + 后台类）
+      const allowed = [
+        '/', '/mall', '/ai', '/notices', '/admin',
+        '/user/profile', '/user/reviews'
+      ]
+      const allowedPrefix = [
+        '/admin/', '/mall/products/', '/pets/', '/notices/',
+        '/user/profile/', '/user/review/'
+      ]
+      const isAllowed = allowed.includes(path) || allowedPrefix.some(p => path.startsWith(p))
+
+      if (!isAllowed) {
+        ElMessage.warning('管理员不能访问此页面')
+        return false  // 阻止导航，留在当前页
+      }
+    }
+  }
+
   if (to.meta.role) {
     const userStore = useUserStore()
     // 每次进入需要角色的页面都重新获取用户信息，确保角色是最新的

@@ -56,7 +56,7 @@ async function loadList() {
 }
 
 function goProduct(productId) {
-  router.push('/mall/' + productId + '?tab=reviews')
+  router.push('/mall/products/' + productId + '?tab=reviews')
 }
 
 function formatTime(t) {

@@ -44,6 +44,11 @@ request.interceptors.response.use(
       router.push('/login?reason=' + reason)
       return Promise.reject(new Error(msg))
     }
+    // 管理员权限拦截（4032）：直接弹友好提示，不跳转
+    if (code === 4032) {
+      ElMessage.warning(msg || '管理员不能执行此操作')
+      return Promise.reject(new Error(msg))
+    }
     // 其他业务错误由各页面的 catch 自行弹窗提示
     // 避免拦截器弹一次、页面 catch 又弹一次
     return Promise.reject(new Error(msg))

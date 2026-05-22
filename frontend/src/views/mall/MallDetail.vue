@@ -252,6 +252,10 @@ async function handleAddCart() {
     router.push('/login')
     return
   }
+  if (userStore.isAdmin) {
+    ElMessage.warning('管理员不能执行此操作')
+    return
+  }
 
   try {
     await addToCart({ productId: product.value.id, quantity: quantity.value })
@@ -265,6 +269,10 @@ async function handleBuyNow() {
   if (!userStore.isLogin) {
     ElMessage.warning('请先登录')
     router.push('/login')
+    return
+  }
+  if (userStore.isAdmin) {
+    ElMessage.warning('管理员不能执行此操作')
     return
   }
 

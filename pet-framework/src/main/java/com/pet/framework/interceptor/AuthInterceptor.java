@@ -106,6 +106,23 @@ public class AuthInterceptor implements HandlerInterceptor {
         request.setAttribute("userId", claims.getSubject());
         request.setAttribute("role", claims.get("role", String.class));
 
+        // 3.5 管理员只能使用后台管理功能，不能进行普通用户操作
+        //     （领养宠物、购买商品、发表评论、发布送养、志愿者操作等一律拦截）
+        String role = claims.get("role", String.class);
+        if ("ADMIN".equals(role)) {
+            String method = request.getMethod();
+            String uri = request.getRequestURI();
+            boolean allowed = "GET".equals(method)
+                    || uri.startsWith("/api/admin/")
+                    || uri.equals("/api/user/logout")
+                    || uri.startsWith("/api/file/")
+                    || uri.startsWith("/api/notifications/");
+            if (!allowed) {
+                throw new UnauthorizedException(ResultCodeEnum.ROLE_REQUIRED.getCode(),
+                        "管理员不能执行此操作");
+            }
+        }
+
         // 4. 校验 @RequireRole 权限（从数据库查询最新角色，而非依赖JWT里可能过期的缓存）
         HandlerMethod hm = (HandlerMethod) handler;
         RequireRole methodRole = hm.getMethodAnnotation(RequireRole.class);

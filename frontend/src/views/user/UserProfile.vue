@@ -93,10 +93,7 @@
           <el-icon :size="24" color="#F56C6C"><Star /></el-icon>
           <span>我的收藏</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/orders')">
-          <el-icon :size="24" color="#409EFF"><Tickets /></el-icon>
-          <span>我的订单</span>
-        </div>
+
         <div class="menu-item" @click="$router.push('/user/reviews')">
           <el-icon :size="24" color="#67C23A"><EditPen /></el-icon>
           <span>我的评价</span>
@@ -177,7 +174,7 @@ import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   CircleCheck, Edit, Postcard, Lock, User, UserFilled, Iphone,
-  Star, Tickets, Select, ChatLineSquare, Camera, InfoFilled, StarFilled, EditPen
+  Star, Select, ChatLineSquare, Camera, InfoFilled, StarFilled, EditPen
 } from '@element-plus/icons-vue'
 import { uploadAvatar } from '@/api/user'
 import { ROLE_MAP } from '@/utils/constants'

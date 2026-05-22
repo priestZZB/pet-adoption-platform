@@ -36,55 +36,44 @@ const router = useRouter()
 function goBack() {
   const path = router.currentRoute.value.path
 
-  // ===== 精确匹配首页级别的 =====
-  if (path === '/user/chats') { router.push('/'); return }
-  if (path === '/user/adopt-applications') { router.push('/'); return }
-  if (path === '/volunteer/pending') { router.push('/'); return }
-  if (path === '/volunteer/reviewed') { router.push('/'); return }
-  if (path === '/volunteer/visits') { router.push('/'); return }
-  if (path === '/donate/pets') { router.push('/'); return }
-  if (path === '/donate/publish') { router.push('/donate/pets'); return }
-
-  // ===== 子页面 → 父页面 =====
-  // 聊天
-  if (path === '/user/chat') { router.push('/user/chats'); return }
-  // 志愿者子页
-  if (path.startsWith('/volunteer/review/')) { router.push('/volunteer/pending'); return }
-  if (path.startsWith('/volunteer/review-history/')) { router.push('/volunteer/reviewed'); return }
-  if (path.startsWith('/volunteer/visits/add')) { router.push('/volunteer/visits'); return }
-  if (path.startsWith('/volunteer/visits/')) { router.push('/volunteer/visits'); return }
-  // 送养人子页
-  if (path.startsWith('/donate/detail/')) { router.push('/donate/pets'); return }
-  if (path.startsWith('/donate/pets/')) { router.push('/donate/pets'); return }
-  // 领养子页
-  if (path.startsWith('/user/adopt-application/')) { router.push('/user/adopt-applications'); return }
-  // 订单详情 → 订单列表（修复关键 bug！）
-  if (path.startsWith('/user/orders/')) { router.push('/user/orders'); return }
-  // 评价页面 → 回退（新标签打开时去评价列表）
-  if (path.startsWith('/user/review/')) {
+  // 辅助：尝试 router.back()，100ms 后如果还在当前页则跳 fallback
+  function backOrFallback(fallback) {
     router.back()
     setTimeout(() => {
       if (router.currentRoute.value.path === path) {
-        router.replace('/user/reviews')
+        router.replace(fallback || '/')
       }
     }, 100)
-    return
   }
-  // 用户子页（有明确上级的）
-  if (path.startsWith('/user/profile/')) { router.push('/user/profile'); return }
-  // 其他 /user/* 命中的先试试返回上一页
-  if (path.startsWith('/user/')) {
-    router.back()
-    return
-  }
-  // 领养考试/申请
-  if (path.startsWith('/adopt/')) { router.push('/'); return }
-  // 宠物详情
-  if (path.startsWith('/pets/')) { router.push('/'); return }
-  // 商城
-  if (path.startsWith('/mall/')) { router.push('/mall'); return }
 
-  // 兜底：尽量回退历史记录
+  // ===== 所有页面统一：优先返回上一级（点进来的页面）=====
+  // 精确匹配首页级别（从个人中心/导航栏点进来的，回到上一页）
+  if (path === '/user/chats') { backOrFallback('/'); return }
+  if (path === '/user/adopt-applications') { backOrFallback('/'); return }
+  if (path === '/user/reviews') { backOrFallback('/'); return }
+  if (path === '/volunteer/pending') { backOrFallback('/'); return }
+  if (path === '/volunteer/reviewed') { backOrFallback('/'); return }
+  if (path === '/volunteer/visits') { backOrFallback('/'); return }
+  if (path === '/donate/pets') { backOrFallback('/'); return }
+  if (path === '/donate/publish') { backOrFallback('/donate/pets'); return }
+
+  // 子页面 → 回退，如果没历史记录则跳父页面
+  if (path === '/user/chat') { backOrFallback('/user/chats'); return }
+  if (path.startsWith('/volunteer/review/')) { backOrFallback('/volunteer/pending'); return }
+  if (path.startsWith('/volunteer/review-history/')) { backOrFallback('/volunteer/reviewed'); return }
+  if (path.startsWith('/volunteer/visits/add')) { backOrFallback('/volunteer/visits'); return }
+  if (path.startsWith('/volunteer/visits/')) { backOrFallback('/volunteer/visits'); return }
+  if (path.startsWith('/donate/detail/')) { backOrFallback('/donate/pets'); return }
+  if (path.startsWith('/donate/pets/')) { backOrFallback('/donate/pets'); return }
+  if (path.startsWith('/user/adopt-application/')) { backOrFallback('/user/adopt-applications'); return }
+  if (path.startsWith('/user/orders/')) { backOrFallback('/user/orders'); return }
+  if (path.startsWith('/user/review/')) { backOrFallback('/user/reviews'); return }
+  if (path.startsWith('/user/profile/')) { backOrFallback('/user/profile'); return }
+  if (path.startsWith('/adopt/')) { backOrFallback('/'); return }
+  if (path.startsWith('/pets/')) { backOrFallback('/'); return }
+  if (path.startsWith('/mall/')) { backOrFallback('/mall'); return }
+
+  // 兜底
   router.back()
 }
 </script>

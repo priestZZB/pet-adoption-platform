@@ -2,6 +2,7 @@ package com.pet.module.pet.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.pet.mapper.PetCommentMapper;
 import com.pet.module.pet.mapper.PetInfoMapper;
@@ -16,6 +17,7 @@ import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,9 @@ public class PetCommentServiceImpl implements PetCommentService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     @Override
     @Transactional
     public CommentVo addComment(Long petId, Long userId, CommentDto dto) {
@@ -48,6 +53,19 @@ public class PetCommentServiceImpl implements PetCommentService {
             comment.setImages(String.join(",", dto.getImages()));
         }
         commentMapper.insert(comment);
+
+        // 通知送养人：有人评论了你的宠物
+        if (!pet.getUserId().equals(userId)) {
+            SysUser commenter = userMapper.selectById(userId);
+            String name = commenter != null ? (commenter.getNickname() != null ? commenter.getNickname() : commenter.getUsername()) : "用户";
+            String petName = pet.getName() != null ? pet.getName() : "宠物";
+            eventPublisher.publishEvent(new NotificationEvent(
+                    pet.getUserId(), "PET_COMMENT",
+                    "宠物收到新评论",
+                    name + "评论了你发布的" + petName,
+                    petId));
+        }
+
         return toVo(comment, userId);
     }
 
@@ -66,6 +84,30 @@ public class PetCommentServiceImpl implements PetCommentService {
         reply.setReplyTo(dto.getReplyTo());
         reply.setContent(dto.getContent());
         commentMapper.insert(reply);
+
+        // 通知被回复的人
+        SysUser replier = userMapper.selectById(userId);
+        String replierName = replier != null ? (replier.getNickname() != null ? replier.getNickname() : replier.getUsername()) : "用户";
+        String replySnippet = dto.getContent() != null && dto.getContent().length() > 20 ? dto.getContent().substring(0, 20) + "…" : dto.getContent();
+
+        // 通知父评论的作者（如果不等于回复人自己）
+        if (!parent.getUserId().equals(userId)) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    parent.getUserId(), "PET_COMMENT_REPLY",
+                    "回复了你的评论",
+                    replierName + "回复了你的评论：“" + replySnippet + "”",
+                    parent.getPetId()));
+        }
+
+        // 如果 replyTo 和父评论作者不是同一个人，额外通知 replyTo 的人
+        if (dto.getReplyTo() != null && !dto.getReplyTo().equals(parent.getUserId()) && !dto.getReplyTo().equals(userId)) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    dto.getReplyTo(), "PET_COMMENT_REPLY",
+                    "有人回复了你",
+                    replierName + "回复了你：“" + replySnippet + "”",
+                    parent.getPetId()));
+        }
+
         return toVo(reply, userId);
     }
 
@@ -102,6 +144,17 @@ public class PetCommentServiceImpl implements PetCommentService {
         like.setUserId(userId);
         commentMapper.insertLike(like);
         commentMapper.updateLikeCount(commentId);
+
+        // 通知评论作者有人点赞
+        if (!comment.getUserId().equals(userId)) {
+            SysUser liker = userMapper.selectById(userId);
+            String name = liker != null ? (liker.getNickname() != null ? liker.getNickname() : liker.getUsername()) : "用户";
+            eventPublisher.publishEvent(new NotificationEvent(
+                    comment.getUserId(), "PET_COMMENT_LIKE",
+                    "评论收到点赞",
+                    name + "赞了你的评论",
+                    comment.getPetId()));
+        }
     }
 
     @Override
@@ -125,6 +178,17 @@ public class PetCommentServiceImpl implements PetCommentService {
         dislike.setUserId(userId);
         commentMapper.insertDislike(dislike);
         commentMapper.updateDislikeCount(commentId);
+
+        // 通知评论作者被踩
+        if (!comment.getUserId().equals(userId)) {
+            SysUser disliker = userMapper.selectById(userId);
+            String name = disliker != null ? (disliker.getNickname() != null ? disliker.getNickname() : disliker.getUsername()) : "用户";
+            eventPublisher.publishEvent(new NotificationEvent(
+                    comment.getUserId(), "PET_COMMENT_DISLIKE",
+                    "评论收到心碎",
+                    name + "给你的评论点了个心碎💔",
+                    comment.getPetId()));
+        }
     }
 
     @Override

@@ -330,6 +330,10 @@ async function handleAdopt() {
     router.push('/login')
     return
   }
+  if (userStore.isAdmin) {
+    ElMessage.warning('管理员不能执行此操作')
+    return
+  }
   if (!pet.value || pet.value.status !== 'APPROVED') {
     ElMessage.warning('该宠物当前不可申请领养')
     return
@@ -530,6 +534,10 @@ function handleChat() {
   if (!userStore.isLogin) {
     ElMessage.warning('请先登录')
     router.push('/login')
+    return
+  }
+  if (userStore.isAdmin) {
+    ElMessage.warning('管理员不能执行此操作')
     return
   }
   if (pet.value.userId === userStore.userInfo?.id) {
