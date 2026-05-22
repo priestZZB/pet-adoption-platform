@@ -5,7 +5,6 @@
     </div>
 
     <template v-else-if="order">
-      <el-page-header :icon="ArrowLeft" title="返回订单列表" @back="$router.push('/user/orders')" />
 
       <!-- 订单状态步骤条 -->
       <el-card class="section-card" style="margin-top:16px">
@@ -122,8 +121,59 @@
           >
             确认收货
           </el-button>
+          <el-button
+            v-if="order.status === 'RECEIVED' && isReviewed"
+            class="od-review-btn"
+            size="large"
+            @click="goToProductReviews(order)"
+          >
+            查看评价
+          </el-button>
+          <el-button
+            v-if="order.status === 'RECEIVED' && !isReviewed"
+            class="od-review-btn"
+            size="large"
+            @click="router.push('/user/review/' + order.id)"
+          >
+            去评价
+          </el-button>
         </div>
       </el-card>
+
+      <!-- 评价弹窗 -->
+      <el-dialog v-model="reviewDialogVisible" title="评价商品" width="500px" top="10vh">
+        <div v-for="(item, idx) in orderItems" :key="idx" class="review-item-block">
+          <div class="review-product-name">{{ item.productName }}</div>
+          <div class="star-select">
+            <span
+              v-for="s in 5"
+              :key="s"
+              class="star-select-btn"
+              :class="{ active: s <= reviewRating }"
+              @click="reviewRating = s"
+            >★</span>
+            <span class="star-hint">{{ ['', '很差', '较差', '一般', '满意', '非常满意'][reviewRating] }}</span>
+          </div>
+          <el-input v-model="reviewContent" type="textarea" :rows="3" placeholder="说说使用感受..." maxlength="500" show-word-limit />
+          <div class="review-dialog-actions">
+            <el-button size="small" @click="triggerReviewUpload">📷 添加图片</el-button>
+            <input ref="reviewFileInput" type="file" multiple accept="image/*" style="display:none" @change="handleReviewFileChange" />
+            <span v-if="reviewImages.length > 0" class="comment-img-count">{{ reviewImages.length }}张</span>
+          </div>
+          <div v-if="reviewImages.length > 0" class="comment-img-preview">
+            <div v-for="(img, i) in reviewImages" :key="i" class="comment-img-item">
+              <el-image :src="img" fit="cover" style="width:60px;height:60px;border-radius:4px" />
+              <span class="comment-img-remove" @click="reviewImages.splice(i, 1)">✕</span>
+            </div>
+          </div>
+          <el-checkbox v-model="reviewAnonymous">匿名评价</el-checkbox>
+        </div>
+        <template #footer>
+          <el-button @click="reviewDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="reviewSubmitting" @click="submitReview">提交评价</el-button>
+        </template>
+      </el-dialog>
+
     </template>
 
     <template v-else>
@@ -140,6 +190,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Loading } from '@element-plus/icons-vue'
 import { getOrderDetail, payOrder, receiveOrder, cancelOrder } from '@/api/mall'
+import { addReview } from '@/api/review'
+import { uploadFile } from '@/api/file'
 import { ORDER_STATUS } from '@/utils/constants'
 
 const route = useRoute()
@@ -236,6 +288,67 @@ async function handleReceive() {
 }
 
 onMounted(loadDetail)
+
+// ===== 评价弹窗 =====
+const reviewDialogVisible = ref(false)
+const orderItems = ref([])
+const isReviewed = ref(false)
+const reviewRating = ref(5)
+const reviewContent = ref('')
+const reviewImages = ref([])
+const reviewAnonymous = ref(false)
+const reviewSubmitting = ref(false)
+const reviewFileInput = ref(null)
+
+function triggerReviewUpload() { reviewFileInput.value?.click() }
+
+async function handleReviewFileChange(e) {
+  const files = e.target.files
+  if (!files || files.length === 0) return
+  for (const f of files) {
+    try {
+      const res = await uploadFile(f, 'review')
+      if (res && res.url) reviewImages.value.push(res.url)
+    } catch {}
+  }
+  e.target.value = ''
+}
+
+async function submitReview() {
+  if (reviewRating.value < 1) { ElMessage.warning('请选择评分'); return }
+  if (orderItems.value.length === 0) { ElMessage.warning('没有可评价的商品'); return }
+  reviewSubmitting.value = true
+  try {
+    const item = orderItems.value[0]
+    await addReview({
+      orderItemId: item.id,
+      rating: reviewRating.value,
+      content: reviewContent.value,
+      images: reviewImages.value,
+      isAnonymous: reviewAnonymous.value ? 1 : 0
+    })
+    ElMessage.success('评价成功')
+    reviewDialogVisible.value = false
+    isReviewed.value = true
+    reviewContent.value = ''
+    reviewImages.value = []
+  } catch {} finally { reviewSubmitting.value = false }
+}
+
+function goToProductReviews(order) {
+  if (order.items && order.items.length > 0) {
+    router.push('/mall/' + order.items[0].productId + '?tab=reviews')
+  }
+}
+
+// 加载订单后获取订单项
+const origLoad = loadDetail
+loadDetail = async function() {
+  await origLoad()
+  if (order.value && order.value.items) {
+    orderItems.value = order.value.items
+  }
+}
 </script>
 
 <style scoped>
@@ -391,6 +504,18 @@ onMounted(loadDetail)
 :deep(.od-cancel-btn:hover) {
   border-color: #f56c6c;
   color: #f56c6c;
+}
+:deep(.od-review-btn) {
+  background: #c19a6b;
+  border: 1px solid #c19a6b;
+  color: #fff;
+  border-radius: var(--yc-radius-btn);
+  font-weight: 500;
+}
+:deep(.od-review-btn:hover) {
+  background: #b0895a;
+  border-color: #b0895a;
+  color: #fff;
 }
 :deep(.od-receive-btn) {
   background: var(--yc-accent);

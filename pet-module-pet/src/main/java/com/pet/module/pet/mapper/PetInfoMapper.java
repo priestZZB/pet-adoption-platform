@@ -39,4 +39,6 @@ public interface PetInfoMapper {
     int countAll();
 
     int countByStatus(@Param("status") String status);
+
+    long countByCreatedDate(@Param("date") String date);
 }

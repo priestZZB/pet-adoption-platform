@@ -20,6 +20,7 @@ const routes = [
       { path: 'notices/:id', component: () => import('@/views/notice/NoticeDetail.vue') },
       { path: 'ai',         component: () => import('@/views/ai/AIChat.vue'), meta: { requiresAuth: true } },
       { path: 'user/orders',      component: () => import('@/views/mall/MyOrders.vue'), meta: { requiresAuth: true } },
+      { path: 'user/reviews',     component: () => import('@/views/mall/MyReviews.vue'), meta: { requiresAuth: true } },
       { path: 'mall/cart',         component: () => import('@/views/mall/Cart.vue'), meta: { requiresAuth: true } },
     ]
   },
@@ -38,6 +39,7 @@ const routes = [
       { path: 'user/real-name',    component: () => import('@/views/user/RealName.vue'), meta: { requiresAuth: true } },
       { path: 'user/favorites',   component: () => import('@/views/pet/PetFavorites.vue'), meta: { requiresAuth: true } },
       { path: 'user/orders/:id',  component: () => import('@/views/mall/OrderDetail.vue'), meta: { requiresAuth: true } },
+      { path: 'user/review/:id',   component: () => import('@/views/mall/OrderReview.vue'), meta: { requiresAuth: true } },
       { path: 'user/chats',       component: () => import('@/views/chat/ChatList.vue'), meta: { requiresAuth: true } },
       { path: 'user/chat',        component: () => import('@/views/chat/ChatDetail.vue'), meta: { requiresAuth: true } },
       { path: 'user/feedback',    component: () => import('@/views/user/MyFeedback.vue'), meta: { requiresAuth: true } },

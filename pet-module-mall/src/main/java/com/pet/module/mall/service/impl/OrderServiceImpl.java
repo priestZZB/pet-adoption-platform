@@ -152,8 +152,8 @@ public class OrderServiceImpl implements OrderService {
             mallProductMapper.updateById(update);
         }
 
-        // 清空购物车
-        redisTemplate.delete("mall:cart:" + userId);
+        // 清空购物车（Redis + MySQL）
+        cartService.clear(userId);
 
         // 清除商品缓存，库存变化即时显示
         productService.evictProductCache();

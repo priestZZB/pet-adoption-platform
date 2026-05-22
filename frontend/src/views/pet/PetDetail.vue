@@ -171,23 +171,106 @@
           </div>
         </div>
       </div>
-    </template>
-
-    <template v-else>
-      <div class="empty-tip">
-        <el-empty description="宠物信息不存在" />
+    <!-- ===== 评论区 ===== -->
+    <div class="comments-section">
+      <div class="comments-header">
+        <h3>评论（{{ commentTotal }}）</h3>
+        <el-radio-group v-model="commentSort" size="small" @change="loadComments">
+          <el-radio-button value="latest">最新</el-radio-button>
+          <el-radio-button value="hot">最热</el-radio-button>
+        </el-radio-group>
       </div>
-    </template>
-  </div>
+
+      <div v-if="userStore.isLogin" class="comment-input-area">
+        <el-input v-model="commentText" type="textarea" :rows="2" placeholder="说说你的想法..." maxlength="500" show-word-limit />
+        <div class="comment-input-actions">
+          <div>
+            <el-button size="small" @click="triggerCommentUpload">📷 添加图片</el-button>
+            <span v-if="commentImages.length > 0" class="comment-img-count">{{ commentImages.length }}张</span>
+            <input ref="commentFileInput" type="file" multiple accept="image/*" style="display:none" @change="handleCommentFileChange" />
+          </div>
+          <el-button type="primary" size="small" :loading="commentSubmitting" @click="submitComment">发表</el-button>
+        </div>
+        <div v-if="commentImages.length > 0" class="comment-img-preview">
+          <div v-for="(img, idx) in commentImages" :key="idx" class="comment-img-item">
+            <el-image :src="img" fit="cover" style="width:60px;height:60px;border-radius:4px" />
+            <span class="comment-img-remove" @click="commentImages.splice(idx, 1)">✕</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="commentList.length > 0" class="comment-list">
+        <div v-for="item in commentList" :key="item.id" class="comment-item">
+          <el-avatar :size="36" :src="item.avatar">{{ item.nickname?.[0] || '?' }}</el-avatar>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="comment-nickname">{{ item.nickname }}</span>
+              <span class="comment-time">{{ formatTime(item.createdAt) }}</span>
+            </div>
+
+            <!-- 折叠状态只显示提示条 -->
+            <div v-if="item.disliked" class="comment-collapsed">
+              该评论已被折叠
+              <el-button text size="small" class="unfold-btn" @click="toggleDislike(item)">展开</el-button>
+            </div>
+
+            <!-- 未折叠显示全部 -->
+            <template v-else>
+              <div class="comment-content">{{ item.content }}</div>
+              <div v-if="item.images && item.images.length > 0" class="comment-imgs">
+                <el-image v-for="(img, idx) in item.images" :key="idx" :src="img" fit="cover" style="width:60px;height:60px;border-radius:4px;cursor:pointer" :preview-src-list="item.images" :initial-index="idx" preview-teleported />
+              </div>
+            </template>
+
+            <!-- 操作按钮始终可见 -->
+            <div class="comment-actions">
+              <el-button text size="small" @click="toggleLike(item)">{{ item.liked ? '❤️' : '🤍' }} {{ item.likeCount || 0 }}</el-button>
+              <el-button text size="small" @click="toggleDislike(item)" :class="{ 'is-disliked': item.disliked }">{{ item.disliked ? '💔' : '🖤' }} {{ item.dislikeCount || 0 }}</el-button>
+              <el-button text size="small" @click="showReplyInput(item)">回复</el-button>
+              <el-button v-if="item.userId === userStore.userInfo?.id" text size="small" type="danger" @click="handleDeleteComment(item.id)">删除</el-button>
+              <el-button v-if="pet.userId === userStore.userInfo?.id && item.userId !== userStore.userInfo?.id" text size="small" type="danger" @click="handleHideComment(item.id)" style="margin-left:auto">删除</el-button>
+            </div>
+            <div v-if="item.replies && item.replies.length > 0" class="reply-list">
+              <div v-for="reply in item.replies" :key="reply.id" class="reply-item">
+                <span class="reply-nickname">{{ reply.nickname }}</span>
+                <span v-if="reply.replyToName" class="reply-at">回复</span>
+                <span v-if="reply.replyToName" class="reply-nickname">{{ reply.replyToName }}</span>
+                <span class="reply-text">：{{ reply.content }}</span>
+              </div>
+            </div>
+            <div v-if="replyTargetId === item.id" class="reply-input-area">
+              <el-input v-model="replyText" size="small" :placeholder="'回复 ' + item.nickname" @keyup.enter="submitReply(item)" />
+              <div class="reply-input-bottom">
+                <el-button size="small" text @click="triggerReplyUpload">📷</el-button>
+                <input ref="replyFileInput" type="file" multiple accept="image/*" style="display:none" @change="handleReplyFileChange" />
+                <span v-if="replyImages.length > 0" class="comment-img-count">{{ replyImages.length }}张</span>
+                <el-button size="small" type="primary" @click="submitReply(item)">发送</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="comment-empty">暂无评论，来说两句吧~</div>
+    </div>
+  </template>
+
+  <template v-else>
+    <div class="empty-tip">
+      <el-empty description="宠物信息不存在" />
+    </div>
+  </template>
+</div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, CircleCheckFilled, RemoveFilled, Star, Check, ChatDotSquare } from '@element-plus/icons-vue'
 import { getPetDetail, favorite, unfavorite } from '@/api/pet'
 import { getExamHistory } from '@/api/adopt'
+import { getPetComments, addPetComment, replyComment, likeComment, unlikeComment, dislikeComment, undislikeComment, deleteComment, hideComment } from '@/api/comment'
+import { uploadFile } from '@/api/file'
 import { GENDER_MAP, PET_STATUS } from '@/utils/constants'
 import { useUserStore } from '@/stores/user'
 
@@ -206,6 +289,7 @@ async function loadDetail() {
   try {
     pet.value = await getPetDetail(route.params.id)
     isFav.value = pet.value.isFavorited === true
+    loadComments()
   } catch {
     pet.value = null
   } finally {
@@ -294,6 +378,147 @@ async function handleAdopt() {
   router.push('/adopt/apply/' + pet.value.id)
 }
 
+// ===== 评论区 =====
+const commentList = ref([])
+const commentTotal = ref(0)
+const commentSort = ref('latest')
+const commentText = ref('')
+const commentImages = ref([])
+const commentSubmitting = ref(false)
+const commentFileInput = ref(null)
+const replyTargetId = ref(null)
+const replyText = ref('')
+const replyImages = ref([])
+const replyFileInput = ref(null)
+
+function triggerReplyUpload() {
+  replyFileInput.value?.click()
+}
+
+async function handleReplyFileChange(e) {
+  const files = e.target.files
+  if (!files || files.length === 0) return
+  for (const f of files) {
+    try {
+      const res = await uploadFile(f, 'comment')
+      if (res && res.url) replyImages.value.push(res.url)
+    } catch {}
+  }
+  e.target.value = ''
+}
+
+function triggerCommentUpload() {
+  commentFileInput.value?.click()
+}
+
+async function handleCommentFileChange(e) {
+  const files = e.target.files
+  if (!files || files.length === 0) return
+  for (const f of files) {
+    try {
+      const res = await uploadFile(f, 'comment')
+      if (res && res.url) commentImages.value.push(res.url)
+    } catch {}
+  }
+  e.target.value = ''
+}
+
+async function submitComment() {
+  if (!commentText.value.trim() && commentImages.value.length === 0) {
+    ElMessage.warning('请输入评论内容或添加图片')
+    return
+  }
+  commentSubmitting.value = true
+  try {
+    await addPetComment(pet.value.id, { content: commentText.value, images: commentImages.value })
+    ElMessage.success('评论成功')
+    commentText.value = ''
+    commentImages.value = []
+    loadComments()
+  } catch {} finally { commentSubmitting.value = false }
+}
+
+async function loadComments() {
+  if (!pet.value) return
+  try {
+    const res = await getPetComments(pet.value.id, { sort: commentSort.value, page: 1, size: 20 })
+    commentList.value = res.list || []
+    commentTotal.value = res.total || 0
+  } catch {}
+}
+
+function showReplyInput(c) {
+  replyTargetId.value = replyTargetId.value === c.id ? null : c.id
+  replyText.value = ''
+}
+
+async function submitReply(c) {
+  if (!replyText.value.trim() && replyImages.value.length === 0) return
+  try {
+    const data = { content: replyText.value, replyTo: c.userId }
+    if (replyImages.value.length > 0) data.images = replyImages.value
+    await replyComment(c.id, data)
+    ElMessage.success('回复成功')
+    replyText.value = ''
+    replyImages.value = []
+    replyTargetId.value = null
+    loadComments()
+  } catch {}
+}
+
+async function toggleDislike(item) {
+  try {
+    if (item.disliked) {
+      await undislikeComment(item.id)
+      item.disliked = false
+      item.dislikeCount = Math.max(0, (item.dislikeCount || 0) - 1)
+    } else {
+      await dislikeComment(item.id)
+      item.disliked = true
+      item.dislikeCount = (item.dislikeCount || 0) + 1
+      if (item.liked) {
+        item.liked = false
+        await unlikeComment(item.id)
+        item.likeCount = Math.max(0, (item.likeCount || 0) - 1)
+      }
+    }
+  } catch {}
+}
+
+async function toggleLike(item) {
+  try {
+    if (item.liked) {
+      await unlikeComment(item.id)
+      item.liked = false
+      item.likeCount = Math.max(0, (item.likeCount || 0) - 1)
+    } else {
+      await likeComment(item.id)
+      item.liked = true
+      item.likeCount = (item.likeCount || 0) + 1
+    }
+  } catch {}
+}
+
+async function handleDeleteComment(id) {
+  try { await deleteComment(id); ElMessage.success('已删除'); loadComments() } catch {}
+}
+
+async function handleHideComment(id) {
+  try { await hideComment(id); ElMessage.success('已删除'); loadComments() } catch {}
+}
+
+function formatTime(t) {
+  if (!t) return ''
+  const d = new Date(t)
+  const now = new Date()
+  const diff = Math.floor((now - d) / 1000)
+  if (diff < 60) return '刚刚'
+  if (diff < 3600) return Math.floor(diff / 60) + '分钟前'
+  if (diff < 86400) return Math.floor(diff / 3600) + '小时前'
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 function handleThumbnailClick(idx) {
   activeIdx.value = idx
   if (carouselRef.value) {
@@ -315,6 +540,17 @@ function handleChat() {
 }
 
 onMounted(loadDetail)
+
+// 轮询：每30秒刷新评论
+let commentTimer = null
+onMounted(() => {
+  commentTimer = setInterval(() => {
+    if (pet.value) loadComments()
+  }, 10000)
+})
+onUnmounted(() => {
+  if (commentTimer) clearInterval(commentTimer)
+})
 </script>
 
 <style scoped>
@@ -505,5 +741,170 @@ onMounted(loadDetail)
 }
 :deep(.el-carousel__arrow:hover) {
   background: var(--yc-btn-primary);
+}
+
+/* ===== 评论区 ===== */
+.comments-section {
+  margin-top: 24px;
+  background: var(--yc-bg-card);
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  padding: 24px 28px;
+  box-shadow: var(--yc-shadow-card);
+}
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.comments-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--yc-text-primary);
+}
+.comment-input-area {
+  margin-bottom: 20px;
+}
+.comment-input-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.comment-img-count {
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
+  margin-left: 4px;
+}
+.comment-img-preview {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.comment-img-item {
+  position: relative;
+}
+.comment-img-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #F56C6C;
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.comment-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--yc-border);
+}
+.comment-item:last-child {
+  border-bottom: none;
+}
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+.comment-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.comment-nickname {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--yc-accent);
+}
+.comment-time {
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
+}
+.comment-content {
+  font-size: 14px;
+  color: var(--yc-text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  margin-bottom: 6px;
+}
+.comment-imgs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.comment-actions {
+  display: flex;
+  gap: 4px;
+}
+.reply-list {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--yc-bg-page);
+  border-radius: 6px;
+}
+.reply-item {
+  font-size: 13px;
+  color: var(--yc-text-primary);
+  line-height: 1.6;
+}
+.reply-nickname {
+  font-weight: 500;
+  color: var(--yc-accent);
+}
+.reply-at {
+  color: var(--yc-text-tertiary);
+  margin: 0 2px;
+}
+.reply-text {
+  color: var(--yc-text-primary);
+}
+.reply-input-area {
+  margin-top: 8px;
+}
+.reply-input-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.comment-empty {
+  text-align: center;
+  padding: 30px 0;
+  color: var(--yc-text-tertiary);
+  font-size: 14px;
+}
+.comment-collapsed {
+  padding: 8px 10px;
+  background: var(--yc-bg-page);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--yc-text-tertiary);
+  text-align: center;
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.unfold-btn {
+  font-size: 12px;
+}
+.is-disliked :deep(.el-button__text) {
+  color: #e8564a !important;
 }
 </style>

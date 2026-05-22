@@ -51,14 +51,32 @@ function goBack() {
   // 志愿者子页
   if (path.startsWith('/volunteer/review/')) { router.push('/volunteer/pending'); return }
   if (path.startsWith('/volunteer/review-history/')) { router.push('/volunteer/reviewed'); return }
-  if (path.startsWith('/volunteer/visits/')) { router.push('/volunteer/pending'); return }
+  if (path.startsWith('/volunteer/visits/add')) { router.push('/volunteer/visits'); return }
+  if (path.startsWith('/volunteer/visits/')) { router.push('/volunteer/visits'); return }
   // 送养人子页
   if (path.startsWith('/donate/detail/')) { router.push('/donate/pets'); return }
   if (path.startsWith('/donate/pets/')) { router.push('/donate/pets'); return }
   // 领养子页
   if (path.startsWith('/user/adopt-application/')) { router.push('/user/adopt-applications'); return }
-  // 用户子页（所有 /user/* 没有匹配到的）
-  if (path.startsWith('/user/')) { router.push('/'); return }
+  // 订单详情 → 订单列表（修复关键 bug！）
+  if (path.startsWith('/user/orders/')) { router.push('/user/orders'); return }
+  // 评价页面 → 回退（新标签打开时去评价列表）
+  if (path.startsWith('/user/review/')) {
+    router.back()
+    setTimeout(() => {
+      if (router.currentRoute.value.path === path) {
+        router.replace('/user/reviews')
+      }
+    }, 100)
+    return
+  }
+  // 用户子页（有明确上级的）
+  if (path.startsWith('/user/profile/')) { router.push('/user/profile'); return }
+  // 其他 /user/* 命中的先试试返回上一页
+  if (path.startsWith('/user/')) {
+    router.back()
+    return
+  }
   // 领养考试/申请
   if (path.startsWith('/adopt/')) { router.push('/'); return }
   // 宠物详情
@@ -66,7 +84,7 @@ function goBack() {
   // 商城
   if (path.startsWith('/mall/')) { router.push('/mall'); return }
 
-  // 兜底
+  // 兜底：尽量回退历史记录
   router.back()
 }
 </script>

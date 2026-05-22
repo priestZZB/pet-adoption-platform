@@ -113,4 +113,8 @@
     <select id="countByStatus" resultType="int">
         SELECT COUNT(*) FROM pet_info WHERE status = #{status}
     </select>
+    <select id="countByCreatedDate" resultType="long">
+        SELECT COUNT(*) FROM pet_info WHERE DATE(created_at) = #{date}
+    </select>
+
 </mapper>

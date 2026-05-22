@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.mall.mapper.ProductReviewMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.mall.model.entity.ProductReview">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="order_item_id" property="orderItemId"/>
+        <result column="user_id" property="userId"/>
+        <result column="rating" property="rating"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="tags" property="tags"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="is_additional" property="isAdditional"/>
+        <result column="is_anonymous" property="isAnonymous"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, product_id, order_item_id, user_id, rating, content, images, tags,
+        parent_id, is_additional, is_anonymous, status, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product_review (product_id, order_item_id, user_id, rating, content, images, tags,
+                                    parent_id, is_additional, is_anonymous)
+        VALUES (#{productId}, #{orderItemId}, #{userId}, #{rating}, #{content}, #{images}, #{tags},
+                #{parentId}, #{isAdditional}, #{isAnonymous})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM product_review WHERE id = #{id}
+    </select>
+
+    <select id="selectByOrderItemId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM product_review WHERE order_item_id = #{orderItemId}
+    </select>
+
+    <select id="selectRootByProductId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM product_review
+        WHERE product_id = #{productId} AND parent_id IS NULL AND status = 1
+        <if test="ratingFilter != null and ratingFilter == 'good'">AND rating >= 4</if>
+        <if test="ratingFilter != null and ratingFilter == 'mid'">AND rating = 3</if>
+        <if test="ratingFilter != null and ratingFilter == 'bad'">AND rating &lt;= 2</if>
+        <if test="hasImage != null and hasImage == true">AND images IS NOT NULL AND images != ''</if>
+        ORDER BY
+        <choose>
+            <when test="sort == 'highest'">rating DESC, created_at DESC</when>
+            <when test="sort == 'lowest'">rating ASC, created_at DESC</when>
+            <when test="sort == 'imageFirst'">CASE WHEN images IS NOT NULL AND images != '' THEN 0 ELSE 1 END, created_at DESC</when>
+            <otherwise>created_at DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM product_review
+        WHERE parent_id = #{parentId} AND status = 1
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="countByProductId" resultType="int">
+        SELECT COUNT(*) FROM product_review WHERE product_id = #{productId} AND status = 1
+    </select>
+
+    <select id="selectRatingStats" resultType="java.util.Map">
+        SELECT rating, COUNT(*) AS count FROM product_review
+        WHERE product_id = #{productId} AND status = 1
+        GROUP BY rating ORDER BY rating DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM product_review
+        WHERE user_id = #{userId} AND parent_id IS NULL AND status = 1
+        ORDER BY created_at DESC
+    </select>
+</mapper>

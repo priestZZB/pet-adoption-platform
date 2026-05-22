@@ -20,4 +20,6 @@ public interface MallOrderMapper {
 
     // ========== Dashboard 统计 ==========
     int countAll();
+
+    long countByCreatedDate(@Param("date") String date);
 }

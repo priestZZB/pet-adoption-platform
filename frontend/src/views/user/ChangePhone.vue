@@ -37,7 +37,7 @@
           <el-button class="save-btn" :loading="submitting" @click="handleSubmit">
             保存修改
           </el-button>
-          <el-button class="cancel-btn" @click="router.back()">取消</el-button>
+          <el-button class="cancel-btn" @click="router.push('/user/profile')">取消</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -111,7 +111,7 @@ async function handleSubmit() {
     await updateUserInfo({ phone: form.newPhone, smsCode: form.smsCode })
     await userStore.fetchUserInfo()
     ElMessage.success('手机号已更新')
-    router.back()
+    router.push('/user/profile')
   } catch {}
   finally { submitting.value = false }
 }

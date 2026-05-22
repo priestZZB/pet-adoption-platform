@@ -53,8 +53,11 @@
                 </el-input>
                 <div v-if="historyVisible && historyList.length > 0" class="history-dropdown">
                   <div class="history-title">最近登录</div>
-                  <div v-for="(h, i) in historyList" :key="i" class="history-item" @mousedown.prevent="selectHistory(h)">
-                    <i class="fas fa-user-circle"></i><span>{{ h }}</span>
+                  <div v-for="(h, i) in historyList" :key="i" class="history-item">
+                    <span class="history-name" @mousedown.prevent="selectHistory(h)">
+                      <i class="fas fa-user-circle"></i><span>{{ h }}</span>
+                    </span>
+                    <span class="history-x" @mousedown.prevent="removeHistory(i)">✕</span>
                   </div>
                 </div>
               </div>
@@ -262,6 +265,11 @@ function showHistory() {
 function hideHistoryDelay() {
   historyHideTimer = setTimeout(() => { historyVisible.value = false }, 200)
 }
+function removeHistory(index) {
+  historyList.value.splice(index, 1)
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(historyList.value))
+}
+
 function selectHistory(value) {
   if (loginTab.value === 'username') {
     loginForm.username = value
@@ -500,9 +508,12 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   margin-top: 2px;
 }
 .history-title { font-size: 12px; color: #a09080; padding: 4px 14px; }
-.history-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; cursor: pointer; font-size: 14px; color: #5a4a42; }
-.history-item:hover { background: #f8f2ea; }
+.history-item { display: flex; align-items: center; justify-content: space-between; padding: 3px 14px; font-size: 14px; color: #5a4a42; }
+.history-name { display: flex; align-items: center; gap: 8px; flex: 1; padding: 4px 0; cursor: pointer; border-radius: 4px; }
+.history-name:hover { background: #f8f2ea; }
 .history-item i { color: #b5a898; font-size: 14px; }
+.history-x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 12px; color: #c0b8a8; transition: all 0.15s; flex-shrink: 0; }
+.history-x:hover { color: #fff; background: #e8564a; }
 
 /* ===== 公告区域（跟轮播等宽）===== */
 .notice-area {

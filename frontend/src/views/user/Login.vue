@@ -18,6 +18,13 @@
             size="large"
             @keyup.enter="handleLogin"
           >
+            <div v-if="savedUsername" class="saved-account-bar">
+              <span class="saved-account-label">最近登录：</span>
+              <span class="saved-account-tag" @click="form.username = savedUsername">
+                {{ savedUsername }}
+                <span class="saved-account-x" @click.stop="handleClearRemembered">✕</span>
+              </span>
+            </div>
             <el-form-item prop="username">
               <el-input
                 v-model="form.username"
@@ -33,6 +40,9 @@
                 :prefix-icon="Lock"
                 show-password
               />
+            </el-form-item>
+            <el-form-item>
+              <el-checkbox v-model="rememberMe">记住我</el-checkbox>
             </el-form-item>
             <el-form-item>
               <el-button
@@ -113,7 +123,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock, Iphone } from '@element-plus/icons-vue'
+import { User, Lock, Iphone, Close } from '@element-plus/icons-vue'
 import { login, phoneLogin, getUserInfo } from '@/api/user'
 import { sendSmsCode } from '@/api/sms'
 import { useUserStore } from '@/stores/user'
@@ -122,6 +132,8 @@ import CaptchaSlider from '@/components/CaptchaSlider.vue'
 const router = useRouter()
 const userStore = useUserStore()
 
+const REMEMBER_KEY = 'remembered_username'
+
 const activeTab = ref('username')
 const formRef = ref(null)
 const phoneFormRef = ref(null)
@@ -129,6 +141,8 @@ const captchaRef = ref(null)
 const submitting = ref(false)
 const smsSending = ref(false)
 const smsCountdown = ref(0)
+const rememberMe = ref(false)
+const savedUsername = ref(localStorage.getItem(REMEMBER_KEY) || '')
 let smsTimer = null
 
 // 用户名+密码登录 表单
@@ -136,6 +150,13 @@ const form = reactive({
   username: '',
   password: ''
 })
+
+function handleClearRemembered() {
+  localStorage.removeItem(REMEMBER_KEY)
+  savedUsername.value = ''
+  form.username = ''
+  rememberMe.value = false
+}
 
 // 手机号登录 表单
 const phoneForm = reactive({
@@ -212,6 +233,14 @@ async function handleLogin() {
 
   try {
     const captchaData = await captchaRef.value.showCaptcha()
+
+    // 记住我：勾选则保存用户名，否则清除
+    if (rememberMe.value) {
+      localStorage.setItem(REMEMBER_KEY, form.username)
+      savedUsername.value = form.username
+    } else {
+      localStorage.removeItem(REMEMBER_KEY)
+    }
 
     submitting.value = true
     const res = await login({
@@ -301,6 +330,54 @@ async function handlePhoneLogin() {
 .login-links a:hover {
   text-decoration: underline;
 }
+.saved-account-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: #f0f5ff;
+  border: 1px solid #d6e4ff;
+  border-radius: 8px;
+}
+.saved-account-label {
+  font-size: 13px;
+  color: #909399;
+  white-space: nowrap;
+}
+.saved-account-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: #fff;
+  border: 1px solid #409EFF;
+  border-radius: 14px;
+  font-size: 13px;
+  color: #409EFF;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.saved-account-tag:hover {
+  background: #ecf5ff;
+}
+.saved-account-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  color: #c0c4cc;
+  transition: all 0.15s;
+}
+.saved-account-x:hover {
+  color: #fff;
+  background: #F56C6C;
+}
+
 .sms-row {
   display: flex;
   gap: 10px;

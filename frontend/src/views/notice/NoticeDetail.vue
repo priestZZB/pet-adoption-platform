@@ -1,6 +1,5 @@
 ﻿<template>
   <div class="notice-detail-page">
-    <el-page-header :icon="ArrowLeft" title="返回公告列表" @back="$router.push('/notices')" />
 
     <div v-if="loading" class="loading-center">
       <el-icon class="is-loading" :size="32"><Loading /></el-icon>

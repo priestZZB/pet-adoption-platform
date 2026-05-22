@@ -95,6 +95,77 @@
           </div>
         </div>
       </div>
+
+      <!-- ===== 商品评价 ===== -->
+      <div class="review-section">
+        <div class="review-header">
+          <h3>商品评价</h3>
+        </div>
+
+        <!-- 评分概览 -->
+        <div v-if="reviewStats" class="review-stats-bar">
+          <div class="stats-left">
+            <div class="avg-score">{{ reviewStats.average }}</div>
+            <div class="avg-stars">
+              <span v-for="i in 5" :key="i" class="star">{{ i <= Math.round(reviewStats.average) ? '⭐' : '☆' }}</span>
+            </div>
+            <div class="avg-text">{{ reviewStats.goodRate }}%好评</div>
+          </div>
+          <div class="stats-right">
+            <div v-for="i in 5" :key="i" class="stat-row">
+              <span class="stat-label">{{ 6 - i }}星</span>
+              <div class="stat-bar-bg">
+                <div class="stat-bar-fill" :style="{ width: (reviewStats.distribution[6-i] / Math.max(reviewStats.total, 1) * 100) + '%' }"></div>
+              </div>
+              <span class="stat-count">{{ reviewStats.distribution[6-i] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="review-filter-bar">
+          <el-button :type="reviewRating === 'all' ? 'primary' : 'default'" size="small" @click="reviewRating = 'all'; loadReviews()">全部({{ reviewStats?.total || 0 }})</el-button>
+          <el-button :type="reviewRating === 'good' ? 'primary' : 'default'" size="small" @click="reviewRating = 'good'; loadReviews()">好评</el-button>
+          <el-button :type="reviewRating === 'mid' ? 'primary' : 'default'" size="small" @click="reviewRating = 'mid'; loadReviews()">中评</el-button>
+          <el-button :type="reviewRating === 'bad' ? 'primary' : 'default'" size="small" @click="reviewRating = 'bad'; loadReviews()">差评</el-button>
+          <el-button :type="reviewHasImage ? 'primary' : 'default'" size="small" @click="reviewHasImage = !reviewHasImage; loadReviews()">有图</el-button>
+          <el-select v-model="reviewSort" size="small" style="width:110px;margin-left:auto" @change="loadReviews">
+            <el-option label="最新" value="latest" />
+            <el-option label="最高分" value="highest" />
+            <el-option label="最低分" value="lowest" />
+            <el-option label="有图优先" value="imageFirst" />
+          </el-select>
+        </div>
+
+        <!-- 评价列表 -->
+        <div v-if="reviewList.length > 0" class="review-list">
+          <div v-for="rv in reviewList" :key="rv.id" class="review-item">
+            <div class="review-user">
+              <el-avatar :size="32" :src="rv.avatar" />
+              <span class="review-nickname">{{ rv.nickname || '匿名用户' }}</span>
+              <span class="review-time">{{ formatTime(rv.createdAt) }}</span>
+            </div>
+            <div class="review-stars">
+              <span v-for="i in 5" :key="i" class="star" :class="{ active: i <= rv.rating }">★</span>
+            </div>
+            <div v-if="rv.tags && rv.tags.length > 0" class="review-tags">
+              <el-tag v-for="t in rv.tags" :key="t" size="small" round>{{ t }}</el-tag>
+            </div>
+            <div class="review-content">{{ rv.content }}</div>
+            <div v-if="rv.images && rv.images.length > 0" class="review-images">
+              <el-image v-for="(img, idx) in rv.images" :key="idx" :src="img" fit="cover" style="width:60px;height:60px;border-radius:4px;cursor:pointer" :preview-src-list="rv.images" :initial-index="idx" preview-teleported />
+            </div>
+            <div v-if="rv.additions && rv.additions.length > 0" class="review-additions">
+              <div v-for="add in rv.additions" :key="add.id" class="addition-item">
+                <span class="addition-label">追评：</span>
+                <span>{{ add.content }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="review-empty">暂无评价</div>
+      </div>
+
     </template>
 
     <template v-else>
@@ -106,11 +177,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading, ShoppingCart } from '@element-plus/icons-vue'
 import { getMallProductDetail, addToCart } from '@/api/mall'
+import { getProductReviews, getReviewStats } from '@/api/review'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
@@ -135,11 +207,43 @@ async function loadDetail() {
     product.value = await getMallProductDetail(route.params.id)
     currentImage.value = imageList.value[0] || ''
     currentImgIndex.value = 0
+    loadReviews()
+    loadReviewStats()
   } catch {
     product.value = null
   } finally {
     loading.value = false
   }
+}
+
+// ===== 评价区 =====
+const reviewList = ref([])
+const reviewStats = ref(null)
+const reviewRating = ref('all')
+const reviewHasImage = ref(false)
+const reviewSort = ref('latest')
+
+async function loadReviews() {
+  try {
+    const params = { sort: reviewSort.value, page: 1, size: 20 }
+    if (reviewRating.value !== 'all') params.rating = reviewRating.value
+    if (reviewHasImage.value) params.hasImage = true
+    const res = await getProductReviews(route.params.id, params)
+    reviewList.value = res.list || []
+  } catch {}
+}
+
+async function loadReviewStats() {
+  try {
+    reviewStats.value = await getReviewStats(route.params.id)
+  } catch {}
+}
+
+function formatTime(t) {
+  if (!t) return ''
+  const d = new Date(t)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
 }
 
 async function handleAddCart() {
@@ -174,6 +278,20 @@ async function handleBuyNow() {
 }
 
 onMounted(loadDetail)
+
+// 轮询：每30秒刷新评论
+let reviewTimer = null
+onMounted(() => {
+  reviewTimer = setInterval(() => {
+    if (product.value) {
+      loadReviews()
+      loadReviewStats()
+    }
+  }, 10000)
+})
+onUnmounted(() => {
+  if (reviewTimer) clearInterval(reviewTimer)
+})
 </script>
 
 <style scoped>
@@ -332,5 +450,154 @@ onMounted(loadDetail)
 }
 .thumb-item:hover {
   border-color: var(--yc-accent);
+}
+
+/* ===== 评价区 ===== */
+.review-section {
+  margin-top: 24px;
+  background: var(--yc-bg-card);
+  border: 1px solid var(--yc-border);
+  border-radius: var(--yc-radius-card);
+  padding: 24px 28px;
+  box-shadow: var(--yc-shadow-card);
+}
+.review-header h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  color: var(--yc-text-primary);
+}
+.review-stats-bar {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: var(--yc-bg-page);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.stats-left {
+  text-align: center;
+  min-width: 100px;
+}
+.avg-score {
+  font-size: 36px;
+  font-weight: bold;
+  color: #F56C6C;
+  line-height: 1;
+}
+.avg-stars {
+  margin: 4px 0;
+}
+.avg-text {
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
+}
+.stats-right {
+  flex: 1;
+}
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
+  width: 30px;
+}
+.stat-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  background: #f0c040;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.stat-count {
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
+  width: 20px;
+  text-align: right;
+}
+.review-filter-bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.review-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--yc-border);
+}
+.review-item:last-child {
+  border-bottom: none;
+}
+.review-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.review-nickname {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--yc-text-primary);
+}
+.review-time {
+  font-size: 12px;
+  color: var(--yc-text-tertiary);
+}
+.review-stars {
+  margin-bottom: 4px;
+}
+.review-stars .star {
+  font-size: 18px;
+  color: #ccc;
+}
+.review-stars .star.active {
+  color: #f0c040;
+}
+.review-tags {
+  margin-bottom: 6px;
+}
+.review-content {
+  font-size: 14px;
+  color: var(--yc-text-primary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.review-images {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.review-additions {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--yc-bg-page);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--yc-text-secondary);
+}
+.addition-label {
+  font-weight: 500;
+  color: var(--yc-accent);
+}
+.review-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--yc-text-tertiary);
+  font-size: 14px;
 }
 </style>

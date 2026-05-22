@@ -69,4 +69,8 @@
     <select id="countAll" resultType="int">
         SELECT COUNT(*) FROM mall_order
     </select>
+    <select id="countByCreatedDate" resultType="long">
+        SELECT COUNT(*) FROM mall_order WHERE DATE(created_at) = #{date}
+    </select>
+
 </mapper>

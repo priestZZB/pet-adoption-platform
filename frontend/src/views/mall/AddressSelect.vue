@@ -70,7 +70,7 @@
 
       <!-- 底部操作栏 -->
       <div v-if="isSelectMode" class="bottom-bar">
-        <el-button class="back-btn" @click="$router.back()">返回</el-button>
+        <el-button class="back-btn" @click="$router.push('/mall/addresses')">返回</el-button>
         <el-button class="confirm-btn" :disabled="!selectedId" @click="confirmAddress">确认使用该地址</el-button>
       </div>
     </template>

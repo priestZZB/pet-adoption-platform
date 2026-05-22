@@ -7,7 +7,6 @@ import com.pet.module.system.mapper.FeedbackMapper;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.pet.mapper.PetInfoMapper;
 import com.pet.module.mall.mapper.MallOrderMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,9 +40,6 @@ public class DashboardController {
 
     @Autowired
     private FeedbackMapper feedbackMapper;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @ApiOperation("控制台统计数据")
     @GetMapping("/dashboard/stats")
@@ -93,25 +91,20 @@ public class DashboardController {
     private Map<String, Object> getChartData() {
         Map<String, Object> chart = new HashMap<>();
 
-        // 近 14 天日期
         String[] labels = new String[14];
         long[] users = new long[14];
         long[] pets = new long[14];
         long[] orders = new long[14];
 
-        java.time.LocalDate today = java.time.LocalDate.now();
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM-dd");
         for (int i = 13; i >= 0; i--) {
-            java.time.LocalDate day = today.minusDays(i);
-            labels[13 - i] = day.format(java.time.format.DateTimeFormatter.ofPattern("MM-dd"));
+            LocalDate day = today.minusDays(i);
+            labels[13 - i] = day.format(fmt);
             String dateStr = day.toString();
-            try {
-                users[13 - i] = jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM sys_user WHERE DATE(created_at) = ?", Long.class, dateStr);
-                pets[13 - i] = jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM pet_info WHERE DATE(created_at) = ?", Long.class, dateStr);
-                orders[13 - i] = jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM mall_order WHERE DATE(created_at) = ?", Long.class, dateStr);
-            } catch (Exception ignored) {}
+            users[13 - i] = userMapper.countByCreatedDate(dateStr);
+            pets[13 - i] = petInfoMapper.countByCreatedDate(dateStr);
+            orders[13 - i] = mallOrderMapper.countByCreatedDate(dateStr);
         }
 
         chart.put("labels", labels);

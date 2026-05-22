@@ -44,4 +44,6 @@ public interface UserMapper {
     int countByVolunteerStatus(@Param("status") String status);
 
     int countByDonorStatus(@Param("status") String status);
+
+    long countByCreatedDate(@Param("date") String date);
 }

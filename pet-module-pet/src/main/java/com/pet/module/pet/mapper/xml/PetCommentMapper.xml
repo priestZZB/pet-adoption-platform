@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.module.pet.mapper.PetCommentMapper">
+
+    <resultMap id="BaseResultMap" type="com.pet.module.pet.model.entity.PetComment">
+        <id column="id" property="id"/>
+        <result column="pet_id" property="petId"/>
+        <result column="user_id" property="userId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="reply_to" property="replyTo"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="dislike_count" property="dislikeCount"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, pet_id, user_id, parent_id, reply_to, content, images, like_count, dislike_count, status, created_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pet_comment (pet_id, user_id, parent_id, reply_to, content, images)
+        VALUES (#{petId}, #{userId}, #{parentId}, #{replyTo}, #{content}, #{images})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE pet_comment SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_comment WHERE id = #{id}
+    </select>
+
+    <select id="selectRootByPetId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_comment
+        WHERE pet_id = #{petId} AND parent_id IS NULL
+        <if test="statusLimit != null">AND status >= #{statusLimit}</if>
+        ORDER BY
+        <choose>
+            <when test="sort == 'hot'">like_count DESC, created_at DESC</when>
+            <otherwise>created_at DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectReplies" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_comment
+        WHERE pet_id = #{petId} AND parent_id = #{parentId}
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="countByPetId" resultType="int">
+        SELECT COUNT(*) FROM pet_comment WHERE pet_id = #{petId}
+    </select>
+
+    <!-- ===== 点赞 ===== -->
+    <insert id="insertLike" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pet_comment_like (comment_id, user_id)
+        VALUES (#{commentId}, #{userId})
+    </insert>
+
+    <update id="updateLikeCount">
+        UPDATE pet_comment SET like_count = (SELECT COUNT(*) FROM pet_comment_like WHERE comment_id = #{commentId}) WHERE id = #{commentId}
+    </update>
+
+    <delete id="deleteLike">
+        DELETE FROM pet_comment_like WHERE comment_id = #{commentId} AND user_id = #{userId}
+    </delete>
+
+    <select id="selectLike" resultType="com.pet.module.pet.model.entity.PetCommentLike">
+        SELECT id, comment_id AS commentId, user_id AS userId, created_at AS createdAt
+        FROM pet_comment_like WHERE comment_id = #{commentId} AND user_id = #{userId}
+    </select>
+
+    <select id="countLikeByCommentId" resultType="int">
+        SELECT COUNT(*) FROM pet_comment_like WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- ===== 心碎（踩） ===== -->
+    <insert id="insertDislike" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pet_comment_dislike (comment_id, user_id)
+        VALUES (#{commentId}, #{userId})
+    </insert>
+
+    <update id="updateDislikeCount">
+        UPDATE pet_comment SET dislike_count = (SELECT COUNT(*) FROM pet_comment_dislike WHERE comment_id = #{commentId}) WHERE id = #{commentId}
+    </update>
+
+    <delete id="deleteDislike">
+        DELETE FROM pet_comment_dislike WHERE comment_id = #{commentId} AND user_id = #{userId}
+    </delete>
+
+    <select id="selectDislike" resultType="com.pet.module.pet.model.entity.PetCommentLike">
+        SELECT id, comment_id AS commentId, user_id AS userId, created_at AS createdAt
+        FROM pet_comment_dislike WHERE comment_id = #{commentId} AND user_id = #{userId}
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM pet_comment WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByParentId">
+        DELETE FROM pet_comment WHERE parent_id = #{parentId}
+    </delete>
+</mapper>

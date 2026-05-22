@@ -52,12 +52,15 @@ public class OrderVo implements Serializable {
      * 订单项返回
      */
     public static class OrderItemVo {
+        private Long id;
         private Long productId;
         private String productName;
         private String productImage;
         private Integer quantity;
         private BigDecimal price;
 
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
         public Long getProductId() { return productId; }
         public void setProductId(Long productId) { this.productId = productId; }
         public String getProductName() { return productName; }

@@ -12,4 +12,6 @@ public interface MallOrderItemMapper {
     List<MallOrderItem> selectByOrderId(Long orderId);
 
     List<MallOrderItem> selectByOrderIds(List<Long> orderIds);
+
+    MallOrderItem selectById(Long id);
 }

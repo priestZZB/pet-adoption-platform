@@ -44,11 +44,15 @@ request.interceptors.response.use(
       router.push('/login?reason=' + reason)
       return Promise.reject(new Error(msg))
     }
-    ElMessage.error(msg || '操作失败')
+    // 其他业务错误由各页面的 catch 自行弹窗提示
+    // 避免拦截器弹一次、页面 catch 又弹一次
     return Promise.reject(new Error(msg))
   },
   error => {
-    ElMessage.error('网络错误，请稍后重试')
+    // HTTP 网络层错误（断网、超时、500等）
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      ElMessage.error('网络错误，请稍后重试')
+    }
     return Promise.reject(error)
   }
 )

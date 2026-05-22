@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="orders-page">
     <h3 class="page-title">我的订单</h3>
 
@@ -100,6 +100,14 @@
                 确认收货
               </el-button>
               <el-button
+                v-if="order.status === 'RECEIVED'"
+                class="order-detail-link"
+                size="small"
+                @click="goReview(order)"
+              >
+                去评价
+              </el-button>
+              <el-button
                 class="order-detail-link"
                 size="small"
                 @click="goDetail(order.id)"
@@ -189,6 +197,10 @@ async function handleReceive(order) {
 
 function goDetail(id) {
   router.push('/user/orders/' + id)
+}
+
+function goReview(order) {
+  router.push('/user/review/' + order.id)
 }
 
 onMounted(loadOrders)
