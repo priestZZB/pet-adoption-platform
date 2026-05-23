@@ -104,6 +104,13 @@ pet:
   upload:
     path: /data/pet-adoption/uploads                    # 文件上传存储路径
 
+  # ---- 高德地图服务 ----
+  map:
+    # amap-key 在 application-secret.yml 中配置（不提交到Git）
+    # 需要申请高德Web服务API（非JS API），免费额度 30万次/月
+    regeo-url: "https://restapi.amap.com/v3/geocode/regeo"
+    inputtips-url: "https://restapi.amap.com/v3/assistant/inputtips"
+
   # ---- 第三方服务配置（敏感值在 application-secret.yml 中配置）----
   third-party:
     face:

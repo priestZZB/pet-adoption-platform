@@ -13,8 +13,10 @@ public class AddressVo {
     private String province;
     private String city;
     private String district;
-    private String detailAddress;
-    private String receiverAddress;
+    private String specificPlace;      // 具体位置（小区/酒店/地标）
+    private String roomNo;             // 门牌号（选填）
+    private String detailAddress;      // specificPlace || roomNo 拼接
+    private String receiverAddress;    // 完整地址
     private Integer isDefault;
     private LocalDateTime createdAt;
 
@@ -30,6 +32,10 @@ public class AddressVo {
     public void setCity(String city) { this.city = city; }
     public String getDistrict() { return district; }
     public void setDistrict(String district) { this.district = district; }
+    public String getSpecificPlace() { return specificPlace; }
+    public void setSpecificPlace(String specificPlace) { this.specificPlace = specificPlace; }
+    public String getRoomNo() { return roomNo; }
+    public void setRoomNo(String roomNo) { this.roomNo = roomNo; }
     public String getDetailAddress() { return detailAddress; }
     public void setDetailAddress(String detailAddress) { this.detailAddress = detailAddress; }
     public String getReceiverAddress() { return receiverAddress; }

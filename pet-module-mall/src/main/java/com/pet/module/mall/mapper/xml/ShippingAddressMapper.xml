@@ -11,6 +11,8 @@
         <result column="province" property="province"/>
         <result column="city" property="city"/>
         <result column="district" property="district"/>
+        <result column="specific_place" property="specificPlace"/>
+        <result column="room_no" property="roomNo"/>
         <result column="detail_address" property="detailAddress"/>
         <result column="receiver_address" property="receiverAddress"/>
         <result column="is_default" property="isDefault"/>
@@ -20,15 +22,16 @@
 
     <sql id="BaseColumns">
         id, user_id, receiver_name, receiver_phone, province, city, district,
-        detail_address, receiver_address, is_default, created_at, updated_at
+        specific_place, room_no, detail_address, receiver_address,
+        is_default, created_at, updated_at
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO mall_shipping_address
             (user_id, receiver_name, receiver_phone, province, city, district,
-             detail_address, receiver_address, is_default)
+             specific_place, room_no, detail_address, receiver_address, is_default)
         VALUES (#{userId}, #{receiverName}, #{receiverPhone}, #{province}, #{city}, #{district},
-                #{detailAddress}, #{receiverAddress}, #{isDefault})
+                #{specificPlace}, #{roomNo}, #{detailAddress}, #{receiverAddress}, #{isDefault})
     </insert>
 
     <update id="updateById">
@@ -39,6 +42,8 @@
             <if test="province != null">province = #{province},</if>
             <if test="city != null">city = #{city},</if>
             <if test="district != null">district = #{district},</if>
+            <if test="specificPlace != null">specific_place = #{specificPlace},</if>
+            <if test="roomNo != null">room_no = #{roomNo},</if>
             <if test="detailAddress != null">detail_address = #{detailAddress},</if>
             <if test="receiverAddress != null">receiver_address = #{receiverAddress},</if>
             <if test="isDefault != null">is_default = #{isDefault},</if>

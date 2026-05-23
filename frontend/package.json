@@ -16,6 +16,7 @@
     "lint:eslint": "eslint . --fix --cache"
   },
   "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
     "@element-plus/icons-vue": "^2.3.2",
     "@stomp/stompjs": "^7.3.0",
     "axios": "^1.16.0",

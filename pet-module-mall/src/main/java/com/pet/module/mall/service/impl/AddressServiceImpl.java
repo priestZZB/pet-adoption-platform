@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.util.StrUtil;
+
 @Service
 public class AddressServiceImpl implements AddressService {
 
@@ -42,10 +44,26 @@ public class AddressServiceImpl implements AddressService {
         address.setProvince(dto.getProvince());
         address.setCity(dto.getCity());
         address.setDistrict(dto.getDistrict());
-        address.setDetailAddress(dto.getDetailAddress());
 
-        // 拼接完整地址
-        String full = dto.getProvince() + dto.getCity() + dto.getDistrict() + dto.getDetailAddress();
+        // 处理具体位置和门牌号
+        String specificPlace = dto.getSpecificPlace();
+        String roomNo = dto.getRoomNo();
+
+        // 兼容旧前端：如果没传 specificPlace 但传了 detailAddress，则从 detailAddress 解析
+        if (StrUtil.isBlank(specificPlace) && StrUtil.isNotBlank(dto.getDetailAddress())) {
+            specificPlace = dto.getDetailAddress();
+        }
+
+        address.setSpecificPlace(specificPlace);
+        address.setRoomNo(roomNo);
+
+        // detailAddress = specificPlace + roomNo（用 || 分隔便于编辑时解析）
+        String detailAddr = buildDetailAddress(specificPlace, roomNo);
+        address.setDetailAddress(detailAddr);
+
+        // 拼接完整地址（用于显示，不含 || 分隔符）
+        String displayDetail = buildDisplayDetail(specificPlace, roomNo);
+        String full = dto.getProvince() + dto.getCity() + dto.getDistrict() + displayDetail;
         address.setReceiverAddress(full);
 
         // 如果没有传isDefault，则判断是否是第一条（第一条自动默认）
@@ -81,9 +99,26 @@ public class AddressServiceImpl implements AddressService {
         update.setProvince(dto.getProvince());
         update.setCity(dto.getCity());
         update.setDistrict(dto.getDistrict());
-        update.setDetailAddress(dto.getDetailAddress());
 
-        String full = dto.getProvince() + dto.getCity() + dto.getDistrict() + dto.getDetailAddress();
+        // 处理具体位置和门牌号
+        String specificPlace = dto.getSpecificPlace();
+        String roomNo = dto.getRoomNo();
+
+        // 兼容旧前端：如果没传 specificPlace 但传了 detailAddress，则保持原有解析逻辑
+        if (StrUtil.isBlank(specificPlace) && StrUtil.isNotBlank(dto.getDetailAddress())) {
+            specificPlace = dto.getDetailAddress();
+        }
+
+        update.setSpecificPlace(specificPlace);
+        update.setRoomNo(roomNo);
+
+        // detailAddress 含 || 用于编辑时解析
+        String detailAddr = buildDetailAddress(specificPlace, roomNo);
+        update.setDetailAddress(detailAddr);
+
+        // receiverAddress 不含 ||，用于展示
+        String displayDetail = buildDisplayDetail(specificPlace, roomNo);
+        String full = dto.getProvince() + dto.getCity() + dto.getDistrict() + displayDetail;
         update.setReceiverAddress(full);
 
         if (dto.getIsDefault() != null) {
@@ -140,9 +175,51 @@ public class AddressServiceImpl implements AddressService {
         return convertToVo(address);
     }
 
+    /**
+     * 拼接 detailAddress 字段（含 || 分隔符，用于编辑时解析回显）
+     * specificPlace + "||" + roomNo（roomNo为空时不拼接）
+     */
+    private String buildDetailAddress(String specificPlace, String roomNo) {
+        if (StrUtil.isBlank(specificPlace)) {
+            return "";
+        }
+        if (StrUtil.isBlank(roomNo)) {
+            return specificPlace;
+        }
+        return specificPlace + "||" + roomNo;
+    }
+
+    /**
+     * 拼接展示用详细地址（不含 || 分隔符，用于 receiverAddress）
+     */
+    private String buildDisplayDetail(String specificPlace, String roomNo) {
+        if (StrUtil.isBlank(specificPlace)) {
+            return "";
+        }
+        if (StrUtil.isBlank(roomNo)) {
+            return specificPlace;
+        }
+        return specificPlace + roomNo;
+    }
+
     private AddressVo convertToVo(ShippingAddress address) {
         AddressVo vo = new AddressVo();
         BeanUtils.copyProperties(address, vo);
+
+        // 如果 specificPlace 为空但 detailAddress 不为空，尝试从 detailAddress 解析
+        if (StrUtil.isBlank(vo.getSpecificPlace()) && StrUtil.isNotBlank(vo.getDetailAddress())) {
+            String detail = vo.getDetailAddress();
+            int idx = detail.indexOf("||");
+            if (idx != -1) {
+                vo.setSpecificPlace(detail.substring(0, idx));
+                vo.setRoomNo(detail.substring(idx + 2));
+            } else {
+                // 旧数据：整个 detailAddress 当具体位置
+                vo.setSpecificPlace(detail);
+                vo.setRoomNo("");
+            }
+        }
+
         return vo;
     }
 }

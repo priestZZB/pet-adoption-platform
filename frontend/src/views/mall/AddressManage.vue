@@ -30,7 +30,7 @@
               <el-tag v-if="item.isDefault === 1" size="small" type="warning" class="default-tag">默认</el-tag>
             </div>
             <p class="address-detail">{{ item.receiverAddress }}</p>
-            <p class="address-full">省: {{ item.province }} / 市: {{ item.city }} / 区: {{ item.district }} / {{ item.detailAddress }}</p>
+            <p class="address-full">{{ item.province }} {{ item.city }} {{ item.district }}<span v-if="item.specificPlace"> · {{ item.specificPlace }}</span><span v-if="item.roomNo"> {{ item.roomNo }}</span></p>
           </div>
           <div class="address-actions">
             <el-button v-if="item.isDefault !== 1" class="action-btn" size="small" @click="handleSetDefault(item.id)">设为默认</el-button>
@@ -42,14 +42,17 @@
     </template>
 
     <!-- 新增/编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑收货地址' : '新增收货地址'" width="520px" :close-on-click-modal="false">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑收货地址' : '新增收货地址'" width="540px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+
         <el-form-item label="收货人" prop="receiverName">
           <el-input v-model="form.receiverName" placeholder="请输入收货人姓名" maxlength="20" />
         </el-form-item>
         <el-form-item label="手机号" prop="receiverPhone">
           <el-input v-model="form.receiverPhone" placeholder="请输入收货人手机号" maxlength="11" />
         </el-form-item>
+
+        <!-- 省市区（完全保持原样式）-->
         <el-form-item label="省市区" prop="province">
           <div class="region-selector">
             <el-select v-model="form.province" placeholder="省份" class="region-select" @change="onProvinceChange">
@@ -65,9 +68,23 @@
             </el-select>
           </div>
         </el-form-item>
-        <el-form-item label="门牌号" prop="detailAddress">
-          <el-input v-model="form.detailAddress" placeholder="街道、门牌号、楼层等详细信息" maxlength="100" />
+
+        <el-form-item label=" ">
+          <el-button class="map-pick-btn" @click="showMapPicker = true">
+            在地图上选择
+          </el-button>
         </el-form-item>
+
+        <!-- 具体位置（必填）-->
+        <el-form-item label="具体位置" prop="specificPlace">
+          <el-input v-model="form.specificPlace" placeholder="小区、酒店、街道名称（必填）" maxlength="100" />
+        </el-form-item>
+
+        <!-- 门牌号（选填）-->
+        <el-form-item label="门牌号">
+          <el-input v-model="form.roomNo" placeholder="楼层/房号（可不填）" maxlength="50" />
+        </el-form-item>
+
         <el-form-item>
           <el-checkbox v-model="form.isDefault" :true-value="1" :false-value="0">设为默认地址</el-checkbox>
         </el-form-item>
@@ -77,6 +94,9 @@
         <el-button class="save-dialog-btn" :loading="saving" @click="handleSave">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 🗺️ 地图选点 -->
+    <MapPicker v-model="showMapPicker" :on-confirm="onMapPick" />
   </div>
 </template>
 
@@ -86,9 +106,13 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, Plus } from '@element-plus/icons-vue'
 import { getAddressList, addAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/api/mall'
 import { regionData } from '@/utils/region'
+import MapPicker from '@/components/MapPicker.vue'
+import { useUserStore } from '@/stores/user'
 
+const userStore = useUserStore()
 const loading = ref(true)
 const saving = ref(false)
+const showMapPicker = ref(false)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
@@ -105,7 +129,8 @@ const form = reactive({
   province: '',
   city: '',
   district: '',
-  detailAddress: '',
+  specificPlace: '',
+  roomNo: '',
   isDefault: 0
 })
 
@@ -116,7 +141,7 @@ const rules = {
     { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
   ],
   province: [{ required: true, message: '请选择省份', trigger: 'change' }],
-  detailAddress: [{ required: true, message: '请输入详细门牌号', trigger: 'blur' }]
+  specificPlace: [{ required: true, message: '请输入具体位置', trigger: 'blur' }]
 }
 
 function onProvinceChange(val) {
@@ -141,7 +166,8 @@ function resetForm() {
   form.province = ''
   form.city = ''
   form.district = ''
-  form.detailAddress = ''
+  form.specificPlace = ''
+  form.roomNo = ''
   form.isDefault = 0
   cities.value = []
   districts.value = []
@@ -157,7 +183,8 @@ function openDialog(item) {
     form.province = item.province
     form.city = item.city
     form.district = item.district
-    form.detailAddress = item.detailAddress
+    form.specificPlace = item.specificPlace || ''
+    form.roomNo = item.roomNo || ''
     form.isDefault = item.isDefault
 
     // 加载级联选项
@@ -170,6 +197,15 @@ function openDialog(item) {
   } else {
     isEdit.value = false
     editId.value = null
+    // 快速填入：用最近地址的姓名电话，没有则用用户信息
+    if (list.value.length > 0) {
+      const last = list.value[0]
+      form.receiverName = last.receiverName || ''
+      form.receiverPhone = last.receiverPhone || ''
+    } else if (userStore.userInfo) {
+      form.receiverName = userStore.userInfo.nickname || ''
+      form.receiverPhone = userStore.userInfo.phone || ''
+    }
   }
   dialogVisible.value = true
   nextTick(() => formRef.value?.clearValidate())
@@ -194,17 +230,24 @@ async function handleSave() {
     ElMessage.warning('请选择城市')
     return
   }
-  if (!form.district) {
-    form.district = ''
-  }
 
   saving.value = true
   try {
+    const submitData = {
+      receiverName: form.receiverName,
+      receiverPhone: form.receiverPhone,
+      province: form.province,
+      city: form.city,
+      district: form.district || '',
+      specificPlace: form.specificPlace,
+      roomNo: form.roomNo || '',
+      isDefault: form.isDefault
+    }
     if (isEdit.value) {
-      await updateAddress(editId.value, { ...form })
+      await updateAddress(editId.value, submitData)
       ElMessage.success('地址已更新')
     } else {
-      await addAddress({ ...form })
+      await addAddress(submitData)
       ElMessage.success('地址已添加')
     }
     dialogVisible.value = false
@@ -239,6 +282,43 @@ async function handleSetDefault(id) {
   } catch {
     // 拦截器处理
   }
+}
+
+// ========== 地图选点回调 ==========
+
+function onMapPick(data) {
+  // data: { province, city, district, specificPlace, address, lng, lat }
+  console.log('🗺️ 地图选点回调:', data)
+
+  // 直接设置省市区（强制匹配 region.js，不匹配也填上）
+  if (data.province && provinces.value.includes(data.province)) {
+    form.province = data.province
+    cities.value = regionData[data.province] ? Object.keys(regionData[data.province]) : []
+  } else if (data.province) {
+    form.province = data.province
+  }
+
+  if (data.city) {
+    if (cities.value.includes(data.city)) {
+      form.city = data.city
+      if (form.province && regionData[form.province] && regionData[form.province][data.city]) {
+        districts.value = regionData[form.province][data.city]
+      }
+    } else {
+      form.city = data.city
+    }
+  }
+
+  if (data.district) {
+    if (districts.value.includes(data.district)) {
+      form.district = data.district
+    } else {
+      form.district = data.district
+    }
+  }
+
+  form.specificPlace = data.specificPlace || data.district || ''
+  ElMessage.success('📍 已选择位置')
 }
 
 onMounted(() => {
@@ -346,6 +426,13 @@ onMounted(() => {
 .region-select {
   flex: 1;
 }
+
+/* ========== 地图选点按钮 ========== */
+.map-pick-btn {
+  border: 1px solid #c19a6b; color: #c19a6b; border-radius: 8px;
+  background: #fff; font-size: 14px;
+}
+.map-pick-btn:hover { background: #fff5e8; }
 
 /* 按钮暖色 */
 .add-btn {

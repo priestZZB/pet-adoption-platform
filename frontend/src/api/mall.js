@@ -44,3 +44,7 @@ export const deleteAddress = (id) => request.delete('/mall/addresses/' + id)
 export const setDefaultAddress = (id) => request.put('/mall/addresses/' + id + '/default')
 // 获取默认地址
 export const getDefaultAddress = () => request.get('/mall/addresses/default')
+
+// ===== 地图服务 =====
+export const reverseGeocode = (data) => request.post('/map/reverse-geocode', data)
+export const placeSuggest = (params) => request.get('/map/place-suggest', { params })

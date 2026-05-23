@@ -10,7 +10,9 @@ public class AddressDto {
     private String province;
     private String city;
     private String district;
-    private String detailAddress;
+    private String specificPlace;      // 具体位置（小区/酒店/地标，必填）
+    private String roomNo;             // 门牌号（选填）
+    private String detailAddress;      // 兼容旧前端（可选，新前端传specificPlace+roomNo）
     private Integer isDefault;
 
     public String getReceiverName() { return receiverName; }
@@ -23,6 +25,10 @@ public class AddressDto {
     public void setCity(String city) { this.city = city; }
     public String getDistrict() { return district; }
     public void setDistrict(String district) { this.district = district; }
+    public String getSpecificPlace() { return specificPlace; }
+    public void setSpecificPlace(String specificPlace) { this.specificPlace = specificPlace; }
+    public String getRoomNo() { return roomNo; }
+    public void setRoomNo(String roomNo) { this.roomNo = roomNo; }
     public String getDetailAddress() { return detailAddress; }
     public void setDetailAddress(String detailAddress) { this.detailAddress = detailAddress; }
     public Integer getIsDefault() { return isDefault; }
