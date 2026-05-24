@@ -10,7 +10,7 @@ spring:
     # 开发库（可覆盖主配置）
     url: jdbc:mysql://localhost:3306/pet_adoption?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 123456
+    # password 在 application-secret.yml 中配置
 
   redis:
     host: localhost
@@ -58,7 +58,7 @@ pet:
 
   # 地图服务（高德Web服务API）
   map:
-    mock: false            # true=模拟模式（不调真实API，开发用）| false=调高德API
+    mock: true            # true=模拟模式（不调真实API，开发用）| false=调高德API
 
   # 聊天违禁限制
   chat:

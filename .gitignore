@@ -10,3 +10,7 @@ dist/
 
 # ===== 敏感配置（含 API Key、密码、密钥等，不提交到Git）=====
 application-secret.yml
+
+# 前端环境变量
+.env
+!.env.example
