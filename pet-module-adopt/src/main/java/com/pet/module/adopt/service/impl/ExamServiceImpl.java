@@ -11,7 +11,6 @@ import com.pet.module.adopt.model.vo.ExamResultVo;
 import com.pet.module.adopt.model.vo.QuestionVo;
 import com.pet.module.adopt.service.ExamService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +20,17 @@ import java.util.stream.Collectors;
 @Service
 public class ExamServiceImpl implements ExamService {
 
-    @Autowired
-    private AdoptQuestionMapper adoptQuestionMapper;
+    private final AdoptQuestionMapper adoptQuestionMapper;
 
-    @Autowired
-    private AdoptExamRecordMapper adoptExamRecordMapper;
+    private final AdoptExamRecordMapper adoptExamRecordMapper;
+
+    public ExamServiceImpl(
+            AdoptQuestionMapper adoptQuestionMapper,
+            AdoptExamRecordMapper adoptExamRecordMapper) {
+        this.adoptQuestionMapper = adoptQuestionMapper;
+        this.adoptExamRecordMapper = adoptExamRecordMapper;
+    }
+
 
     @Override
     public List<QuestionVo> startExam() {

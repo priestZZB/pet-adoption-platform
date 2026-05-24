@@ -14,5 +14,9 @@ public interface PetFavoriteMapper {
 
     List<PetFavorite> selectByUserId(Long userId);
 
+    List<PetFavorite> selectByUserIdAndFolder(@Param("userId") Long userId, @Param("folderId") Long folderId);
+
+    int updateFolderId(PetFavorite favorite);
+
     int countByPetId(Long petId);
 }

@@ -22,7 +22,6 @@ import com.pet.module.mall.service.CartService;
 import com.pet.module.mall.service.OrderService;
 import com.pet.module.mall.service.ProductService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -37,29 +36,41 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private MallOrderMapper mallOrderMapper;
+    private final MallOrderMapper mallOrderMapper;
 
-    @Autowired
-    private MallOrderItemMapper mallOrderItemMapper;
+    private final MallOrderItemMapper mallOrderItemMapper;
 
-    @Autowired
-    private MallProductMapper mallProductMapper;
+    private final MallProductMapper mallProductMapper;
 
-    @Autowired
-    private ShippingAddressMapper shippingAddressMapper;
+    private final ShippingAddressMapper shippingAddressMapper;
 
-    @Autowired
-    private CartService cartService;
+    private final CartService cartService;
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+
+    public OrderServiceImpl(
+            MallOrderMapper mallOrderMapper,
+            MallOrderItemMapper mallOrderItemMapper,
+            MallProductMapper mallProductMapper,
+            ShippingAddressMapper shippingAddressMapper,
+            CartService cartService,
+            ProductService productService,
+            StringRedisTemplate redisTemplate,
+            ApplicationEventPublisher eventPublisher) {
+        this.mallOrderMapper = mallOrderMapper;
+        this.mallOrderItemMapper = mallOrderItemMapper;
+        this.mallProductMapper = mallProductMapper;
+        this.shippingAddressMapper = shippingAddressMapper;
+        this.cartService = cartService;
+        this.productService = productService;
+        this.redisTemplate = redisTemplate;
+        this.eventPublisher = eventPublisher;
+    }
+
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();

@@ -1,4 +1,5 @@
-# 开发环境配置
+# 生产环境配置
+# 使用方式：--spring.profiles.active=prod
 # ===============================================
 server:
   port: 8080
@@ -51,13 +52,11 @@ mybatis:
     map-underscore-to-camel-case: true
     lazy-loading-enabled: true
     aggressive-lazy-loading: false
-    # 开发打印 SQL
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 logging:
   level:
-    com.pet: debug
-    org.springframework: info
+    com.pet: info
+    org.springframework: warn
 
 pet:
   login:
@@ -67,19 +66,17 @@ pet:
   ai:
     model: "deepseek-chat"
     api-url: "https://api.deepseek.com/chat/completions"
-    mock: true
 
   jwt:
     expiration: 86400000
 
   sms:
     rate-limit-seconds: 60
-    mock: true
+    mock: false
 
   map:
     regeo-url: "https://restapi.amap.com/v3/geocode/regeo"
     inputtips-url: "https://restapi.amap.com/v3/assistant/inputtips"
-    mock: true
 
   third-party:
     face:
@@ -93,13 +90,7 @@ pet:
       url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
 
   upload:
-    path: D:/data/pet-adoption/uploads
+    path: /data/pet-adoption/uploads
 
-  captcha:
-    mock: true
-
-  realname:
-    mock: true
-
-  chat:
-    violation-limit: 3
+  cors:
+    allowed-origins: "https://你的域名.com"

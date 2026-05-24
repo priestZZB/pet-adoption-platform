@@ -18,7 +18,6 @@ import com.pet.module.pet.model.entity.PetInfo;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -30,23 +29,33 @@ import java.util.stream.Collectors;
 @Service
 public class AdoptServiceImpl implements AdoptService {
 
-    @Autowired
-    private AdoptApplicationMapper adoptApplicationMapper;
+    private final AdoptApplicationMapper adoptApplicationMapper;
 
-    @Autowired
-    private AdoptExamRecordMapper adoptExamRecordMapper;
+    private final AdoptExamRecordMapper adoptExamRecordMapper;
 
-    @Autowired
-    private PetInfoMapper petInfoMapper;
+    private final PetInfoMapper petInfoMapper;
 
-    @Autowired
-    private PetImageMapper petImageMapper;
+    private final PetImageMapper petImageMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+
+    public AdoptServiceImpl(
+            AdoptApplicationMapper adoptApplicationMapper,
+            AdoptExamRecordMapper adoptExamRecordMapper,
+            PetInfoMapper petInfoMapper,
+            PetImageMapper petImageMapper,
+            UserMapper userMapper,
+            ApplicationEventPublisher eventPublisher) {
+        this.adoptApplicationMapper = adoptApplicationMapper;
+        this.adoptExamRecordMapper = adoptExamRecordMapper;
+        this.petInfoMapper = petInfoMapper;
+        this.petImageMapper = petImageMapper;
+        this.userMapper = userMapper;
+        this.eventPublisher = eventPublisher;
+    }
+
 
     @Override
     @Transactional

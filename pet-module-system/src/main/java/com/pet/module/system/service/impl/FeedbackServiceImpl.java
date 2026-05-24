@@ -7,7 +7,6 @@ import com.pet.module.system.mapper.FeedbackMapper;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysFeedback;
 import com.pet.module.system.service.FeedbackService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +15,21 @@ import java.util.List;
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
 
-    @Autowired
-    private FeedbackMapper feedbackMapper;
+    private final FeedbackMapper feedbackMapper;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+
+    public FeedbackServiceImpl(
+            FeedbackMapper feedbackMapper,
+            ApplicationEventPublisher eventPublisher,
+            UserMapper userMapper) {
+        this.feedbackMapper = feedbackMapper;
+        this.eventPublisher = eventPublisher;
+        this.userMapper = userMapper;
+    }
+
 
     @Override
     public void submit(Long userId, String content, String images) {

@@ -81,9 +81,10 @@ public class PetController {
      */
     @ApiOperation("收藏宠物")
     @PostMapping("/pets/{id}/favorite")
-    public Result<String> favorite(HttpServletRequest request, @PathVariable Long id) {
+    public Result<String> favorite(HttpServletRequest request, @PathVariable Long id,
+                                   @RequestParam(required = false) Long folderId) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
-        petFavoriteService.favorite(userId, id);
+        petFavoriteService.favorite(userId, id, folderId);
         return Result.success("收藏成功");
     }
 
@@ -106,5 +107,48 @@ public class PetController {
     public Result<List<PetListVo>> myFavorites(HttpServletRequest request) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
         return Result.success(petFavoriteService.getMyFavorites(userId));
+    }
+
+    /**
+     * 按收藏夹查看收藏
+     */
+    @ApiOperation("按收藏夹查看收藏")
+    @GetMapping("/pets/favorites/by-folder")
+    public Result<List<PetListVo>> myFavoritesByFolder(HttpServletRequest request,
+                                                         @RequestParam Long folderId) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        return Result.success(petFavoriteService.getMyFavoritesByFolder(userId, folderId));
+    }
+
+    /**
+     * 移动收藏到指定收藏夹
+     */
+    @ApiOperation("移动收藏到指定收藏夹")
+    @PutMapping("/pets/{id}/favorite/move")
+    public Result<String> moveFavorite(HttpServletRequest request, @PathVariable Long id,
+                                       @RequestParam(required = false) Long folderId) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        petFavoriteService.favorite(userId, id, folderId);
+        return Result.success("ok");
+    }
+
+    /**
+     * 收藏列表+各收藏夹计数（一次性返回）
+     */
+    @ApiOperation("收藏列表+计数")
+    @GetMapping("/pets/favorites/with-counts")
+    public Result<java.util.Map<String, Object>> favoritesWithCounts(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        return Result.success(petFavoriteService.getFavoritesWithCounts(userId));
+    }
+
+    /**
+     * 各收藏夹的收藏数量统计
+     */
+    @ApiOperation("各收藏夹收藏数量")
+    @GetMapping("/pets/favorites/counts")
+    public Result<java.util.Map<Long, Integer>> favoriteCounts(HttpServletRequest request) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        return Result.success(petFavoriteService.getFavoriteCounts(userId));
     }
 }

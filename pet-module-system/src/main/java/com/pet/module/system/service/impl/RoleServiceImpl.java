@@ -10,7 +10,6 @@ import com.pet.module.system.model.entity.SysRole;
 import com.pet.module.system.model.entity.SysUser;
 import com.pet.module.system.model.entity.SysUserRole;
 import com.pet.module.system.service.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -21,20 +20,29 @@ import java.util.List;
 @Service
 public class RoleServiceImpl implements RoleService {
 
-    @Autowired
-    private RoleMapper roleMapper;
+    private final RoleMapper roleMapper;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
+
+    public RoleServiceImpl(
+            RoleMapper roleMapper,
+            UserRoleMapper userRoleMapper,
+            UserMapper userMapper,
+            ApplicationEventPublisher eventPublisher,
+            JdbcTemplate jdbcTemplate) {
+        this.roleMapper = roleMapper;
+        this.userRoleMapper = userRoleMapper;
+        this.userMapper = userMapper;
+        this.eventPublisher = eventPublisher;
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
 
     @Override
     public List<SysRole> getAllRoles() {

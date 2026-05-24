@@ -260,10 +260,11 @@
     </div>
   </template>
 </div>
+
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, CircleCheckFilled, RemoveFilled, Star, Check, ChatDotSquare } from '@element-plus/icons-vue'
@@ -307,21 +308,17 @@ async function toggleFavorite() {
     if (isFav.value) {
       await unfavorite(pet.value.id)
       isFav.value = false
-      // 重新获取最新收藏数
       const updated = await getPetDetail(pet.value.id)
       pet.value.favoriteCount = updated.favoriteCount
       ElMessage.success('已取消收藏')
     } else {
       await favorite(pet.value.id)
       isFav.value = true
-      // 重新获取最新收藏数
       const updated = await getPetDetail(pet.value.id)
       pet.value.favoriteCount = updated.favoriteCount
       ElMessage.success('收藏成功')
     }
-  } catch {
-    // 请求拦截器统一处理
-  }
+  } catch {}
 }
 
 async function handleAdopt() {

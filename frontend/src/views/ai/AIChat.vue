@@ -259,6 +259,9 @@ async function sendMessage() {
   try {
     const res = await chat({ question: q, sessionId: currentSessionId.value })
     messages.value.push({ role: 'assistant', content: res.answer })
+    if (res.answer === '抱歉，AI服务暂时不可用，请稍后再试。') {
+      ElMessage.warning('抱歉，AI服务暂时不可用，请稍后再试。')
+    }
     loadSessions()
   } catch {
     messages.value.push({ role: 'assistant', content: '抱歉，AI服务暂时不可用，请稍后再试。' })

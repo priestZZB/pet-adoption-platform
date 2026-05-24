@@ -16,7 +16,6 @@ import com.pet.module.pet.service.PetCommentService;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,17 +26,25 @@ import java.util.stream.Collectors;
 @Service
 public class PetCommentServiceImpl implements PetCommentService {
 
-    @Autowired
-    private PetCommentMapper commentMapper;
+    private final PetCommentMapper commentMapper;
 
-    @Autowired
-    private PetInfoMapper petInfoMapper;
+    private final PetInfoMapper petInfoMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+
+    public PetCommentServiceImpl(
+            PetCommentMapper commentMapper,
+            PetInfoMapper petInfoMapper,
+            UserMapper userMapper,
+            ApplicationEventPublisher eventPublisher) {
+        this.commentMapper = commentMapper;
+        this.petInfoMapper = petInfoMapper;
+        this.userMapper = userMapper;
+        this.eventPublisher = eventPublisher;
+    }
+
 
     @Override
     @Transactional

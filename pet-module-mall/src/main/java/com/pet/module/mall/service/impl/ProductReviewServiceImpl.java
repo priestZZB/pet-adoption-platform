@@ -17,7 +17,6 @@ import com.pet.module.mall.service.ProductReviewService;
 import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,17 +26,25 @@ import java.util.stream.Collectors;
 @Service
 public class ProductReviewServiceImpl implements ProductReviewService {
 
-    @Autowired
-    private ProductReviewMapper reviewMapper;
+    private final ProductReviewMapper reviewMapper;
 
-    @Autowired
-    private MallProductMapper productMapper;
+    private final MallProductMapper productMapper;
 
-    @Autowired
-    private MallOrderItemMapper orderItemMapper;
+    private final MallOrderItemMapper orderItemMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+
+    public ProductReviewServiceImpl(
+            ProductReviewMapper reviewMapper,
+            MallProductMapper productMapper,
+            MallOrderItemMapper orderItemMapper,
+            UserMapper userMapper) {
+        this.reviewMapper = reviewMapper;
+        this.productMapper = productMapper;
+        this.orderItemMapper = orderItemMapper;
+        this.userMapper = userMapper;
+    }
+
 
     @Override
     @Transactional

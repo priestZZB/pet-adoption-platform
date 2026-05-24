@@ -11,7 +11,6 @@ import com.pet.module.mall.model.vo.ProductDetailVo;
 import com.pet.module.mall.model.vo.ProductListVo;
 import com.pet.module.mall.service.ProductService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,11 +24,17 @@ import java.util.stream.Collectors;
 @CacheConfig(cacheNames = "product")
 public class ProductServiceImpl implements ProductService {
 
-    @Autowired
-    private MallProductMapper mallProductMapper;
+    private final MallProductMapper mallProductMapper;
 
-    @Autowired
-    private MallCategoryMapper mallCategoryMapper;
+    private final MallCategoryMapper mallCategoryMapper;
+
+    public ProductServiceImpl(
+            MallProductMapper mallProductMapper,
+            MallCategoryMapper mallCategoryMapper) {
+        this.mallProductMapper = mallProductMapper;
+        this.mallCategoryMapper = mallCategoryMapper;
+    }
+
 
     @Cacheable(key = "'list:' + #categoryId")
     @Override

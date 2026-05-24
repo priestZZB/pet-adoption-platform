@@ -15,47 +15,65 @@ import com.pet.module.pet.model.entity.PetInfo;
 import com.pet.module.pet.model.vo.PetListVo;
 import com.pet.module.pet.service.PetFavoriteService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class PetFavoriteServiceImpl implements PetFavoriteService {
 
-    @Autowired
-    private PetFavoriteMapper petFavoriteMapper;
+    private final PetFavoriteMapper petFavoriteMapper;
 
-    @Autowired
-    private PetInfoMapper petInfoMapper;
+    private final PetInfoMapper petInfoMapper;
 
-    @Autowired
-    private PetImageMapper petImageMapper;
+    private final PetImageMapper petImageMapper;
 
-    @Autowired
-    private PetCategoryMapper petCategoryMapper;
+    private final PetCategoryMapper petCategoryMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+
+    public PetFavoriteServiceImpl(
+            PetFavoriteMapper petFavoriteMapper,
+            PetInfoMapper petInfoMapper,
+            PetImageMapper petImageMapper,
+            PetCategoryMapper petCategoryMapper,
+            UserMapper userMapper) {
+        this.petFavoriteMapper = petFavoriteMapper;
+        this.petInfoMapper = petInfoMapper;
+        this.petImageMapper = petImageMapper;
+        this.petCategoryMapper = petCategoryMapper;
+        this.userMapper = userMapper;
+    }
+
 
     @Override
     @CacheEvict(cacheNames = "pet", allEntries = true)
     @Transactional
-    public void favorite(Long userId, Long petId) {
+    public void favorite(Long userId, Long petId, Long folderId) {
         PetInfo pet = petInfoMapper.selectById(petId);
         if (pet == null) {
             throw new BusinessException(ResultCodeEnum.PET_NOT_FOUND);
         }
         PetFavorite existing = petFavoriteMapper.selectByUserAndPet(userId, petId);
         if (existing != null) {
+            // 更新收藏夹（支持移出：folderId=null）
+            boolean needsUpdate = (folderId == null && existing.getFolderId() != null)
+                    || (folderId != null && !folderId.equals(existing.getFolderId()));
+            if (needsUpdate) {
+                existing.setFolderId(folderId);
+                petFavoriteMapper.updateFolderId(existing);
+            }
             return;
         }
         PetFavorite fav = new PetFavorite();
         fav.setUserId(userId);
         fav.setPetId(petId);
+        fav.setFolderId(folderId);
         petFavoriteMapper.insert(fav);
     }
 
@@ -67,8 +85,51 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
     }
 
     @Override
+    public List<PetListVo> getMyFavoritesByFolder(Long userId, Long folderId) {
+        List<PetFavorite> favs = petFavoriteMapper.selectByUserIdAndFolder(userId, folderId);
+        return buildFavList(favs);
+    }
+
+    @Override
+    public Map<Long, Integer> getFavoriteCounts(Long userId) {
+        List<PetFavorite> favs = petFavoriteMapper.selectByUserId(userId);
+        Map<Long, Integer> counts = new HashMap<>();
+        for (PetFavorite f : favs) {
+            Long fid = f.getFolderId();
+            if (fid != null) {
+                counts.put(fid, counts.getOrDefault(fid, 0) + 1);
+            }
+        }
+        return counts;
+    }
+
+    @Override
+    public Map<String, Object> getFavoritesWithCounts(Long userId) {
+        List<PetFavorite> favs = petFavoriteMapper.selectByUserId(userId);
+        List<PetListVo> list = buildFavList(favs);
+        Map<Long, Integer> counts = new HashMap<>();
+        for (PetFavorite f : favs) {
+            Long fid = f.getFolderId();
+            if (fid != null) {
+                counts.put(fid, counts.getOrDefault(fid, 0) + 1);
+            }
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("counts", counts);
+        return result;
+    }
+
+    @Override
     public List<PetListVo> getMyFavorites(Long userId) {
         List<PetFavorite> favs = petFavoriteMapper.selectByUserId(userId);
+        return buildFavList(favs);
+    }
+
+    /**
+     * 将 PetFavorite 列表转为 PetListVo（含封面、分类、送养人信息）
+     */
+    private List<PetListVo> buildFavList(List<PetFavorite> favs) {
         return favs.stream().map(f -> {
             PetInfo pet = petInfoMapper.selectById(f.getPetId());
             if (pet == null) return null;

@@ -5,7 +5,6 @@ import com.pet.common.exception.BusinessException;
 import com.pet.module.mall.mapper.MallCategoryMapper;
 import com.pet.module.mall.model.entity.MallCategory;
 import com.pet.module.mall.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +13,13 @@ import java.util.List;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
-    private MallCategoryMapper mallCategoryMapper;
+    private final MallCategoryMapper mallCategoryMapper;
+
+    public CategoryServiceImpl(
+            MallCategoryMapper mallCategoryMapper) {
+        this.mallCategoryMapper = mallCategoryMapper;
+    }
+
 
     @Override
     public List<MallCategory> getCategoryList() {

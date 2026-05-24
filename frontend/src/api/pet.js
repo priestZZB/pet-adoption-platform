@@ -7,11 +7,19 @@ export const getPetList = (params) => request.get('/pets', { params })
 // 宠物详情（含多图+送养人，公开）
 export const getPetDetail = (id) => request.get('/pets/' + id)
 // 收藏宠物
-export const favorite = (id) => request.post('/pets/' + id + '/favorite')
+export const favorite = (id, folderId) => {
+  const params = folderId ? { folderId } : {}
+  return request.post('/pets/' + id + '/favorite', null, { params })
+}
 // 取消收藏
 export const unfavorite = (id) => request.delete('/pets/' + id + '/favorite')
 // 我的收藏列表
 export const getFavorites = () => request.get('/pets/favorites')
+// 按收藏夹查看收藏
+export const getFavoritesByFolder = (folderId) => request.get('/pets/favorites/by-folder', { params: { folderId } })
+export const getFavoriteCounts = () => request.get('/pets/favorites/counts')
+export const getFavoritesWithCounts = () => request.get('/pets/favorites/with-counts')
+export const moveFavorite = (petId, folderId) => request.put('/pets/' + petId + '/favorite/move', null, { params: { folderId } })
 // 发布送养宠物（含多图上传）
 export const publishPet = (data) => request.post('/donate/pets', data)
 // 编辑宠物信息
@@ -26,3 +34,9 @@ export const getMyPets = () => request.get('/donate/pets')
 export const getPetApplications = (petId) => request.get('/donate/pets/' + petId + '/applications')
 // 同意/拒绝领养申请
 export const reviewApplication = (id, action) => request.put('/donate/application/' + id, null, { params: { action } })
+
+// ====== 收藏夹 ======
+export const getFolders = () => request.get('/folders')
+export const createFolder = (name) => request.post('/folders', null, { params: { name } })
+export const renameFolder = (id, name) => request.put('/folders/' + id, null, { params: { name } })
+export const deleteFolder = (id) => request.delete('/folders/' + id)

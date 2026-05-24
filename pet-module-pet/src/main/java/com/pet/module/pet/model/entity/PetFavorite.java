@@ -10,6 +10,7 @@ public class PetFavorite {
     private Long id;
     private Long userId;
     private Long petId;
+    private Long folderId;
     private LocalDateTime createdAt;
 
     public Long getId() { return id; }
@@ -18,6 +19,8 @@ public class PetFavorite {
     public void setUserId(Long userId) { this.userId = userId; }
     public Long getPetId() { return petId; }
     public void setPetId(Long petId) { this.petId = petId; }
+    public Long getFolderId() { return folderId; }
+    public void setFolderId(Long folderId) { this.folderId = folderId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

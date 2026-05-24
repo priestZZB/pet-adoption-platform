@@ -9,7 +9,6 @@ import com.pet.module.system.model.entity.UserNoticeRead;
 import com.pet.module.system.model.vo.NoticeVo;
 import com.pet.module.system.service.NoticeService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +18,15 @@ import java.util.stream.Collectors;
 @Service
 public class NoticeServiceImpl implements NoticeService {
 
-    @Autowired
-    private NoticeMapper noticeMapper;
+    private final NoticeMapper noticeMapper;
+
+    public NoticeServiceImpl(
+            NoticeMapper noticeMapper,
+            UserNoticeReadMapper userNoticeReadMapper) {
+        this.noticeMapper = noticeMapper;
+        this.userNoticeReadMapper = userNoticeReadMapper;
+    }
+
 
     @Override
     public List<NoticeVo> getPublicNotices() {
@@ -103,6 +109,5 @@ public class NoticeServiceImpl implements NoticeService {
         }
     }
 
-    @Autowired
-    private UserNoticeReadMapper userNoticeReadMapper;
+    private final UserNoticeReadMapper userNoticeReadMapper;
 }

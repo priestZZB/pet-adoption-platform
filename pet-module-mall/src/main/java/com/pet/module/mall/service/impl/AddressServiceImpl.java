@@ -8,7 +8,6 @@ import com.pet.module.mall.model.entity.ShippingAddress;
 import com.pet.module.mall.model.vo.AddressVo;
 import com.pet.module.mall.service.AddressService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +19,13 @@ import cn.hutool.core.util.StrUtil;
 @Service
 public class AddressServiceImpl implements AddressService {
 
-    @Autowired
-    private ShippingAddressMapper addressMapper;
+    private final ShippingAddressMapper addressMapper;
+
+    public AddressServiceImpl(
+            ShippingAddressMapper addressMapper) {
+        this.addressMapper = addressMapper;
+    }
+
 
     @Override
     public List<AddressVo> getUserAddresses(Long userId) {

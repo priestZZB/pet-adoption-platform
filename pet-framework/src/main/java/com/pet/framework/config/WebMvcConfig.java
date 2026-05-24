@@ -25,8 +25,25 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations(location);
     }
 
+    @Autowired
+    private com.pet.framework.interceptor.RateLimitInterceptor rateLimitInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 限流拦截器（优先执行）
+        registry.addInterceptor(rateLimitInterceptor)
+                .addPathPatterns(
+                        "/api/user/login",
+                        "/api/user/login/phone",
+                        "/api/user/register",
+                        "/api/user/password/reset",
+                        "/api/sms/code",
+                        "/api/ai/chat",
+                        "/api/file/upload",
+                        "/api/file/upload/multi"
+                );
+
+        // JWT 认证拦截器
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(

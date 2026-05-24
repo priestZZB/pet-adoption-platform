@@ -71,6 +71,9 @@
         <!-- 文件上传 -->
         <commons-io.version>2.15.1</commons-io.version>
         <commons-fileupload.version>1.5</commons-fileupload.version>
+
+        <!-- 限流 -->
+        <bucket4j.version>8.7.0</bucket4j.version>
     </properties>
 
     <dependencyManagement>
@@ -170,6 +173,13 @@
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
                 <version>${commons-fileupload.version}</version>
+            </dependency>
+
+            <!-- ====== 限流 ====== -->
+            <dependency>
+                <groupId>com.bucket4j</groupId>
+                <artifactId>bucket4j-core</artifactId>
+                <version>${bucket4j.version}</version>
             </dependency>
 
             <!-- ====== 测试 ====== -->

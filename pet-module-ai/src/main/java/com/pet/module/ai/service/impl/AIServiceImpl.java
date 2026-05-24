@@ -11,7 +11,6 @@ import com.pet.module.ai.model.vo.ChatVo;
 import com.pet.module.ai.model.vo.SessionVo;
 import com.pet.module.ai.service.AIService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +26,11 @@ import java.util.stream.Collectors;
 @Service("aiService")
 public class AIServiceImpl implements AIService {
 
+    public AIServiceImpl(
+            AIConversationMapper conversationMapper) {
+        this.conversationMapper = conversationMapper;
+    }
+
     @Value("${pet.ai.api-key:sk-demo}")
     private String apiKey;
 
@@ -39,8 +43,7 @@ public class AIServiceImpl implements AIService {
     @Value("${pet.ai.api-url:https://api.deepseek.com/chat/completions}")
     private String apiUrl;
 
-    @Autowired
-    private AIConversationMapper conversationMapper;
+    private final AIConversationMapper conversationMapper;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -151,7 +154,11 @@ public class AIServiceImpl implements AIService {
     @Transactional
     public ChatVo chat(Long userId, ChatDto dto) {
         if (aiMock) {
-            throw new BusinessException(ResultCodeEnum.AI_SERVICE_ERROR, "AI功能正在维护中，请关注平台公告");
+            ChatVo mockVo = new ChatVo();
+            mockVo.setSessionId(dto.getSessionId());
+            mockVo.setQuestion(dto.getQuestion());
+            mockVo.setAnswer("抱歉，AI服务暂时不可用，请稍后再试。");
+            return mockVo;
         }
         String question = dto.getQuestion();
         if (question == null || question.trim().isEmpty()) {

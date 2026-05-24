@@ -7,16 +7,17 @@
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>
         <result column="pet_id" property="petId"/>
+        <result column="folder_id" property="folderId"/>
         <result column="created_at" property="createdAt"/>
     </resultMap>
 
     <sql id="BaseColumns">
-        id, user_id, pet_id, created_at
+        id, user_id, pet_id, folder_id, created_at
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO pet_favorite (user_id, pet_id)
-        VALUES (#{userId}, #{petId})
+        INSERT INTO pet_favorite (user_id, pet_id, folder_id)
+        VALUES (#{userId}, #{petId}, #{folderId})
     </insert>
 
     <delete id="deleteByUserAndPet">
@@ -35,4 +36,14 @@
     <select id="countByPetId" resultType="int">
         SELECT COUNT(*) FROM pet_favorite WHERE pet_id = #{petId}
     </select>
+
+    <select id="selectByUserIdAndFolder" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM pet_favorite
+        WHERE user_id = #{userId} AND folder_id = #{folderId}
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="updateFolderId">
+        UPDATE pet_favorite SET folder_id = #{folderId} WHERE id = #{id}
+    </update>
 </mapper>

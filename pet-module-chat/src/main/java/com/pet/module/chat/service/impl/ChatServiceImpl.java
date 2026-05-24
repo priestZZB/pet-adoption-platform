@@ -9,7 +9,6 @@ import com.pet.module.chat.service.ChatSSEService;
 import com.pet.module.chat.service.ChatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,25 +22,34 @@ import java.util.regex.Pattern;
 @Service
 public class ChatServiceImpl implements ChatService {
 
+    public ChatServiceImpl(
+            ChatMessageMapper chatMessageMapper,
+            StringRedisTemplate redisTemplate,
+            ApplicationEventPublisher eventPublisher,
+            JdbcTemplate jdbcTemplate,
+            ChatSSEService chatSSEService,
+            SimpMessagingTemplate messagingTemplate) {
+        this.chatMessageMapper = chatMessageMapper;
+        this.redisTemplate = redisTemplate;
+        this.eventPublisher = eventPublisher;
+        this.jdbcTemplate = jdbcTemplate;
+        this.chatSSEService = chatSSEService;
+        this.messagingTemplate = messagingTemplate;
+    }
+
     private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
 
-    @Autowired
-    private ChatMessageMapper chatMessageMapper;
+    private final ChatMessageMapper chatMessageMapper;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private ChatSSEService chatSSEService;
+    private final ChatSSEService chatSSEService;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${pet.chat.violation-limit:3}")
     private int violationLimit;

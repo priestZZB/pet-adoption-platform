@@ -5,7 +5,6 @@ import com.pet.common.exception.BusinessException;
 import com.pet.module.system.mapper.BannerMapper;
 import com.pet.module.system.model.entity.Banner;
 import com.pet.module.system.service.BannerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +13,13 @@ import java.util.List;
 @Service
 public class BannerServiceImpl implements BannerService {
 
-    @Autowired
-    private BannerMapper bannerMapper;
+    private final BannerMapper bannerMapper;
+
+    public BannerServiceImpl(
+            BannerMapper bannerMapper) {
+        this.bannerMapper = bannerMapper;
+    }
+
 
     @Override
     public List<Banner> getBannerList() {

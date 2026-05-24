@@ -9,7 +9,6 @@ import com.pet.module.volunteer.model.entity.VisitRecord;
 import com.pet.module.volunteer.model.vo.VisitVo;
 import com.pet.module.volunteer.service.VisitService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,8 +20,13 @@ import java.util.stream.Collectors;
 @Service
 public class VisitServiceImpl implements VisitService {
 
-    @Autowired
-    private VisitRecordMapper visitRecordMapper;
+    private final VisitRecordMapper visitRecordMapper;
+
+    public VisitServiceImpl(
+            VisitRecordMapper visitRecordMapper) {
+        this.visitRecordMapper = visitRecordMapper;
+    }
+
 
     @Override
     public void add(Long volunteerId, VisitDto dto) {

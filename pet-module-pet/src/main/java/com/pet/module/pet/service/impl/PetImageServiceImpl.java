@@ -3,7 +3,6 @@ package com.pet.module.pet.service.impl;
 import com.pet.module.pet.mapper.PetImageMapper;
 import com.pet.module.pet.model.entity.PetImage;
 import com.pet.module.pet.service.PetImageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,8 +11,13 @@ import java.util.List;
 @Service
 public class PetImageServiceImpl implements PetImageService {
 
-    @Autowired
-    private PetImageMapper petImageMapper;
+    private final PetImageMapper petImageMapper;
+
+    public PetImageServiceImpl(
+            PetImageMapper petImageMapper) {
+        this.petImageMapper = petImageMapper;
+    }
+
 
     @Override
     public void saveImages(Long petId, List<String> imageUrls) {

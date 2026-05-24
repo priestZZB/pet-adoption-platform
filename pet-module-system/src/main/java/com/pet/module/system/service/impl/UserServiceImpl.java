@@ -20,7 +20,6 @@ import com.pet.module.system.service.RealNameService;
 import com.pet.module.system.service.SmsService;
 import com.pet.module.system.service.UserService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -34,32 +33,45 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private RoleMapper roleMapper;
+    private final RoleMapper roleMapper;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private RealNameService realNameService;
+    private final RealNameService realNameService;
 
-    @Autowired
-    private SmsService smsService;
+    private final SmsService smsService;
 
-    @Autowired
-    private CaptchaService captchaService;
+    private final CaptchaService captchaService;
+
+    public UserServiceImpl(
+            UserMapper userMapper,
+            RoleMapper roleMapper,
+            UserRoleMapper userRoleMapper,
+            JwtUtils jwtUtils,
+            ApplicationEventPublisher eventPublisher,
+            StringRedisTemplate redisTemplate,
+            RealNameService realNameService,
+            SmsService smsService,
+            CaptchaService captchaService) {
+        this.userMapper = userMapper;
+        this.roleMapper = roleMapper;
+        this.userRoleMapper = userRoleMapper;
+        this.jwtUtils = jwtUtils;
+        this.eventPublisher = eventPublisher;
+        this.redisTemplate = redisTemplate;
+        this.realNameService = realNameService;
+        this.smsService = smsService;
+        this.captchaService = captchaService;
+    }
+
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 

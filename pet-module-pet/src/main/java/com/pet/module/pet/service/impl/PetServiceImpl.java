@@ -27,7 +27,6 @@ import com.pet.module.system.mapper.UserMapper;
 import com.pet.module.system.mapper.UserRoleMapper;
 import com.pet.module.system.model.entity.SysUser;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -43,32 +42,45 @@ import java.util.stream.Collectors;
 @CacheConfig(cacheNames = "pet")
 public class PetServiceImpl implements PetService {
 
-    @Autowired
-    private PetInfoMapper petInfoMapper;
+    private final PetInfoMapper petInfoMapper;
 
-    @Autowired
-    private PetCategoryMapper petCategoryMapper;
+    private final PetCategoryMapper petCategoryMapper;
 
-    @Autowired
-    private PetImageMapper petImageMapper;
+    private final PetImageMapper petImageMapper;
 
-    @Autowired
-    private PetFavoriteMapper petFavoriteMapper;
+    private final PetFavoriteMapper petFavoriteMapper;
 
-    @Autowired
-    private PetReviewRecordMapper petReviewRecordMapper;
+    private final PetReviewRecordMapper petReviewRecordMapper;
 
-    @Autowired
-    private PetImageService petImageService;
+    private final PetImageService petImageService;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
+
+    public PetServiceImpl(
+            PetInfoMapper petInfoMapper,
+            PetCategoryMapper petCategoryMapper,
+            PetImageMapper petImageMapper,
+            PetFavoriteMapper petFavoriteMapper,
+            PetReviewRecordMapper petReviewRecordMapper,
+            PetImageService petImageService,
+            UserMapper userMapper,
+            ApplicationEventPublisher eventPublisher,
+            UserRoleMapper userRoleMapper) {
+        this.petInfoMapper = petInfoMapper;
+        this.petCategoryMapper = petCategoryMapper;
+        this.petImageMapper = petImageMapper;
+        this.petFavoriteMapper = petFavoriteMapper;
+        this.petReviewRecordMapper = petReviewRecordMapper;
+        this.petImageService = petImageService;
+        this.userMapper = userMapper;
+        this.eventPublisher = eventPublisher;
+        this.userRoleMapper = userRoleMapper;
+    }
+
 
     @Cacheable(key = "'list:' + #categoryId + ':' + #keyword + ':' + #status")
     @Override

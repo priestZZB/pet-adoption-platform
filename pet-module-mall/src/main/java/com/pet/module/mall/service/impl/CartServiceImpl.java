@@ -8,7 +8,6 @@ import com.pet.module.mall.model.entity.MallCart;
 import com.pet.module.mall.model.entity.MallProduct;
 import com.pet.module.mall.model.vo.CartVo;
 import com.pet.module.mall.service.CartService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +21,20 @@ import java.util.Set;
 @Service
 public class CartServiceImpl implements CartService {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private MallProductMapper mallProductMapper;
+    private final MallProductMapper mallProductMapper;
 
-    @Autowired
-    private MallCartMapper mallCartMapper;
+    private final MallCartMapper mallCartMapper;
+
+    public CartServiceImpl(
+                StringRedisTemplate redisTemplate,
+            MallProductMapper mallProductMapper,
+            MallCartMapper mallCartMapper) {
+        this.redisTemplate = redisTemplate;
+        this.mallProductMapper = mallProductMapper;
+        this.mallCartMapper = mallCartMapper;
+    }
 
     private String cartKey(Long userId) {
         return "mall:cart:" + userId;
@@ -76,7 +81,6 @@ public class CartServiceImpl implements CartService {
         if (dbCarts.isEmpty()) {
             return new ArrayList<>();
         }
-
         // 写回 Redis 以便下次快速读取
         for (MallCart db : dbCarts) {
             redisTemplate.opsForHash().put(key, String.valueOf(db.getProductId()), String.valueOf(db.getQuantity()));

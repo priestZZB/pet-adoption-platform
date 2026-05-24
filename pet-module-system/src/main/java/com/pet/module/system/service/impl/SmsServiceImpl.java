@@ -5,7 +5,6 @@ import com.pet.common.enums.ResultCodeEnum;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.system.service.SmsService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
@@ -24,6 +23,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class SmsServiceImpl implements SmsService {
+
+    public SmsServiceImpl(
+            StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String SMS_CODE_PREFIX = "sms:code:";
     private static final String SMS_RATE_PREFIX = "sms:rate:";
@@ -55,8 +59,7 @@ public class SmsServiceImpl implements SmsService {
     @Value("${pet.sms.rate-limit-seconds:60}")
     private int rateLimitSeconds;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     private final RestTemplate restTemplate = new RestTemplate();
 

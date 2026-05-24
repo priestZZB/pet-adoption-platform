@@ -10,7 +10,6 @@ import com.pet.module.pet.model.entity.PetInfo;
 import com.pet.module.pet.model.entity.PetReviewRecord;
 import com.pet.module.pet.service.PetReviewService;
 import com.pet.module.system.mapper.UserRoleMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,17 +20,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PetReviewServiceImpl implements PetReviewService {
 
-    @Autowired
-    private PetInfoMapper petInfoMapper;
+    private final PetInfoMapper petInfoMapper;
 
-    @Autowired
-    private PetReviewRecordMapper petReviewRecordMapper;
+    private final PetReviewRecordMapper petReviewRecordMapper;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+    private final UserRoleMapper userRoleMapper;
+
+    public PetReviewServiceImpl(
+            PetInfoMapper petInfoMapper,
+            PetReviewRecordMapper petReviewRecordMapper,
+            ApplicationEventPublisher eventPublisher,
+            UserRoleMapper userRoleMapper) {
+        this.petInfoMapper = petInfoMapper;
+        this.petReviewRecordMapper = petReviewRecordMapper;
+        this.eventPublisher = eventPublisher;
+        this.userRoleMapper = userRoleMapper;
+    }
+
 
     @Override
     @Transactional

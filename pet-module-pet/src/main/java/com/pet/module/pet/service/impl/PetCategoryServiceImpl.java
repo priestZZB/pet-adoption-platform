@@ -7,7 +7,6 @@ import com.pet.module.pet.model.entity.PetCategory;
 import com.pet.module.pet.model.vo.PetCategoryVo;
 import com.pet.module.pet.service.PetCategoryService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +16,13 @@ import java.util.stream.Collectors;
 @Service
 public class PetCategoryServiceImpl implements PetCategoryService {
 
-    @Autowired
-    private PetCategoryMapper petCategoryMapper;
+    private final PetCategoryMapper petCategoryMapper;
+
+    public PetCategoryServiceImpl(
+            PetCategoryMapper petCategoryMapper) {
+        this.petCategoryMapper = petCategoryMapper;
+    }
+
 
     @Override
     public List<PetCategoryVo> getCategoryList() {

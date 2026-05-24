@@ -6,7 +6,6 @@ import com.pet.common.exception.BusinessException;
 import com.pet.module.adopt.mapper.AdoptQuestionMapper;
 import com.pet.module.adopt.model.entity.AdoptQuestion;
 import com.pet.module.adopt.service.QuestionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +13,13 @@ import java.util.List;
 @Service
 public class QuestionServiceImpl implements QuestionService {
 
-    @Autowired
-    private AdoptQuestionMapper adoptQuestionMapper;
+    private final AdoptQuestionMapper adoptQuestionMapper;
+
+    public QuestionServiceImpl(
+            AdoptQuestionMapper adoptQuestionMapper) {
+        this.adoptQuestionMapper = adoptQuestionMapper;
+    }
+
 
     @Override
     public List<AdoptQuestion> getQuestionList(int page, int size) {
