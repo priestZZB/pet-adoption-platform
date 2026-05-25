@@ -12,7 +12,7 @@ services:
     container_name: pet-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ZZb070104
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-ZZb070104}
       MYSQL_DATABASE: pet_adoption
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
@@ -26,7 +26,7 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pZZb070104"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-ZZb070104}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,12 +36,13 @@ services:
     image: redis:7
     container_name: pet-redis
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-ZZb070104}
     volumes:
       - redis-data:/data
     networks:
       - pet-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-ZZb070104}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -51,23 +52,35 @@ services:
     build: .
     container_name: pet-app
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:8080:8080"    # 只监听本地，不对外暴露
+    # 仅本地调试时取消注释下面这行（不经过 Nginx 直接访问后端）
+    # ports:
+    #   - "127.0.0.1:8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
-      # Docker 内部网络，MySQL 和 Redis 用服务名访问
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pet_adoption?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-ZZb070104}
       SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-ZZb070104}
     volumes:
-      # 挂载 secret 配置（包含 API Key、密码等敏感信息）
-      # ⚠️ 服务器上需要手动创建此文件，从本地 application-secret.yml 复制
+      # 挂载 secret 配置（含 API Key、JWT 密钥等敏感信息）
       - ./pet-gateway/src/main/resources/application-secret.yml:/app/application-secret.yml
-      # 上传文件持久化
       - upload-data:/data/pet-adoption/uploads
+    networks:
+      - pet-network
+
+  # --------------- Nginx（前端 + API 网关）---------------
+  nginx:
+    build: ./frontend
+    container_name: pet-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - app
     networks:
       - pet-network
 

@@ -1,0 +1,15 @@
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+.DS_Store
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.log
+logs/
+.env
+application-secret.yml
+docker-compose.override.yml
+*.md
