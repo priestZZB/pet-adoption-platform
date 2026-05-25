@@ -93,4 +93,4 @@ pet:
     path: /data/pet-adoption/uploads
 
   cors:
-    allowed-origins: "https://你的域名.com"
+    allowed-origins: "https://adopt.priestlab.top"

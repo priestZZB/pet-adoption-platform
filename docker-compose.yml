@@ -1,0 +1,85 @@
+# ============================================
+# 宠物领养救助管理平台 — Docker Compose
+# 使用：docker compose up -d
+# ============================================
+
+version: "3.8"
+
+services:
+  # --------------- MySQL ---------------
+  mysql:
+    image: mysql:8.0
+    container_name: pet-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ZZb070104
+      MYSQL_DATABASE: pet_adoption
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./pet_adoption.sql:/docker-entrypoint-initdb.d/01-pet_adoption.sql
+    networks:
+      - pet-network
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pZZb070104"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------- Redis ---------------
+  redis:
+    image: redis:7
+    container_name: pet-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - pet-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------- 后端应用 ---------------
+  app:
+    build: .
+    container_name: pet-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"    # 只监听本地，不对外暴露
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Docker 内部网络，MySQL 和 Redis 用服务名访问
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pet_adoption?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_REDIS_HOST: redis
+    volumes:
+      # 挂载 secret 配置（包含 API Key、密码等敏感信息）
+      # ⚠️ 服务器上需要手动创建此文件，从本地 application-secret.yml 复制
+      - ./pet-gateway/src/main/resources/application-secret.yml:/app/application-secret.yml
+      # 上传文件持久化
+      - upload-data:/data/pet-adoption/uploads
+    networks:
+      - pet-network
+
+volumes:
+  mysql-data:
+    name: pet-mysql-data
+  redis-data:
+    name: pet-redis-data
+  upload-data:
+    name: pet-upload-data
+
+networks:
+  pet-network:
+    name: pet-network
+    driver: bridge
