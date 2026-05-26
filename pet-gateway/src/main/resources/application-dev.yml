@@ -1,3 +1,4 @@
+# ===============================================
 # 开发环境配置
 # ===============================================
 server:
@@ -59,28 +60,55 @@ logging:
     com.pet: debug
     org.springframework: info
 
+# ============================================================
+# 🎛️ 模拟模式开关（mock: true / false）
+#
+#   mock: true   → 模拟模式（开发用，不调真实三方服务）
+#                   • 滑块验证码：后端直接跳过验证，返回成功
+#                   • 短信验证码：控制台输出验证码，不真实发送
+#                   • 实名认证：姓名+身份证校验数据库即可，不调人脸API
+#                   • AI咨询：返回"AI服务暂时不可用"，不调DeepSeek
+#                   • 地图服务：返回模拟数据，不调高德API
+#
+#   mock: false  → 真实模式（生产用，调第三方服务）
+#                   删除或注释掉 mock 配置项也等同 false
+# ============================================================
 pet:
+  # -------- 登录安全 --------
   login:
-    max-attempts: 5
-    lock-minutes: 15
+    max-attempts: 5          # 连续输错几次锁定
+    lock-minutes: 15         # 锁定多少分钟
 
-  ai:
-    model: "deepseek-chat"
-    api-url: "https://api.deepseek.com/chat/completions"
-    mock: true
-
+  # -------- JWT --------
   jwt:
-    expiration: 86400000
+    expiration: 86400000     # Token有效期（毫秒），24小时
 
+  # -------- 滑块验证码 --------
+  captcha:
+    mock: true               # true=跳过验证 | false=调怜花API
+
+  # -------- 短信验证码 --------
   sms:
-    rate-limit-seconds: 60
-    mock: true
+    rate-limit-seconds: 60   # 同手机号发短信最小间隔（秒）
+    mock: true               # true=控制台输出 | false=调三网短信API
 
+  # -------- 实名认证 --------
+  realname:
+    mock: true               # true=模拟通过(校验DB) | false=调人脸比对API
+
+  # -------- AI智能咨询（DeepSeek）--------
+  ai:
+    model: "deepseek-chat"   # DeepSeek 模型名
+    api-url: "https://api.deepseek.com/chat/completions"
+    mock: true               # true=返回"维护中" | false=调DeepSeek API
+
+  # -------- 地图服务（高德Web服务API）--------
   map:
     regeo-url: "https://restapi.amap.com/v3/geocode/regeo"
     inputtips-url: "https://restapi.amap.com/v3/assistant/inputtips"
-    mock: true
+    mock: true               # true=模拟数据 | false=调高德API
 
+  # -------- 第三方 API 地址（仅mock=false时生效）--------
   third-party:
     face:
       url: "https://kzfacev1.market.alicloudapi.com/api-mall/api/face_id_card_yi_suo/check"
@@ -92,14 +120,10 @@ pet:
     sms:
       url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
 
+  # -------- 文件上传路径 --------
   upload:
     path: D:/data/pet-adoption/uploads
 
-  captcha:
-    mock: true
-
-  realname:
-    mock: true
-
+  # -------- 聊天 --------
   chat:
-    violation-limit: 3
+    violation-limit: 3        # 累计违规几次后自动封号
