@@ -10,9 +10,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
  * CAPTCHA_MOCK = true  → 模拟模式（不弹窗，直接返回模拟数据）
  * CAPTCHA_MOCK = false → 真实模式（加载怜花SDK，弹窗验证）
  *
- * 开发时设 true，上线前改 false（或对接后端配置）
+ * 通过 VITE_CAPTCHA_MOCK 环境变量控制，默认 false
+ * 开发时 .env 设 VITE_CAPTCHA_MOCK=true，生产不设或 false
  */
-const CAPTCHA_MOCK = true
+const CAPTCHA_MOCK = import.meta.env.VITE_CAPTCHA_MOCK === 'true'
 
 const CAPTCHA_APP_ID = '193347059'
 const CAPTCHA_APP_SECRET = 'vzvaQXQjhqgQ7pDXb80NTadLU'

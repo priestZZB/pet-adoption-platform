@@ -253,7 +253,9 @@ async function handleLogin() {
     ElMessage.success('登录成功')
     router.push('/')
   } catch (err) {
-    // 用户取消验证时不提示，其他错误由拦截器统一处理
+    if (err?.message && err.message !== 'VERIFY_CANCELLED') {
+      ElMessage.error(err.message || '登录失败，请重试')
+    }
   } finally {
     submitting.value = false
   }
@@ -275,7 +277,9 @@ async function handlePhoneLogin() {
     ElMessage.success('登录成功')
     router.push('/')
   } catch (err) {
-    // 用户取消验证时不提示，其他错误由拦截器统一处理
+    if (err?.message && err.message !== 'VERIFY_CANCELLED') {
+      ElMessage.error(err.message || '登录失败，请重试')
+    }
   } finally {
     submitting.value = false
   }
