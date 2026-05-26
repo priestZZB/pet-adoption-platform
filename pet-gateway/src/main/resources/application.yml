@@ -1,8 +1,8 @@
 # 环境选择器
-# 开发：默认（dev）| 生产：--spring.profiles.active=prod
+# 使用 prod 作为默认环境（生产），include加载 secret 密钥
 # ===============================================
 
 spring:
   profiles:
-    active: dev
+    active: prod
     include: secret
