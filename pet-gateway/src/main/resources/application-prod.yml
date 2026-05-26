@@ -1,3 +1,4 @@
+# ===============================================
 # 生产环境配置
 # 使用方式：--spring.profiles.active=prod
 # ===============================================
@@ -25,7 +26,7 @@ spring:
   redis:
     host: localhost
     port: 6379
-    password:
+    password: "Zzb070104"
     database: 0
     timeout: 5000ms
     lettuce:
@@ -58,26 +59,51 @@ logging:
     com.pet: info
     org.springframework: warn
 
+# ============================================================
+# 🎛️ 模拟模式开关（默认关闭，测试临时开启）
+#
+#   生产环境默认全部 mock: false，走真实第三方服务
+#   首次部署或调试时可临时改为 true，跳过三方依赖
+#
+#   mock: true → 模拟模式（适合前期验证）
+#   mock: false → 真实模式（上线正式用）
+# ============================================================
 pet:
+  # -------- 登录安全 --------
   login:
     max-attempts: 5
     lock-minutes: 15
 
-  ai:
-    model: "deepseek-chat"
-    api-url: "https://api.deepseek.com/chat/completions"
-
+  # -------- JWT --------
   jwt:
     expiration: 86400000
 
+  # -------- 滑块验证码（生产默认关掉mock，走真实API）--------
+  captcha:
+    mock: false
+
+  # -------- 短信验证码 --------
   sms:
     rate-limit-seconds: 60
     mock: false
 
+  # -------- 实名认证 --------
+  realname:
+    mock: false
+
+  # -------- AI智能咨询（DeepSeek）--------
+  ai:
+    model: "deepseek-chat"
+    api-url: "https://api.deepseek.com/chat/completions"
+    mock: false
+
+  # -------- 地图服务（高德Web服务API）--------
   map:
     regeo-url: "https://restapi.amap.com/v3/geocode/regeo"
     inputtips-url: "https://restapi.amap.com/v3/assistant/inputtips"
+    mock: false
 
+  # -------- 第三方 API 地址 --------
   third-party:
     face:
       url: "https://kzfacev1.market.alicloudapi.com/api-mall/api/face_id_card_yi_suo/check"
@@ -89,8 +115,10 @@ pet:
     sms:
       url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
 
+  # -------- 文件上传路径 --------
   upload:
     path: /data/pet-adoption/uploads
 
+  # -------- CORS 跨域 --------
   cors:
     allowed-origins: "https://adopt.priestlab.top"
