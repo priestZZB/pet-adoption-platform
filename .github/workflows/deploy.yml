@@ -23,13 +23,15 @@ jobs:
         with:
           node-version: '22'
 
+      - name: 注入 secret 配置
+        env:
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+        run: |
+          mkdir -p pet-gateway/src/main/resources
+          printf '%s\n' "$APP_SECRET" > pet-gateway/src/main/resources/application-secret.yml
+
       - name: Build Backend
         run: mvn clean package -DskipTests -U --batch-mode
-
-      - name: 验证 jar 完整性
-        run: |
-          jar -tf pet-gateway/target/pet-gateway-1.0.0.jar | grep 'org/springframework/util' | head -3
-          ls -lh pet-gateway/target/pet-gateway-1.0.0.jar
 
       - name: Build Frontend
         run: |
