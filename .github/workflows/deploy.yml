@@ -61,7 +61,7 @@ jobs:
             cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/
             # 替换前端 dist
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
-            # 重启后端（systemd 自动管理）
-            sudo systemctl restart pet-adoption
+            # 杀掉旧进程，宝塔守护进程会自动重启
+            kill $(pgrep -f pet-gateway) 2>/dev/null || true
             # 清理临时文件
             rm -rf /tmp/deploy
