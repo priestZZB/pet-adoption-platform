@@ -54,8 +54,7 @@ jobs:
             cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/
             # 替换前端 dist
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
-            # 重启后端
-            kill $(pgrep -f pet-gateway) 2>/dev/null || true
-            nohup /usr/bin/java -jar -Xmx1024M -Xms256M /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar --server.port=8080 > /dev/null 2>&1 &
+            # 重启后端（systemd 自动管理）
+            sudo systemctl restart pet-adoption
             # 清理临时文件
             rm -rf /tmp/deploy
