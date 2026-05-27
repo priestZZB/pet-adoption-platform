@@ -20,6 +20,7 @@ public class SysUser {
     private Integer status;
     private String volunteerStatus;
     private String donorStatus;
+    private Integer isSuperAdmin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -49,6 +50,8 @@ public class SysUser {
     public void setVolunteerStatus(String volunteerStatus) { this.volunteerStatus = volunteerStatus; }
     public String getDonorStatus() { return donorStatus; }
     public void setDonorStatus(String donorStatus) { this.donorStatus = donorStatus; }
+    public Integer getIsSuperAdmin() { return isSuperAdmin; }
+    public void setIsSuperAdmin(Integer isSuperAdmin) { this.isSuperAdmin = isSuperAdmin; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

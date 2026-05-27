@@ -67,16 +67,43 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void assignRole(Long userId, Long roleId) {
-        // 单角色兼容：保持原行为
-        assignRoles(userId, java.util.Collections.singletonList(roleId));
+        // 单角色兼容：保持原行为（未知操作人时不做权限校验）
+        assignRoles(null, userId, java.util.Collections.singletonList(roleId));
     }
 
     @Override
     @Transactional
-    public void assignRoles(Long userId, List<Long> roleIds) {
+    public void assignRoles(Long operatorId, Long userId, List<Long> roleIds) {
         SysUser user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND);
+        }
+
+        // ====== 超级管理员权限校验 ======
+        if (operatorId != null) {
+            SysUser operator = userMapper.selectById(operatorId);
+            boolean opIsSuper = operator != null && operator.getIsSuperAdmin() == 1;
+            boolean targetIsAdmin = userRoleMapper.selectRoleCodesByUserId(userId)
+                    .contains("ADMIN");
+            SysRole adminRole = roleMapper.selectByCode("ADMIN");
+
+            // 规则1：管理员不能移除自己的ADMIN角色
+            if (operatorId.equals(userId) && adminRole != null && !roleIds.contains(adminRole.getId())) {
+                throw new BusinessException(ResultCodeEnum.BAD_REQUEST,
+                        "不能移除自己的管理员身份");
+            }
+
+            // 规则2：非超级管理员不能修改其他管理员的角色
+            if (targetIsAdmin && !opIsSuper && !operatorId.equals(userId)) {
+                throw new BusinessException(ResultCodeEnum.ROLE_REQUIRED,
+                        "只有超级管理员才能修改管理员角色");
+            }
+
+            // 规则3：非超级管理员不能把普通用户提升为管理员
+            if (!opIsSuper && adminRole != null && roleIds.contains(adminRole.getId()) && !targetIsAdmin) {
+                throw new BusinessException(ResultCodeEnum.ROLE_REQUIRED,
+                        "只有超级管理员才能任命管理员");
+            }
         }
 
         // 获取当前用户已有角色

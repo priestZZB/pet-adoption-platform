@@ -80,16 +80,16 @@ pet:
 
   # -------- 滑块验证码（生产默认关掉mock，走真实API）--------
   captcha:
-    mock: false
+    mock: true
 
   # -------- 短信验证码 --------
   sms:
     rate-limit-seconds: 60
-    mock: false
+    mock: true
 
   # -------- 实名认证 --------
   realname:
-    mock: false
+    mock: true
 
   # -------- AI智能咨询（DeepSeek）--------
   ai:

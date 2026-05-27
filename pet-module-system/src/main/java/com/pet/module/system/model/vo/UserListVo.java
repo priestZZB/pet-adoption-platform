@@ -18,6 +18,7 @@ public class UserListVo implements Serializable {
     private Integer isRealName;
     private Integer status;
     private String volunteerStatus;
+    private Integer isSuperAdmin;
     private List<String> roles;
     private LocalDateTime createdAt;
 
@@ -39,6 +40,8 @@ public class UserListVo implements Serializable {
     public void setStatus(Integer status) { this.status = status; }
     public String getVolunteerStatus() { return volunteerStatus; }
     public void setVolunteerStatus(String volunteerStatus) { this.volunteerStatus = volunteerStatus; }
+    public Integer getIsSuperAdmin() { return isSuperAdmin; }
+    public void setIsSuperAdmin(Integer isSuperAdmin) { this.isSuperAdmin = isSuperAdmin; }
     public List<String> getRoles() { return roles; }
     public void setRoles(List<String> roles) { this.roles = roles; }
     public LocalDateTime getCreatedAt() { return createdAt; }

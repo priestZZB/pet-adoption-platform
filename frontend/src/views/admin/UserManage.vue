@@ -51,7 +51,29 @@
         <el-table-column label="角色分配" width="180">
           <template #default="{ row }">
             <div class="select-tag-area">
+              <el-tooltip
+                v-if="isRowDisabled(row)"
+                :content="row.id === userStore.userInfo?.id ? '不能修改自己的角色' : '只有超级管理员才能管理管理员角色'"
+                placement="top"
+              >
+                <el-select
+                  :ref="(el) => setSelectRef(row.id, el)"
+                  :model-value="getRowRoleIds(row)"
+                  size="small"
+                  multiple
+                  disabled
+                  popper-class="auto-close-popper"
+                >
+                  <el-option
+                    v-for="r in roleOptions"
+                    :key="r.id"
+                    :label="r.roleName"
+                    :value="r.id"
+                  />
+                </el-select>
+              </el-tooltip>
               <el-select
+                v-else
                 :ref="(el) => setSelectRef(row.id, el)"
                 :model-value="getRowRoleIds(row)"
                 size="small"
@@ -65,6 +87,7 @@
                   :key="r.id"
                   :label="r.roleName"
                   :value="r.id"
+                  :disabled="isOptionDisabled(r.id)"
                 />
               </el-select>
             </div>
@@ -84,9 +107,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getUserList, toggleUserStatus, getRoles, assignRole } from '@/api/admin'
+import { useUserStore } from '@/stores/user'
 import { ROLE_MAP } from '@/utils/constants'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
@@ -95,6 +119,7 @@ import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
 
 // ---- 页面状态 ----
+const userStore = useUserStore()
 const list = ref([])
 const total = ref(0)
 const page = ref(1)
@@ -102,6 +127,10 @@ const size = ref(10)
 const keyword = ref('')
 const loading = ref(false)
 const roleOptions = ref([])
+const adminRoleId = ref(null)
+
+// 当前登录用户是否是超级管理员
+const isSuperAdmin = computed(() => userStore.userInfo?.isSuperAdmin === 1)
 
 async function loadList() {
   loading.value = true
@@ -121,7 +150,10 @@ async function loadList() {
 
 async function loadRoles() {
   try {
-    roleOptions.value = await getRoles()
+    const roles = await getRoles()
+    roleOptions.value = roles
+    const admin = roles.find(r => r.roleCode === 'ADMIN')
+    if (admin) adminRoleId.value = admin.id
   } catch {
     roleOptions.value = []
   }
@@ -154,6 +186,20 @@ function getRowRoleIds(row) {
   }).filter(Boolean)
 }
 
+/** 某行是否禁用角色选择（自己不能改自己、普通管理员不能改其他管理员） */
+function isRowDisabled(row) {
+  if (row.id === userStore.userInfo?.id) return true
+  const isTargetAdmin = row.roles && row.roles.includes('ADMIN')
+  if (isTargetAdmin && !isSuperAdmin.value) return true
+  return false
+}
+
+/** 某角色选项是否禁用（普通管理员不能选ADMIN） */
+function isOptionDisabled(roleId) {
+  if (!isSuperAdmin.value && roleId === adminRoleId.value) return true
+  return false
+}
+
 async function handleAssignRole(row, roleIds) {
   if (!roleIds || roleIds.length === 0) {
     ElMessage.warning('至少选择一个角色')
@@ -181,6 +227,10 @@ async function handleAssignRole(row, roleIds) {
 }
 
 onMounted(() => {
+  // 确保用户信息已加载（含isSuperAdmin）
+  if (userStore.userInfo === null) {
+    userStore.fetchUserInfo()
+  }
   loadRoles()
   loadList()
 })

@@ -67,6 +67,7 @@ CREATE TABLE `sys_user` (
   `status`           tinyint      DEFAULT '1' COMMENT '状态（0禁用 1启用）',
   `volunteer_status` varchar(20)  DEFAULT 'NONE' COMMENT '志愿者状态（NONE未申请/PENDING待审核/APPROVED已通过/REJECTED已驳回）',
   `donor_status`     varchar(20)  DEFAULT 'NONE' COMMENT '送养人状态（NONE未申请/PENDING待审核/APPROVED已通过/REJECTED已驳回）',
+  `is_super_admin`   tinyint      DEFAULT '0' COMMENT '是否超级管理员（0否 1是）',
   `created_at`       datetime     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at`       datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -581,8 +582,8 @@ INSERT INTO `sys_role` (`id`, `role_code`, `role_name`) VALUES
 
 -- 9.2 插入管理员账号（密码: admin060110，已用BCrypt加密）
 -- 如需修改密码，用 https://bcrypt-generator.com/ 生成新hash替换
-INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `phone`, `status`) VALUES
-(1, 'admin', '$2a$10$5DiDsrcsYn6SuC6ifk2Sj.vlYisrsFfna3.DMw1guvkiRbQvnHbea', '管理员', '13078929463', 1);
+INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `phone`, `status`, `is_super_admin`) VALUES
+(1, 'admin', '$2a$12$wO2gCiYyXKou8DinB4EjROkYsBnNAPp3CX64kpW.PAaTiMKFb3qLC', '管理员', '13078929463', 1, 1);
 
 -- 9.3 分配管理员角色
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 4);

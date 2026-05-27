@@ -65,48 +65,48 @@
     <el-card class="menu-card">
       <template #header><span>功能入口</span></template>
       <div class="menu-grid">
-        <div class="menu-item" @click="$router.push('/user/profile/edit')">
+        <div class="menu-item" @click="navTo('/user/profile/edit', true)">
           <el-icon :size="24" color="#409EFF"><Edit /></el-icon>
           <span>编辑资料</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/phone')">
+        <div class="menu-item" @click="navTo('/user/phone', true)">
           <el-icon :size="24" color="#409EFF"><Iphone /></el-icon>
           <span>修改手机号</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/real-name')">
+        <div class="menu-item" @click="navTo('/user/real-name', false)">
           <el-icon :size="24" color="#409EFF"><Postcard /></el-icon>
           <span>实名认证</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/password')">
+        <div class="menu-item" @click="navTo('/user/password', true)">
           <el-icon :size="24" color="#E6A23C"><Lock /></el-icon>
           <span>修改密码</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/volunteer-apply')">
+        <div class="menu-item" @click="navTo('/user/volunteer-apply', false)">
           <el-icon :size="24" color="#67C23A"><User /></el-icon>
           <span>申请志愿者</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/donor-apply')">
+        <div class="menu-item" @click="navTo('/user/donor-apply', false)">
           <el-icon :size="24" color="#F56C6C"><UserFilled /></el-icon>
           <span>申请送养人</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/favorites')">
+        <div class="menu-item" @click="navTo('/user/favorites', false)">
           <el-icon :size="24" color="#F56C6C"><Star /></el-icon>
           <span>我的收藏</span>
         </div>
 
-        <div class="menu-item" @click="$router.push('/user/reviews')">
+        <div class="menu-item" @click="navTo('/user/reviews', false)">
           <el-icon :size="24" color="#67C23A"><EditPen /></el-icon>
           <span>我的评价</span>
         </div>
-        <div class="menu-item" @click="$router.push('/mall/addresses')">
+        <div class="menu-item" @click="navTo('/mall/addresses', false)">
           <el-icon :size="24" color="#E6A23C"><Location /></el-icon>
           <span>收货地址</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/adopt-applications')">
+        <div class="menu-item" @click="navTo('/user/adopt-applications', false)">
           <el-icon :size="24" color="#67C23A"><Select /></el-icon>
           <span>我的领养</span>
         </div>
-        <div class="menu-item" @click="$router.push('/user/feedback')">
+        <div class="menu-item" @click="navTo('/user/feedback', false)">
           <el-icon :size="24" color="#909399"><ChatLineSquare /></el-icon>
           <span>意见反馈</span>
         </div>
@@ -170,7 +170,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   CircleCheck, Edit, Postcard, Lock, User, UserFilled, Iphone,
@@ -182,6 +183,16 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const aboutVisible = ref(false)
+const router = useRouter()
+
+/** 导航辅助：管理员点不允许的菜单时弹提示 */
+function navTo(path, allowAdmin) {
+  if (userStore.isAdmin && !allowAdmin) {
+    ElMessage.warning('管理员不能执行此操作')
+    return
+  }
+  router.push(path)
+}
 
 async function handleAvatarUpload(file) {
   try {

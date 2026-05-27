@@ -19,6 +19,7 @@ public class UserInfoVo implements Serializable {
     private String idCard;
     private Integer isRealName;
     private Integer status;
+    private Integer isSuperAdmin;
     private List<String> roles;
     private LocalDateTime createdAt;
 
@@ -42,6 +43,8 @@ public class UserInfoVo implements Serializable {
     public void setIsRealName(Integer isRealName) { this.isRealName = isRealName; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+    public Integer getIsSuperAdmin() { return isSuperAdmin; }
+    public void setIsSuperAdmin(Integer isSuperAdmin) { this.isSuperAdmin = isSuperAdmin; }
     public List<String> getRoles() { return roles; }
     public void setRoles(List<String> roles) { this.roles = roles; }
     public LocalDateTime getCreatedAt() { return createdAt; }

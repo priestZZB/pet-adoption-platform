@@ -115,6 +115,9 @@ public class AuthInterceptor implements HandlerInterceptor {
             boolean allowed = "GET".equals(method)
                     || uri.startsWith("/api/admin/")
                     || uri.equals("/api/user/logout")
+                    || uri.equals("/api/user/info")
+                    || uri.equals("/api/user/password")
+                    || uri.equals("/api/user/avatar")
                     || uri.startsWith("/api/file/")
                     || uri.startsWith("/api/notifications/");
             if (!allowed) {

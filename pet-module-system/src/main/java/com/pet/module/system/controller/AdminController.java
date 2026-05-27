@@ -73,7 +73,8 @@ public class AdminController {
     public Result<String> assignRole(HttpServletRequest request,
                                      @PathVariable Long id,
                                      @RequestParam List<Long> roleIds) {
-        roleService.assignRoles(id, roleIds);
+        Long operatorId = Long.valueOf(request.getAttribute("userId").toString());
+        roleService.assignRoles(operatorId, id, roleIds);
         operationLogService.addLog(
                 Long.valueOf(request.getAttribute("userId").toString()), null,
                 "用户管理", "修改用户角色: userId=" + id + ", roleIds=" + roleIds,
