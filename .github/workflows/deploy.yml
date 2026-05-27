@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build Backend
+        run: mvn clean package -DskipTests
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Deploy to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          source: |
+            pet-gateway/target/pet-gateway-1.0.0.jar
+            frontend/dist/
+          target: /tmp/deploy/
+
+      - name: Restart Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          script: |
+            # 替换后端 jar
+            cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/
+            # 替换前端 dist
+            cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
+            # 重启后端
+            kill $(pgrep -f pet-gateway) 2>/dev/null || true
+            /usr/bin/java -jar -Xmx1024M -Xms256M /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar --server.port=8080 &
+            # 清理临时文件
+            rm -rf /tmp/deploy
