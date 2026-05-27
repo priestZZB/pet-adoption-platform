@@ -144,7 +144,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading, Picture, Close, ArrowDown, ChatDotSquare } from '@element-plus/icons-vue'
-import { getConversation, sendMessage, markChatAsRead, getConversations, getOnlineUsers } from '@/api/chat'
+import { getConversation, sendMessage, getConversations, getOnlineUsers } from '@/api/chat'
 import { uploadFile } from '@/api/file'
 import { useUserStore } from '@/stores/user'
 import request from '@/api/request'
@@ -436,7 +436,8 @@ onMounted(async () => {
     petName.value = route.query.petName || '宠物'
     otherName.value = route.query.otherName || '用户'
     await loadDetail()
-    try { await markChatAsRead({ petId: qPetId, otherUserId: qOtherUserId }) } catch {}
+    // 静默标记已读，不弹错误提示
+    try { await request.put('/chat/read', null, { params: { petId: qPetId, otherUserId: qOtherUserId }, __silent: true }) } catch {}
   } else if (conversations.value.length > 0) {
     await switchConversation(conversations.value[0])
   }
@@ -447,7 +448,7 @@ onMounted(async () => {
       if (msg.petId === petId.value &&
           (msg.senderId === otherUserId.value || msg.receiverId === otherUserId.value)) {
         refreshConversation()
-        markChatAsRead({ petId: petId.value, otherUserId: otherUserId.value }).catch(() => {})
+        request.put('/chat/read', null, { params: { petId: petId.value, otherUserId: otherUserId.value }, __silent: true }).catch(() => {})
       } else { loadConversations() }
     },
     onUnreadCount() {},
@@ -470,7 +471,7 @@ onMounted(async () => {
   pollTimer = setInterval(() => {
     refreshConversation()
     if (petId.value && otherUserId.value) {
-      markChatAsRead({ petId: petId.value, otherUserId: otherUserId.value }).catch(() => {})
+      request.put('/chat/read', null, { params: { petId: petId.value, otherUserId: otherUserId.value }, __silent: true }).catch(() => {})
     }
   }, 2000)
 

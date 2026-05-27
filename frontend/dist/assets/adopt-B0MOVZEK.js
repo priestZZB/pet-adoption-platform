@@ -1,0 +1,1 @@
+import{b as e}from"./index-4STDtPBj.js";var t=()=>e.get(`/adopt/exam/start`),n=t=>e.post(`/adopt/exam/submit`,t),r=()=>e.get(`/adopt/exam/history`),i=t=>e.post(`/adopt/applications`,t),a=()=>e.get(`/adopt/applications`),o=t=>e.get(`/adopt/applications/`+t);export{i as a,t as i,r as n,n as o,a as r,o as t};

@@ -1,0 +1,1 @@
+import{At as e,Bt as t,kt as n}from"./index-4STDtPBj.js";var r={__name:`CaptchaSlider`,setup(r,{expose:i}){t(``),n(async()=>{}),e(()=>{});async function a(){return{ticket:`dev_mock`,randstr:`dev_mock`,captchaSign:`dev_mock`}}return i({showCaptcha:a}),(e,t)=>null}};export{r as t};

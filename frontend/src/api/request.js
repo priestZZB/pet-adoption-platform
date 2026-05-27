@@ -49,8 +49,13 @@ request.interceptors.response.use(
       ElMessage.warning(msg || '管理员不能执行此操作')
       return Promise.reject(new Error(msg))
     }
-    // 其他业务错误由各页面的 catch 自行弹窗提示
-    // 避免拦截器弹一次、页面 catch 又弹一次
+    // 业务错误统一弹出提示
+    //  - GET 请求（数据加载）不弹窗，避免后台刷新时干扰
+    //  - 请求级配置 __silent: true 可强制不弹窗
+    const method = (response.config?.method || '').toLowerCase()
+    if (method !== 'get' && !response.config?.__silent) {
+      ElMessage.error(msg || '操作失败')
+    }
     return Promise.reject(new Error(msg))
   },
   error => {

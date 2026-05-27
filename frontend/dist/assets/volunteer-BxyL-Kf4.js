@@ -1,0 +1,1 @@
+import{b as e}from"./index-4STDtPBj.js";var t=t=>e.post(`/volunteer/visits`,t),n=t=>e.get(`/volunteer/visits`,{params:t}),r=t=>e.get(`/volunteer/visits/`+t),i=()=>e.get(`/volunteer/pets/selectable`);export{t as i,i as n,r,n as t};
