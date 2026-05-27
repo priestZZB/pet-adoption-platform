@@ -24,7 +24,12 @@ jobs:
           node-version: '22'
 
       - name: Build Backend
-        run: mvn clean package -DskipTests
+        run: mvn clean package -DskipTests -U --batch-mode
+
+      - name: 验证 jar 完整性
+        run: |
+          jar -tf pet-gateway/target/pet-gateway-1.0.0.jar | grep 'org/springframework/util' | head -3
+          ls -lh pet-gateway/target/pet-gateway-1.0.0.jar
 
       - name: Build Frontend
         run: |
