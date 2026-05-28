@@ -117,7 +117,7 @@ pet:
 
   # -------- 文件上传路径 --------
   upload:
-    path: /data/pet-adoption/uploads
+    path: /data/pegit add .github/workflows/deploy.ymlt-adoption/uploads
 
   # -------- CORS 跨域 --------
   cors:
