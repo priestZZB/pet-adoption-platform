@@ -49,6 +49,7 @@ jobs:
           source: pet-gateway/target/pet-gateway-1.0.0.jar,frontend/dist/
           target: /tmp/deploy/
 
+
       - name: Restart Server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -73,3 +74,4 @@ jobs:
             rm -rf /tmp/deploy
             
             sudo systemctl status spring_pet-adoption.service --no-pager
+# ... existing code ...
