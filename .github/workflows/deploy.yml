@@ -58,11 +58,21 @@ jobs:
           port: 22
           timeout: 120s
           script: |
-            # 替换后端 jar
-            cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/
-            # 替换前端 dist
+            # 1️⃣ 先复制新 jar 到临时位置
+            cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar.new
+
+            # 2️⃣ 复制前端
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
-            # 杀掉旧进程，宝塔守护进程会自动重启
-            kill $(pgrep -f pet-gateway) 2>/dev/null || true
-            # 清理临时文件
+
+            # 3️⃣ 原子替换（mv 比 cp 快几十倍，窗口期接近零）
+            mv /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar.new /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar
+
+            # 4️⃣ ⚠️ 用 SIGKILL（-9）强行杀掉旧进程，立即释放 8080 端口
+            #    宝塔检测到进程挂了会自动拉起，这时候端口已经空闲，不会冲突
+            kill -9 $(pgrep -f pet-gateway) 2>/dev/null || true
+
+            # 5️⃣ 等宝塔检测 + 重启完成（给足时间）
+            sleep 5
+
+            # 6️⃣ 清理临时文件
             rm -rf /tmp/deploy
