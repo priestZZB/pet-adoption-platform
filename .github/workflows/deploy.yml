@@ -1,4 +1,4 @@
-﻿name: Deploy
+name: Deploy
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: 娉ㄥ叆 secret 閰嶇疆
+      - name: 注入 secret 配置
         env:
           APP_SECRET: ${{ secrets.APP_SECRET }}
         run: |
@@ -58,8 +58,18 @@ jobs:
           port: 22
           timeout: 120s
           script: |
-            cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar.new
+            mkdir -p /www/wwwroot/pet-adoption/pet-gateway/target
+            mkdir -p /www/wwwroot/pet-adoption/frontend/dist
+            
+            sudo systemctl stop spring_pet-adoption.service
+            sleep 2
+            
+            cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
-            mv /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar.new /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar
-            sudo systemctl restart spring_pet-adoption.service
+            
+            sudo systemctl start spring_pet-adoption.service
+            sleep 5
+            
             rm -rf /tmp/deploy
+            
+            sudo systemctl status spring_pet-adoption.service --no-pager
