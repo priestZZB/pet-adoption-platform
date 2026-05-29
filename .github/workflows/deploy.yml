@@ -56,6 +56,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
+          timeout: 120s
           script: |
             # 替换后端 jar
             cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/

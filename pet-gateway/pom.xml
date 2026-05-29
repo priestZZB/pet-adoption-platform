@@ -125,16 +125,10 @@
     <build>
         <plugins>
             <!-- 启动模块必须配这个插件，才能打可执行 JAR -->
+            <!-- 由父 POM pluginManagement 统一管理版本 + repackage -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
