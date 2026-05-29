@@ -50,6 +50,7 @@ jobs:
           target: /tmp/deploy/
 
 
+
       - name: Restart Server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -62,16 +63,17 @@ jobs:
             mkdir -p /www/wwwroot/pet-adoption/pet-gateway/target
             mkdir -p /www/wwwroot/pet-adoption/frontend/dist
             
-            sudo systemctl stop spring_pet-adoption.service
+            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl stop spring_pet-adoption.service
             sleep 2
             
             cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
             
-            sudo systemctl start spring_pet-adoption.service
+            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl start spring_pet-adoption.service
             sleep 5
             
             rm -rf /tmp/deploy
             
-            sudo systemctl status spring_pet-adoption.service --no-pager
-# ... existing code ...
+            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl status spring_pet-adoption.service --no-pager
+
+
