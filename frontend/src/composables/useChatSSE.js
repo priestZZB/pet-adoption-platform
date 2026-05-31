@@ -57,8 +57,13 @@ export function useChatSSE() {
       if (handlers.onConversationUpdate) handlers.onConversationUpdate()
     })
 
-    esWithToken.addEventListener('new-notification', () => {
-      if (handlers.onNewNotification) handlers.onNewNotification()
+    esWithToken.addEventListener('new-notification', (e) => {
+      try {
+        const data = JSON.parse(e.data)
+        if (handlers.onNewNotification) handlers.onNewNotification(data)
+      } catch {
+        if (handlers.onNewNotification) handlers.onNewNotification()
+      }
     })
 
     esWithToken.addEventListener('online-status', (e) => {
@@ -89,14 +94,6 @@ export function useChatSSE() {
       retryTimer = null
     }
     retryCount = 0
-    if (eventSource.value) {
-      eventSource.value.close()
-      eventSource.value = null
-    }
-    connected.value = false
-  }
-
-  function disconnect() {
     if (eventSource.value) {
       eventSource.value.close()
       eventSource.value = null

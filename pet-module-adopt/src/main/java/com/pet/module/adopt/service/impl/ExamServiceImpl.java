@@ -1,6 +1,7 @@
 package com.pet.module.adopt.service.impl;
 
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.adopt.mapper.AdoptExamRecordMapper;
 import com.pet.module.adopt.mapper.AdoptQuestionMapper;
@@ -11,6 +12,7 @@ import com.pet.module.adopt.model.vo.ExamResultVo;
 import com.pet.module.adopt.model.vo.QuestionVo;
 import com.pet.module.adopt.service.ExamService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +26,15 @@ public class ExamServiceImpl implements ExamService {
 
     private final AdoptExamRecordMapper adoptExamRecordMapper;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     public ExamServiceImpl(
             AdoptQuestionMapper adoptQuestionMapper,
-            AdoptExamRecordMapper adoptExamRecordMapper) {
+            AdoptExamRecordMapper adoptExamRecordMapper,
+            ApplicationEventPublisher eventPublisher) {
         this.adoptQuestionMapper = adoptQuestionMapper;
         this.adoptExamRecordMapper = adoptExamRecordMapper;
+        this.eventPublisher = eventPublisher;
     }
 
 
@@ -82,6 +88,21 @@ public class ExamServiceImpl implements ExamService {
         record.setTotalQuestions(total);
         record.setIsPassed(isPassed);
         adoptExamRecordMapper.insert(record);
+
+        // 通知用户考试结果
+        if (isPassed == 1) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    userId, "EXAM_RESULT",
+                    "领养考试通过",
+                    "恭喜你通过了领养考试，现在可以申请领养宠物了🎉",
+                    null));
+        } else {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    userId, "EXAM_RESULT",
+                    "领养考试未通过",
+                    "很遗憾你没有通过领养考试（得分" + score + "/" + total + "），请复习相关知识后重试",
+                    null));
+        }
 
         ExamResultVo vo = new ExamResultVo();
         vo.setScore(score);

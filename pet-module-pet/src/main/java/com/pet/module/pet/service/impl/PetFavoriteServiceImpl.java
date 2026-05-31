@@ -1,6 +1,7 @@
 package com.pet.module.pet.service.impl;
 
 import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.event.NotificationEvent;
 import com.pet.common.exception.BusinessException;
 import com.pet.module.pet.mapper.PetCategoryMapper;
 import com.pet.module.pet.mapper.PetFavoriteMapper;
@@ -16,6 +17,7 @@ import com.pet.module.pet.model.vo.PetListVo;
 import com.pet.module.pet.service.PetFavoriteService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,17 +39,21 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
 
     private final UserMapper userMapper;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     public PetFavoriteServiceImpl(
             PetFavoriteMapper petFavoriteMapper,
             PetInfoMapper petInfoMapper,
             PetImageMapper petImageMapper,
             PetCategoryMapper petCategoryMapper,
-            UserMapper userMapper) {
+            UserMapper userMapper,
+            ApplicationEventPublisher eventPublisher) {
         this.petFavoriteMapper = petFavoriteMapper;
         this.petInfoMapper = petInfoMapper;
         this.petImageMapper = petImageMapper;
         this.petCategoryMapper = petCategoryMapper;
         this.userMapper = userMapper;
+        this.eventPublisher = eventPublisher;
     }
 
 
@@ -75,6 +81,18 @@ public class PetFavoriteServiceImpl implements PetFavoriteService {
         fav.setPetId(petId);
         fav.setFolderId(folderId);
         petFavoriteMapper.insert(fav);
+
+        // 通知送养人：有人收藏了你的宠物
+        if (!pet.getUserId().equals(userId)) {
+            SysUser favoriter = userMapper.selectById(userId);
+            String name = favoriter != null ? (favoriter.getNickname() != null ? favoriter.getNickname() : favoriter.getUsername()) : "用户";
+            String petName = pet.getName() != null ? pet.getName() : "宠物";
+            eventPublisher.publishEvent(new NotificationEvent(
+                    pet.getUserId(), "PET_FAVORITED",
+                    "宠物被收藏",
+                    name + "收藏了你发布的" + petName,
+                    petId));
+        }
     }
 
     @Override

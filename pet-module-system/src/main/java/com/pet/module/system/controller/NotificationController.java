@@ -1,5 +1,6 @@
 package com.pet.module.system.controller;
 
+import com.github.pagehelper.PageHelper;
 import com.pet.common.result.Result;
 import com.pet.module.system.mapper.NotificationMapper;
 import com.pet.module.system.model.entity.Notification;
@@ -29,9 +30,14 @@ public class NotificationController {
      */
     @ApiOperation("我的通知列表")
     @GetMapping
-    public Result<List<Notification>> myNotifications(HttpServletRequest request) {
+    public Result<List<Notification>> myNotifications(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
         Long userId = Long.valueOf(request.getAttribute("userId").toString());
-        return Result.success(notificationMapper.selectByUserId(userId));
+        PageHelper.startPage(page, size);
+        List<Notification> list = notificationMapper.selectByUserId(userId);
+        return Result.success(list);
     }
 
     /**
@@ -74,8 +80,9 @@ public class NotificationController {
      */
     @ApiOperation("删除通知")
     @DeleteMapping("/{id}")
-    public Result<String> delete(@PathVariable Long id) {
-        notificationMapper.deleteById(id);
+    public Result<String> delete(HttpServletRequest request, @PathVariable Long id) {
+        Long userId = Long.valueOf(request.getAttribute("userId").toString());
+        notificationMapper.deleteById(id, userId);
         return Result.success("已删除");
     }
 

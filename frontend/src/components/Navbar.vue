@@ -203,6 +203,42 @@ function toggleNotif() {
   }
 }
 
+function getNotifRoute(n) {
+  const id = n.relatedId
+  const type = n.type
+  // 管理员相关
+  if (type === 'VOLUNTEER_APPLY') return '/admin/volunteer'
+  if (type === 'DONOR_APPLY') return '/admin/donor'
+  if (type === 'USER_BANNED') return '/admin/users'
+  if (type === 'ORDER_NEW') return id ? '/admin/mall-orders' : '/admin/mall-orders'
+  if (type === 'PRODUCT_LOW_STOCK') return '/admin/mall-products'
+  if (type === 'FEEDBACK_NEW') return '/admin/feedback'
+  // 宠物相关 → 宠物详情页
+  if (['PET_REVIEW', 'PET_PUBLISH', 'PET_COMMENT', 'PET_COMMENT_REPLY',
+       'PET_COMMENT_LIKE', 'PET_COMMENT_DISLIKE', 'PET_FAVORITED',
+       'PET_ADOPTED'].includes(type)) {
+    return id ? '/pets/' + id : '/donate/pets'
+  }
+  // 领养申请相关
+  if (type === 'ADOPT_APPLY') return id ? '/donate/pets/' + id + '/applications' : '/donate/pets'
+  if (type === 'ADOPT_REVIEW') return id ? '/user/adopt-application/' + id : '/user/adopt-applications'
+  // 订单相关
+  if (type === 'ORDER_STATUS') return id ? '/user/orders/' + id : '/user/orders'
+  // 反馈回复
+  if (type === 'FEEDBACK_REPLY') return '/user/feedback'
+  // 考试结果
+  if (type === 'EXAM_RESULT') return '/adopt/exam'
+  // 志愿者/送养人申请结果 → 个人中心
+  if (['VOLUNTEER_REVIEW', 'DONOR_REVIEW', 'VOLUNTEER_ADDED',
+       'VOLUNTEER_REMOVED', 'DONOR_ADDED', 'DONOR_REMOVED'].includes(type)) {
+    return '/user/profile'
+  }
+  // 聊天违规
+  if (type === 'CHAT_VIOLATION') return '/user/chats'
+  // 默认：有 relatedId 跳宠物详情，否则无跳转
+  return id ? '/pets/' + id : null
+}
+
 async function handleNotifClick(n) {
   // 标记已读
   if (n.isRead === 0) {
@@ -213,6 +249,9 @@ async function handleNotifClick(n) {
     } catch { /* ignore */ }
   }
   notifOpen.value = false
+  // 根据通知类型跳转
+  const route = getNotifRoute(n)
+  if (route) router.push(route)
 }
 
 async function handleMarkAll() {

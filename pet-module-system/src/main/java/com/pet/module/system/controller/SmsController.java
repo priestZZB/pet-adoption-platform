@@ -1,7 +1,5 @@
 package com.pet.module.system.controller;
 
-import com.pet.common.enums.ResultCodeEnum;
-import com.pet.common.exception.BusinessException;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
 import com.pet.module.system.mapper.UserMapper;
@@ -47,9 +45,8 @@ public class SmsController {
         }
 
         // 行为验证码校验（防短信轰炸）
-        if (dto.getTicket() == null || dto.getTicket().isEmpty()) {
-            return Result.error(400, "请先完成滑块验证");
-        }
+        // mock=true 时 verify() 直接返回 true，不需要前端传真实票据
+        // mock=false 时 verify() 内部会校验参数是否完整
         if (!captchaService.verify(dto.getTicket(), dto.getRandstr(), dto.getCaptchaSign(), null)) {
             return Result.error(400, "滑块验证码验证失败，请重试");
         }

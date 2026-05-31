@@ -62,18 +62,23 @@ jobs:
           script: |
             mkdir -p /www/wwwroot/pet-adoption/pet-gateway/target
             mkdir -p /www/wwwroot/pet-adoption/frontend/dist
-            
+
+            # 确保生产环境使用 prod profile（覆盖 application.yml 的 dev 默认值）
+            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S mkdir -p /etc/systemd/system/spring_pet-adoption.service.d
+            printf '[Service]\nEnvironment=SPRING_PROFILES_ACTIVE=prod\n' | echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S tee /etc/systemd/system/spring_pet-adoption.service.d/override.conf > /dev/null
+            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl daemon-reload
+
             echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl stop spring_pet-adoption.service
             sleep 2
-            
+
             cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
-            
+
             echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl start spring_pet-adoption.service
             sleep 5
-            
+
             rm -rf /tmp/deploy
-            
+
             echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl status spring_pet-adoption.service --no-pager
 
 

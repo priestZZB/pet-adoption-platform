@@ -21,6 +21,7 @@ import com.pet.module.mall.mapper.ShippingAddressMapper;
 import com.pet.module.mall.service.CartService;
 import com.pet.module.mall.service.OrderService;
 import com.pet.module.mall.service.ProductService;
+import com.pet.module.system.mapper.UserRoleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -52,6 +53,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final UserRoleMapper userRoleMapper;
+
     public OrderServiceImpl(
             MallOrderMapper mallOrderMapper,
             MallOrderItemMapper mallOrderItemMapper,
@@ -60,7 +63,8 @@ public class OrderServiceImpl implements OrderService {
             CartService cartService,
             ProductService productService,
             StringRedisTemplate redisTemplate,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            UserRoleMapper userRoleMapper) {
         this.mallOrderMapper = mallOrderMapper;
         this.mallOrderItemMapper = mallOrderItemMapper;
         this.mallProductMapper = mallProductMapper;
@@ -69,11 +73,15 @@ public class OrderServiceImpl implements OrderService {
         this.productService = productService;
         this.redisTemplate = redisTemplate;
         this.eventPublisher = eventPublisher;
+        this.userRoleMapper = userRoleMapper;
     }
 
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
+
+    /** 库存低于此值通知管理员 */
+    private static final int LOW_STOCK_THRESHOLD = 10;
 
     private static final Map<String, String[]> COURIER_CONFIG = new LinkedHashMap<>();
     static {
@@ -169,6 +177,12 @@ public class OrderServiceImpl implements OrderService {
         // 清除商品缓存，库存变化即时显示
         productService.evictProductCache();
 
+        // 通知管理员有新订单
+        notifyAdminsNewOrder(order);
+
+        // 检查低库存
+        checkLowStock(cart);
+
         return convertToVo(order);
     }
 
@@ -229,6 +243,15 @@ public class OrderServiceImpl implements OrderService {
 
         // 清除商品缓存
         productService.evictProductCache();
+
+        // 通知管理员有新订单
+        notifyAdminsNewOrder(order);
+
+        // 检查低库存
+        MallProduct afterProduct = mallProductMapper.selectById(productId);
+        if (afterProduct != null && afterProduct.getStock() <= LOW_STOCK_THRESHOLD) {
+            notifyAdminsLowStock(afterProduct);
+        }
 
         return convertToVo(order);
     }
@@ -464,6 +487,46 @@ public class OrderServiceImpl implements OrderService {
             }
             eventPublisher.publishEvent(new NotificationEvent(
                     order.getUserId(), "ORDER_STATUS", title, content, order.getId()));
+        }
+    }
+
+    /**
+     * 通知所有管理员有新订单
+     */
+    private void notifyAdminsNewOrder(MallOrder order) {
+        List<Long> adminIds = userRoleMapper.selectUserIdsByRoleCode("ADMIN");
+        for (Long adminId : adminIds) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    adminId, "ORDER_NEW",
+                    "新订单",
+                    "用户下单了" + order.getOrderNo() + "，金额" + order.getTotalAmount() + "元，请及时处理",
+                    order.getId()));
+        }
+    }
+
+    /**
+     * 检查购物车中商品库存，低于阈值通知管理员
+     */
+    private void checkLowStock(List<CartVo> cart) {
+        for (CartVo item : cart) {
+            MallProduct product = mallProductMapper.selectById(item.getProductId());
+            if (product != null && product.getStock() <= LOW_STOCK_THRESHOLD) {
+                notifyAdminsLowStock(product);
+            }
+        }
+    }
+
+    /**
+     * 通知管理员商品库存不足
+     */
+    private void notifyAdminsLowStock(MallProduct product) {
+        List<Long> adminIds = userRoleMapper.selectUserIdsByRoleCode("ADMIN");
+        for (Long adminId : adminIds) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                    adminId, "PRODUCT_LOW_STOCK",
+                    "商品库存不足",
+                    "商品\"" + product.getName() + "\"库存仅剩" + product.getStock() + "件，请及时补货",
+                    product.getId()));
         }
     }
 }

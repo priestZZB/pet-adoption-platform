@@ -166,6 +166,18 @@ public class AdoptServiceImpl implements AdoptService {
                     "领养申请已通过",
                     "管理员已批准你领养" + petName + "的申请🎉",
                     id));
+            // 通知送养人：你的宠物已被领养
+            if (pet != null && !pet.getUserId().equals(app.getUserId())) {
+                SysUser donor = userMapper.selectById(pet.getUserId());
+                SysUser adopter = userMapper.selectById(app.getUserId());
+                String donorName = donor != null ? (donor.getNickname() != null ? donor.getNickname() : donor.getUsername()) : "送养人";
+                String adopterName = adopter != null ? (adopter.getNickname() != null ? adopter.getNickname() : adopter.getUsername()) : "用户";
+                eventPublisher.publishEvent(new NotificationEvent(
+                        pet.getUserId(), "PET_ADOPTED",
+                        "宠物已被领养",
+                        donorName + "，你发布的" + petName + "已被" + adopterName + "领养🎉",
+                        pet.getId()));
+            }
         } else {
             eventPublisher.publishEvent(new NotificationEvent(
                     app.getUserId(), "ADOPT_REVIEW",
@@ -211,6 +223,18 @@ public class AdoptServiceImpl implements AdoptService {
                     "领养申请已通过",
                     "恭喜！你领养" + petName + "的申请已通过🎉",
                     id));
+            // 通知送养人：你的宠物已被领养
+            if (pet != null && !pet.getUserId().equals(app.getUserId())) {
+                SysUser donor = userMapper.selectById(pet.getUserId());
+                SysUser adopter = userMapper.selectById(app.getUserId());
+                String donorName = donor != null ? (donor.getNickname() != null ? donor.getNickname() : donor.getUsername()) : "送养人";
+                String adopterName = adopter != null ? (adopter.getNickname() != null ? adopter.getNickname() : adopter.getUsername()) : "用户";
+                eventPublisher.publishEvent(new NotificationEvent(
+                        pet.getUserId(), "PET_ADOPTED",
+                        "宠物已被领养",
+                        donorName + "，你发布的" + petName + "已被" + adopterName + "领养🎉",
+                        pet.getId()));
+            }
         } else {
             eventPublisher.publishEvent(new NotificationEvent(
                     app.getUserId(), "ADOPT_REVIEW",

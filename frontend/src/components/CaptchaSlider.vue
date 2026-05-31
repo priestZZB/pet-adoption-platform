@@ -4,16 +4,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useAppConfig } from '@/composables/useAppConfig'
 
-/**
- * 滑块验证码开关
- * CAPTCHA_MOCK = true  → 模拟模式（不弹窗，直接返回模拟数据）
- * CAPTCHA_MOCK = false → 真实模式（加载怜花SDK，弹窗验证）
- *
- * 通过 VITE_CAPTCHA_MOCK 环境变量控制，默认 false
- * 开发时 .env 设 VITE_CAPTCHA_MOCK=true，生产不设或 false
- */
-const CAPTCHA_MOCK = import.meta.env.VITE_CAPTCHA_MOCK === 'true'
+const { loadConfig } = useAppConfig()
 
 const CAPTCHA_APP_ID = '193347059'
 const CAPTCHA_APP_SECRET = 'vzvaQXQjhqgQ7pDXb80NTadLU'
@@ -22,6 +15,8 @@ const SDK_URL = 'https://api-web.lianhdt.com/action-captcha/action-captcha.min.j
 const errorMsg = ref('')
 let captchaInstance = null
 let sdkLoaded = false
+let configReady = false
+let useMock = true
 
 function loadSDK() {
   return new Promise((resolve) => {
@@ -34,13 +29,19 @@ function loadSDK() {
     script.type = 'text/javascript'
     script.src = SDK_URL
     script.onload = () => { sdkLoaded = true; resolve() }
-    script.onerror = () => { errorMsg.value = '验证码加载失败，请刷新页面'; resolve() }
+    script.onerror = () => {
+      console.warn('[Captcha] SDK加载失败，使用本地mock')
+      resolve()
+    }
     document.head.appendChild(script)
   })
 }
 
 onMounted(async () => {
-  if (!CAPTCHA_MOCK) {
+  const config = await loadConfig()
+  useMock = config?.captchaMock ?? true
+  configReady = true
+  if (!useMock) {
     await loadSDK()
   }
 })
@@ -57,22 +58,31 @@ async function computeSign(ticket, randstr) {
 }
 
 /**
- * 弹出滑块验证码，返回 Promise
- * mock=true 时不加载 SDK、不弹窗，直接返回模拟数据
- * @returns {Promise<{ticket: string, randstr: string, captchaSign: string}>}
+ * 弹出滑块验证码
+ * 由后端 captcha.mock 配置决定：
+ *   mock=true  → 跳过SDK加载，直接返回模拟数据
+ *   mock=false → 加载怜花SDK，弹窗验证
+ * SDK加载失败时自动降级为mock（离线/开发环境兜底）
  */
 async function showCaptcha() {
-  // mock=true：模拟模式，直接跳过
-  if (CAPTCHA_MOCK) {
-    return { ticket: 'dev_mock', randstr: 'dev_mock', captchaSign: 'dev_mock' }
+  // 等待配置加载完成
+  if (!configReady) {
+    const config = await loadConfig()
+    useMock = config?.captchaMock ?? true
+    configReady = true
+  }
+
+  if (useMock) {
+    return { ticket: 'mock', randstr: 'mock', captchaSign: 'mock' }
+  }
+
+  // SDK未就绪时降级
+  if (!sdkLoaded && typeof JumeiActionCaptcha === 'undefined') {
+    console.warn('[Captcha] SDK不可用，使用本地mock')
+    return { ticket: 'mock', randstr: 'mock', captchaSign: 'mock' }
   }
 
   return new Promise((resolve, reject) => {
-    if (!sdkLoaded && typeof JumeiActionCaptcha === 'undefined') {
-      reject(new Error('验证码SDK未加载，请稍后再试'))
-      return
-    }
-
     captchaInstance = new JumeiActionCaptcha(CAPTCHA_APP_ID, async (captchaRes) => {
       if (captchaRes.ret === 0) {
         const { ticket, randstr } = captchaRes

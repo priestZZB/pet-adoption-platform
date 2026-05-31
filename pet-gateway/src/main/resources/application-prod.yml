@@ -103,6 +103,10 @@ pet:
     inputtips-url: "https://restapi.amap.com/v3/assistant/inputtips"
     mock: false
 
+  # -------- 聊天 --------
+  chat:
+    violation-limit: 3
+
   # -------- 第三方 API 地址 --------
   third-party:
     face:
@@ -117,7 +121,7 @@ pet:
 
   # -------- 文件上传路径 --------
   upload:
-    path: /data/pegit add .github/workflows/deploy.ymlt-adoption/uploads
+    path: /data/pet-adoption/uploads
 
   # -------- CORS 跨域 --------
   cors:
