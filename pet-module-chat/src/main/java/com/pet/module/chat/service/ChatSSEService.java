@@ -4,7 +4,6 @@ import com.pet.module.chat.model.entity.ChatMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,20 +31,20 @@ public class ChatSSEService {
 
         emitter.onCompletion(() -> {
             list.remove(emitter);
-            if (list.isEmpty()) { emitters.remove(userId); pushOnlineStatus(userId, false); }
+            if (list.isEmpty()) { emitters.remove(userId); safePushOnlineStatus(userId, false); }
         });
         emitter.onTimeout(() -> {
             list.remove(emitter);
-            if (list.isEmpty()) { emitters.remove(userId); pushOnlineStatus(userId, false); }
+            if (list.isEmpty()) { emitters.remove(userId); safePushOnlineStatus(userId, false); }
         });
         emitter.onError(e -> {
             list.remove(emitter);
-            if (list.isEmpty()) { emitters.remove(userId); pushOnlineStatus(userId, false); }
+            if (list.isEmpty()) { emitters.remove(userId); safePushOnlineStatus(userId, false); }
         });
 
-        // 用户上线 + 推送当前所有在线用户给新连接
-        pushOnlineStatus(userId, true);
-        pushCurrentOnlineUsers(userId);
+        // 用户上线 + 推送当前所有在线用户给新连接（用安全版本，避免 Broken pipe 冲垮请求）
+        safePushOnlineStatus(userId, true);
+        safePushCurrentOnlineUsers(userId);
 
         return emitter;
     }
@@ -71,7 +70,7 @@ public class ChatSSEService {
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data(data));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 list.remove(emitter);
             }
         }
@@ -144,10 +143,33 @@ public class ChatSSEService {
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data(data));
-            } catch (IOException e) {
+            } catch (Exception e) {
+                // Broken pipe / 连接断开 → 移除失效 emitter
                 list.remove(emitter);
             }
         }
         if (list.isEmpty()) emitters.remove(userId);
+    }
+
+    /**
+     * 推送用户在线状态 — 不会抛出异常的安全版本（供回调/初始化使用）
+     */
+    private void safePushOnlineStatus(Long userId, boolean online) {
+        try {
+            pushOnlineStatus(userId, online);
+        } catch (Exception ignored) {
+            // 回调中不做任何事，避免异常冲垮事件循环
+        }
+    }
+
+    /**
+     * 推送当前在线用户列表 — 不会抛出异常的安全版本
+     */
+    private void safePushCurrentOnlineUsers(Long userId) {
+        try {
+            pushCurrentOnlineUsers(userId);
+        } catch (Exception ignored) {
+            // 回调中不做任何事
+        }
     }
 }

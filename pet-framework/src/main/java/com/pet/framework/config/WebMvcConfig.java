@@ -1,6 +1,7 @@
 package com.pet.framework.config;
 
 import com.pet.framework.interceptor.AuthInterceptor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@Slf4j
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
@@ -23,6 +25,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         String location = "file:" + uploadPath + "/";
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(location);
+        log.info("静态资源映射已配置: /uploads/** → {}", location);
     }
 
     @Autowired
