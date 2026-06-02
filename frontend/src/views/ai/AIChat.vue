@@ -1,7 +1,10 @@
 <template>
-  <div class="ai-chat-page">
+  <div class="ai-chat-page" :class="{ 'sidebar-open': sidebarOpen }">
+    <!-- 移动端侧边栏遮罩 -->
+    <div v-if="sidebarOpen" class="sidebar-mask" @click="sidebarOpen = false"></div>
+
     <!-- 侧边栏：对话列表 -->
-    <div class="sidebar">
+    <div class="sidebar" :class="{ 'mobile-open': sidebarOpen }">
       <div class="sidebar-header">
         <h4>对话历史</h4>
       </div>
@@ -46,6 +49,14 @@
 
     <!-- 主对话区 -->
     <div class="chat-main">
+      <!-- 移动端侧边栏切换按钮 -->
+      <div class="chat-topbar">
+        <el-button class="sidebar-toggle-btn" text :icon="Operation" @click="sidebarOpen = !sidebarOpen">
+          对话记录
+        </el-button>
+        <el-button class="new-chat-mobile-btn" text :icon="Plus" @click="handleNewChat" />
+      </div>
+
       <div class="chat-messages" ref="messagesRef" @scroll="onScroll">
         <div
           v-for="(msg, idx) in messages"
@@ -129,7 +140,7 @@
 import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Loading, Delete, ArrowDown } from '@element-plus/icons-vue'
+import { Loading, Delete, ArrowDown, Operation, Plus } from '@element-plus/icons-vue'
 import { chat, getSessions, getSessionMessages, clearChatHistory, deleteSession } from '@/api/ai'
 import { marked } from 'marked'
 
@@ -146,6 +157,7 @@ const currentSessionId = ref('')
 const hoveredMsg = ref(null)
 const showScrollBtn = ref(false)
 const isAtBottom = ref(true)
+const sidebarOpen = ref(false)
 
 function renderMarkdown(text) {
   if (!text) return ''
@@ -303,8 +315,32 @@ onMounted(() => {
 <style scoped>
 .ai-chat-page {
   display: flex;
-  height: calc(100vh - 140px);
+  height: calc(100vh - 76px - 40px);
   gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== 移动端顶部栏（默认隐藏）===== */
+.chat-topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid #d0d9e8;
+  flex-shrink: 0;
+}
+.sidebar-toggle-btn {
+  font-size: 13px;
+  color: #3B82F6;
+}
+.new-chat-mobile-btn {
+  color: #3B82F6;
+}
+
+/* ===== 侧边栏遮罩 ===== */
+.sidebar-mask {
+  display: none;
 }
 
 /* ===== 侧边栏 ===== */
@@ -574,6 +610,84 @@ onMounted(() => {
 .chat-input-field :deep(.el-textarea__inner:focus) {
   border-color: #3B82F6;
   box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+/* ====== 移动端适配 ====== */
+@media (max-width: 767px) {
+  .ai-chat-page {
+    height: calc(100vh - 60px - 72px);
+    gap: 0;
+  }
+
+  /* 侧边栏 → 固定浮层 */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 1100;
+    border-radius: 0 12px 12px 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* 遮罩 */
+  .sidebar-mask {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1099;
+  }
+
+  /* 顶部栏 */
+  .chat-topbar {
+    display: flex;
+  }
+
+  /* 主对话区 */
+  .chat-main {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .chat-messages {
+    padding: 12px;
+  }
+  .msg-bubble {
+    max-width: 82%;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .msg-row {
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* 输入框 */
+  .chat-input {
+    padding: 8px 12px;
+  }
+  :deep(.send-msg-btn) {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 13px;
+  }
+
+  /* 回到底部按钮 */
+  .scroll-bottom-btn {
+    bottom: 68px;
+    right: 16px;
+  }
 }
 </style>
 

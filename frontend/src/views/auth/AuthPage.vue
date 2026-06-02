@@ -345,6 +345,8 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   max-width: 1400px;
   margin: 24px auto 0;
   aspect-ratio: 3 / 1;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 /* 轮播背景 — 填满 banner-section */
