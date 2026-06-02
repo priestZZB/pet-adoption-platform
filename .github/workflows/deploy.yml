@@ -23,12 +23,20 @@ jobs:
         with:
           node-version: '22'
 
-      - name: 注入 secret 配置
+      - name: 注入 secret 配置并强制使用 prod 环境
         env:
           APP_SECRET: ${{ secrets.APP_SECRET }}
         run: |
           mkdir -p pet-gateway/src/main/resources
+          
+          # 创建 application-secret.yml
           printf '%s\n' "$APP_SECRET" > pet-gateway/src/main/resources/application-secret.yml
+          
+          # 强制覆盖 application.yml，设置为 prod 环境
+          echo "spring:" > pet-gateway/src/main/resources/application.yml
+          echo "  profiles:" >> pet-gateway/src/main/resources/application.yml
+          echo "    active: prod" >> pet-gateway/src/main/resources/application.yml
+          echo "    include: secret" >> pet-gateway/src/main/resources/application.yml
 
       - name: Build Backend
         run: mvn clean package -DskipTests -U --batch-mode
@@ -62,11 +70,6 @@ jobs:
           script: |
             mkdir -p /www/wwwroot/pet-adoption/pet-gateway/target
             mkdir -p /www/wwwroot/pet-adoption/frontend/dist
-
-            # 确保生产环境使用 prod profile（覆盖 application.yml 的 dev 默认值）
-            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S mkdir -p /etc/systemd/system/spring_pet-adoption.service.d
-            printf '[Service]\nEnvironment=SPRING_PROFILES_ACTIVE=prod\n' | echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S tee /etc/systemd/system/spring_pet-adoption.service.d/override.conf > /dev/null
-            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl daemon-reload
 
             echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl stop spring_pet-adoption.service
             sleep 2
