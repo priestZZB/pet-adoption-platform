@@ -124,6 +124,10 @@ pet:
   upload:
     path: D:/data/pet-adoption/uploads
 
+  # -------- 全站维护模式 --------
+  maintenance:
+    enabled: false
+
   # -------- 聊天 --------
   chat:
     violation-limit: 3        # 累计违规几次后自动封号

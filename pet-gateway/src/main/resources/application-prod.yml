@@ -123,6 +123,10 @@ pet:
   upload:
     path: /data/pet-adoption/uploads
 
+  # -------- 全站维护模式 --------
+  maintenance:
+    enabled: true
+
   # -------- CORS 跨域 --------
   cors:
     allowed-origins: "https://adopt.priestlab.top"

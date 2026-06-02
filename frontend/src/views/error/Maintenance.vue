@@ -12,33 +12,55 @@
       </p>
       <div class="error-actions">
         <el-button type="primary" size="large" :loading="checking" @click="checkStatus">
-          检查状态
+          {{ maintenanceActive ? '维护中，重新检查' : '检查状态' }}
         </el-button>
       </div>
+      <p v-if="maintenanceActive" class="status-hint">
+        🔧 系统正在维护中，请耐心等待
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 
 const checking = ref(false)
+const maintenanceActive = ref(true)
+
+let pollTimer = null
 
 function checkStatus() {
   checking.value = true
-  fetch('/api/banners')
-    .then(res => {
-      if (res.ok) {
+  fetch('/api/maintenance/status')
+    .then(res => res.json())
+    .then(json => {
+      const data = json.data || json
+      if (data.maintenance === false) {
+        // 维护结束，返回首页
         window.location.href = '/'
       } else {
+        maintenanceActive.value = true
         checking.value = false
       }
     })
     .catch(() => {
+      // 接口不通 = 服务挂了，仍处于维护状态
+      maintenanceActive.value = true
       checking.value = false
     })
 }
+
+// 每 30 秒自动检查一次
+onMounted(() => {
+  checkStatus()
+  pollTimer = setInterval(checkStatus, 30000)
+})
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer)
+})
 </script>
 
 <style scoped>
@@ -86,5 +108,10 @@ function checkStatus() {
   display: flex;
   gap: 12px;
   justify-content: center;
+}
+.status-hint {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #909399;
 }
 </style>

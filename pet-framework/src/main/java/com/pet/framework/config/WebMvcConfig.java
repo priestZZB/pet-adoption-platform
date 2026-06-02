@@ -31,8 +31,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private com.pet.framework.interceptor.RateLimitInterceptor rateLimitInterceptor;
 
+    @Autowired
+    private com.pet.framework.interceptor.MaintenanceInterceptor maintenanceInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 维护模式拦截器（最高优先级，维护时拦截所有 API）
+        registry.addInterceptor(maintenanceInterceptor)
+                .addPathPatterns("/**")
+                .order(0);
+
         // 限流拦截器（优先执行）
         registry.addInterceptor(rateLimitInterceptor)
                 .addPathPatterns(
