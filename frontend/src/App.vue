@@ -1,7 +1,7 @@
 <template>
   <router-view />
   <!-- 未读公告弹窗 -->
-  <el-dialog v-model="noticeVisible" title="📢 平台公告" width="500px" :close-on-click-modal="false" :show-close="false" class="notice-dialog">
+  <el-dialog v-model="noticeVisible" title=" 平台公告" width="500px" :close-on-click-modal="false" :show-close="false" class="notice-dialog">
     <div v-if="currentNotice" class="notice-body">
       <h3 class="notice-title">{{ currentNotice.title }}</h3>
       <div class="notice-content">{{ currentNotice.content }}</div>

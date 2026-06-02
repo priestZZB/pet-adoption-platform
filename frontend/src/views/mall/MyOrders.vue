@@ -335,7 +335,7 @@ onMounted(loadOrders)
     gap: 4px;
   }
 }
-</style>
+
 :deep(.el-tabs__item.is-active) {
   color: var(--yc-text-primary);
 }

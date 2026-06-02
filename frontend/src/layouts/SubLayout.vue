@@ -142,7 +142,6 @@ function goBack() {
     padding: 0 12px;
   }
 }
-</style>
 
 /* 去掉子页面多余的底部留白 */
 .sub-content :deep(.detail-page),
