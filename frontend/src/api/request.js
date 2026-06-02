@@ -59,10 +59,34 @@ request.interceptors.response.use(
     return Promise.reject(new Error(msg))
   },
   error => {
-    // HTTP 网络层错误（断网、超时、500等）
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      ElMessage.error('网络错误，请稍后重试')
+    // HTTP 网络层错误处理
+    const status = error.response?.status
+
+    // 网络断连 / 超时 → 跳转网络错误页
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.code === 'ECONNABORTED') {
+      router.push('/network-error')
+      return Promise.reject(error)
     }
+
+    // 403 无权限 → 跳转 403 页
+    if (status === 403) {
+      router.push('/403')
+      return Promise.reject(error)
+    }
+
+    // 500 服务器错误 → 跳转 500 页
+    if (status === 500) {
+      router.push('/500')
+      return Promise.reject(error)
+    }
+
+    // 503 维护中 → 跳转维护页
+    if (status === 503) {
+      router.push('/maintenance')
+      return Promise.reject(error)
+    }
+
+    // 其他 HTTP 错误（404 等）不跳转，静默返回
     return Promise.reject(error)
   }
 )

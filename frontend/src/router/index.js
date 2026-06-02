@@ -90,7 +90,16 @@ const routes = [
       { path: 'banners',            component: () => import('@/views/admin/BannerManage.vue') },
       { path: 'review/:id',         component: () => import('@/views/admin/PetReviewDetail.vue') },
     ]
-  }
+  },
+
+  // ===== 错误页面（独立，无布局）=====
+  { path: '/403',            component: () => import('@/views/error/Forbidden.vue') },
+  { path: '/500',            component: () => import('@/views/error/ServerError.vue') },
+  { path: '/network-error',  component: () => import('@/views/error/NetworkError.vue') },
+  { path: '/maintenance',    component: () => import('@/views/error/Maintenance.vue') },
+
+  // ===== 404 兜底（必须放在最后）=====
+  { path: '/:pathMatch(.*)*', component: () => import('@/views/error/NotFound.vue') }
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
