@@ -139,7 +139,7 @@ onMounted(loadList)
 .applications-page {
   max-width: 700px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
 }
 .page-title {
   font-size: 20px;

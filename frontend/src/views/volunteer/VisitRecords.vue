@@ -150,7 +150,7 @@ onMounted(loadList)
 .visits-page {
   max-width: 800px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
   min-height: calc(100vh - 180px);
 }
 .loading-center {
@@ -269,5 +269,23 @@ onMounted(loadList)
   height: 100px;
   border-radius: var(--yc-radius-tag);
   cursor: pointer;
+}
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  .visits-page {
+    padding: 12px 12px 40px;
+  }
+  .visit-header {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .detail-row .label {
+    width: auto;
+  }
 }
 </style>

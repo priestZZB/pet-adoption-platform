@@ -118,10 +118,31 @@ function goBack() {
 .sub-content {
   position: relative;
   z-index: 1;
-  padding: 76px 20px 0;
+  padding: 76px 20px 40px;
   max-width: 800px;
   margin: 0 auto;
 }
+
+/* ====== 移动端适配 ====== */
+@media (max-width: 767px) {
+  .sub-content {
+    padding: 68px 12px 32px;
+  }
+  .sub-header {
+    padding: 0 12px;
+  }
+}
+
+/* ====== 横屏手机适配 ====== */
+@media (max-height: 500px) {
+  .sub-content {
+    padding: 56px 12px 24px;
+  }
+  .sub-header {
+    padding: 0 12px;
+  }
+}
+</style>
 
 /* 去掉子页面多余的底部留白 */
 .sub-content :deep(.detail-page),

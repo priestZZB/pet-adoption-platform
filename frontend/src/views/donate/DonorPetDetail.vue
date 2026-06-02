@@ -183,7 +183,7 @@ onMounted(loadDetail)
 </script>
 
 <style scoped>
-.donor-detail-page { max-width: 1100px; margin: 0 auto; padding: 24px 0 40px; }
+.donor-detail-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 40px; }
 .loading-center { display: flex; justify-content: center; padding: 80px 0; }
 .empty-tip { padding: 60px 0; }
 
@@ -270,4 +270,22 @@ onMounted(loadDetail)
 .tl-text { font-size: 14px; color: var(--yc-text-primary); font-weight: 500; }
 .tl-remark { font-size: 12px; color: #E6A23C; }
 .tl-time { font-size: 12px; color: var(--yc-text-tertiary); margin-top: 2px; }
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  .donor-detail-page {
+    padding: 12px 12px 40px;
+  }
+  .detail-layout {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  .detail-right {
+    width: 100%;
+  }
+  .pet-name {
+    font-size: 20px;
+  }
+}
 </style>

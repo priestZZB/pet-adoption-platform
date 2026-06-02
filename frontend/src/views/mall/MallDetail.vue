@@ -306,7 +306,7 @@ onUnmounted(() => {
 .detail-page {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
 }
 .loading-center {
   display: flex;
@@ -538,6 +538,31 @@ onUnmounted(() => {
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 16px;
+}
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  .detail-page {
+    padding: 12px 12px 40px;
+  }
+  .detail-layout {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  .detail-right {
+    width: 100%;
+  }
+  .review-filter-bar .el-select {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 6px;
+  }
+  .review-filter-bar .el-button {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+  }
 }
 .review-list {
   display: flex;

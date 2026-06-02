@@ -220,7 +220,7 @@ onUnmounted(cleanupSelectAutoClose)
 .home-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding-bottom: 40px;
+  padding: 0 20px 40px;
 }
 
 /* Banner */
@@ -328,5 +328,53 @@ onUnmounted(cleanupSelectAutoClose)
   padding: 60px 0;
 }
 
+/* ====== 响应式适配 ====== */
+/* 平板：2 列 */
+@media (max-width: 1023px) {
+  .pet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
 
+/* 手机：1 列 + 搜索栏堆叠 */
+@media (max-width: 639px) {
+  .home-page {
+    padding: 0 12px 40px;
+  }
+  .banner-container {
+    aspect-ratio: 16 / 9;
+    margin-bottom: 14px;
+  }
+  .banner {
+    border-radius: 8px;
+  }
+  .toolbar-inner {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+  .toolbar-inner > :deep(.el-select) {
+    width: 100% !important;
+  }
+  .toolbar-inner > :deep(.el-input) {
+    width: 100% !important;
+  }
+  .toolbar-inner > .el-button {
+    width: 100%;
+  }
+  .pet-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .pet-card:hover {
+    transform: none;
+  }
+  .pet-info {
+    padding: 10px 14px;
+  }
+  .pet-name {
+    font-size: 15px;
+  }
+}
 </style>

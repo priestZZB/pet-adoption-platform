@@ -562,7 +562,7 @@ onUnmounted(() => {
 .detail-page {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
 }
 .loading-center {
   display: flex;
@@ -911,5 +911,70 @@ onUnmounted(() => {
 }
 .is-disliked :deep(.el-button__text) {
   color: #e8564a !important;
+}
+
+/* ====== 响应式适配 ====== */
+/* 平板/窄屏：右侧宽度缩小 */
+@media (max-width: 1023px) {
+  .detail-right {
+    width: 340px;
+  }
+  .detail-layout {
+    gap: 20px;
+    padding: 20px;
+  }
+}
+
+/* 手机端：左右布局 → 上下堆叠 */
+@media (max-width: 767px) {
+  .detail-page {
+    padding: 0 12px 40px;
+  }
+  .detail-layout {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  .detail-left {
+    width: 100%;
+  }
+  .detail-left :deep(.el-carousel) {
+    height: 280px !important;
+  }
+  .detail-right {
+    width: 100%;
+  }
+  .pet-name {
+    font-size: 20px;
+  }
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .action-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .action-bar :deep(.fav-btn) {
+    min-width: auto;
+  }
+  .comments-section {
+    padding: 16px;
+  }
+  .comments-section h3 {
+    font-size: 16px;
+  }
+  .comment-item {
+    gap: 8px;
+  }
+  .comment-nickname {
+    font-size: 13px;
+  }
+  .comment-content {
+    font-size: 13px;
+  }
+  .section p {
+    font-size: 13px;
+  }
 }
 </style>

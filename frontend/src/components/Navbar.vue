@@ -1,34 +1,41 @@
 <template>
   <div class="navbar-wrapper">
-    <el-menu mode="horizontal" :default-active="activeMenu" class="navbar">
+    <!-- 移动端汉堡菜单按钮 -->
+    <div class="mobile-hamburger" @click="drawerOpen = true">
+      <el-icon :size="22"><Menu /></el-icon>
+    </div>
+
+    <el-menu mode="horizontal" :default-active="activeMenu" class="navbar" :class="{ 'navbar-desktop': !isMobile }">
       <div class="navbar-brand">
         <el-image src="/images/logo.jpg" fit="contain" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;border-radius:6px" />
         <span style="font-size:18px;font-weight:bold;color:#303133">有宠</span>
       </div>
-      <el-menu-item index="/" @click="router.push('/')">
-        <el-icon><HomeFilled /></el-icon>
-        <span>首页</span>
-      </el-menu-item>
-      <el-menu-item index="/mall" @click="router.push('/mall')">
-        <el-icon><ShoppingBag /></el-icon>
-        <span>商城</span>
-      </el-menu-item>
-      <el-menu-item index="/notices" @click="router.push('/notices')">
-        <el-icon><Bell /></el-icon>
-        <span>公告</span>
-      </el-menu-item>
-      <el-menu-item index="/ai" @click="handleAIClick">
-        <el-icon><MagicStick /></el-icon>
-        <span>AI助手</span>
-      </el-menu-item>
-      <el-menu-item index="/user/orders" @click="handleOrderClick">
-        <el-icon><Tickets /></el-icon>
-        <span>我的订单</span>
-      </el-menu-item>
-      <el-menu-item index="/mall/cart" @click="handleCartClick">
-        <el-icon><ShoppingCart /></el-icon>
-        <span>购物车</span>
-      </el-menu-item>
+      <template v-if="!isMobile">
+        <el-menu-item index="/" @click="router.push('/')">
+          <el-icon><HomeFilled /></el-icon>
+          <span>首页</span>
+        </el-menu-item>
+        <el-menu-item index="/mall" @click="router.push('/mall')">
+          <el-icon><ShoppingBag /></el-icon>
+          <span>商城</span>
+        </el-menu-item>
+        <el-menu-item index="/notices" @click="router.push('/notices')">
+          <el-icon><Bell /></el-icon>
+          <span>公告</span>
+        </el-menu-item>
+        <el-menu-item index="/ai" @click="handleAIClick">
+          <el-icon><MagicStick /></el-icon>
+          <span>AI助手</span>
+        </el-menu-item>
+        <el-menu-item index="/user/orders" @click="handleOrderClick">
+          <el-icon><Tickets /></el-icon>
+          <span>我的订单</span>
+        </el-menu-item>
+        <el-menu-item index="/mall/cart" @click="handleCartClick">
+          <el-icon><ShoppingCart /></el-icon>
+          <span>购物车</span>
+        </el-menu-item>
+      </template>
     </el-menu>
 
     <div class="user-section">
@@ -99,6 +106,98 @@
         <el-button size="small" class="nav-reg-btn" @click="router.push('/register')" style="margin-left:8px">注册</el-button>
       </template>
     </div>
+
+    <!-- 移动端侧滑导航抽屉 -->
+    <el-drawer
+      v-model="drawerOpen"
+      direction="ltr"
+      size="280px"
+      :with-header="false"
+      :close-on-press-escape="true"
+      :modal="true"
+      :append-to-body="true"
+    >
+      <div class="mobile-drawer">
+        <!-- 抽屉头部 -->
+        <div class="mobile-drawer-header">
+          <el-image src="/images/logo.jpg" fit="contain" style="width:28px;height:28px;border-radius:6px" />
+          <span style="font-size:16px;font-weight:bold;color:#303133;margin-left:8px">有宠</span>
+        </div>
+
+        <!-- 用户信息 -->
+        <div v-if="userStore.isLogin" class="mobile-drawer-user" @click="drawerOpen = false; router.push('/user/profile')">
+          <el-avatar :size="40" :src="userStore.userInfo?.avatar">
+            {{ userStore.userInfo?.nickname?.[0] || 'U' }}
+          </el-avatar>
+          <div class="mobile-drawer-user-info">
+            <div class="mobile-drawer-nickname">{{ userStore.userInfo?.nickname || '用户' }}</div>
+            <div class="mobile-drawer-role">
+              <el-tag v-if="userStore.isAdmin" size="small" type="danger">管理员</el-tag>
+              <el-tag v-if="userStore.isVolunteer" size="small" type="success">志愿者</el-tag>
+              <el-tag v-if="userStore.isDonor" size="small" type="warning">送养人</el-tag>
+            </div>
+          </div>
+          <el-icon style="color:#c0c4cc"><ArrowRight /></el-icon>
+        </div>
+        <div v-else class="mobile-drawer-login">
+          <el-button type="primary" size="small" @click="drawerOpen = false; router.push('/login')">登录</el-button>
+          <el-button size="small" @click="drawerOpen = false; router.push('/register')">注册</el-button>
+        </div>
+
+        <div class="mobile-drawer-divider"></div>
+
+        <!-- 导航菜单 -->
+        <div class="mobile-drawer-menu">
+          <div
+            v-for="item in mobileMenuItems"
+            :key="item.path"
+            class="mobile-drawer-menu-item"
+            :class="{ active: activeMenu === item.path }"
+            @click="drawerOpen = false; router.push(item.path)"
+          >
+            <el-icon :size="item.iconSize || 18"><component :is="item.icon" /></el-icon>
+            <span>{{ item.label }}</span>
+            <el-badge v-if="item.badge && item.badge > 0" :value="item.badge" :max="99" class="mobile-menu-badge" />
+          </div>
+        </div>
+
+        <div class="mobile-drawer-divider"></div>
+
+        <!-- 功能菜单 -->
+        <div class="mobile-drawer-menu">
+          <div class="mobile-drawer-menu-item" @click="drawerOpen = false; router.push('/user/profile')">
+            <el-icon :size="18"><User /></el-icon>
+            <span>个人中心</span>
+          </div>
+          <div class="mobile-drawer-menu-item" @click="drawerOpen = false; router.push('/adopt/exam')">
+            <el-icon :size="18"><Edit /></el-icon>
+            <span>领养考试</span>
+          </div>
+          <div v-if="userStore.isDonor" class="mobile-drawer-menu-item" @click="drawerOpen = false; router.push('/donate/pets')">
+            <el-icon :size="18"><FolderOpened /></el-icon>
+            <span>我的发布</span>
+          </div>
+          <div v-if="userStore.isVolunteer" class="mobile-drawer-menu-item" @click="drawerOpen = false; router.push('/volunteer/pending')">
+            <el-icon :size="18"><Checked /></el-icon>
+            <span>审核工作</span>
+          </div>
+          <div v-if="userStore.isAdmin" class="mobile-drawer-menu-item" @click="drawerOpen = false; router.push('/admin')">
+            <el-icon :size="18"><Setting /></el-icon>
+            <span>后台管理</span>
+          </div>
+        </div>
+
+        <div class="mobile-drawer-divider"></div>
+
+        <!-- 退出 -->
+        <div v-if="userStore.isLogin" class="mobile-drawer-menu">
+          <div class="mobile-drawer-menu-item logout-item" @click="drawerOpen = false; handleLogout()">
+            <el-icon :size="18"><SwitchButton /></el-icon>
+            <span>退出登录</span>
+          </div>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -112,12 +211,20 @@ import { getChatUnreadCount } from "@/api/chat"
 import { getMyOrders } from "@/api/mall"
 import { useChatSSE } from "@/composables/useChatSSE"
 import { useChatWebSocket } from "@/composables/useChatWebSocket"
+import { useMobile } from "@/composables/useMobile"
+import {
+  HomeFilled, ShoppingBag, Bell, MagicStick, Tickets, ShoppingCart,
+  ChatDotSquare, Menu, ArrowRight, User, Edit, FolderOpened, Checked,
+  Setting, SwitchButton
+} from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
+const { isMobile } = useMobile()
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
+const drawerOpen = ref(false)
 
 // ---- 通知 ----
 const notifOpen = ref(false)
@@ -130,6 +237,16 @@ const { connect: wsConnect, disconnect: wsDisconnect } = useChatWebSocket()
 
 // 当前路由对应的高亮菜单
 const activeMenu = computed(() => route.path)
+
+// 移动端导航菜单项
+const mobileMenuItems = computed(() => [
+  { path: '/',          label: '首页',     icon: HomeFilled },
+  { path: '/mall',      label: '商城',     icon: ShoppingBag },
+  { path: '/notices',   label: '公告',     icon: Bell },
+  { path: '/ai',        label: 'AI助手',   icon: MagicStick },
+  { path: '/user/orders', label: '我的订单', icon: Tickets },
+  { path: '/mall/cart', label: '购物车',   icon: ShoppingCart, badge: 0 },
+])
 
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
@@ -440,6 +557,9 @@ onUnmounted(() => {
   margin-right: 16px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .bell-icon {
   cursor: pointer;
@@ -456,6 +576,9 @@ onUnmounted(() => {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .chat-icon {
   color: #606266;
@@ -615,5 +738,180 @@ onUnmounted(() => {
 :deep(.nav-reg-btn:hover) {
   border-color: var(--yc-border-hover);
   color: var(--yc-accent);
+}
+
+/* ====== 移动端汉堡菜单按钮 ====== */
+.mobile-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--yc-text-primary);
+  flex-shrink: 0;
+  margin-left: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.mobile-hamburger:hover {
+  background: var(--yc-bg-page);
+}
+
+/* ====== 移动端侧滑抽屉 ====== */
+.mobile-drawer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f0f2f5;
+}
+.mobile-drawer-user {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.mobile-drawer-user:hover {
+  background: #f5f7fa;
+}
+.mobile-drawer-user-info {
+  flex: 1;
+  margin-left: 10px;
+  min-width: 0;
+}
+.mobile-drawer-nickname {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+}
+.mobile-drawer-role {
+  margin-top: 4px;
+  display: flex;
+  gap: 4px;
+}
+.mobile-drawer-login {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+}
+.mobile-drawer-divider {
+  height: 8px;
+  background: #f5f7fa;
+  flex-shrink: 0;
+}
+.mobile-drawer-menu {
+  padding: 6px 0;
+}
+.mobile-drawer-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 13px 20px;
+  font-size: 15px;
+  color: #303133;
+  cursor: pointer;
+  transition: background 0.15s;
+  gap: 12px;
+}
+.mobile-drawer-menu-item:hover {
+  background: #f5f7fa;
+}
+.mobile-drawer-menu-item.active {
+  color: #409EFF;
+  background: #ecf5ff;
+  font-weight: 600;
+}
+.mobile-drawer-menu-item.logout-item {
+  color: #f56c6c;
+}
+.mobile-drawer-menu-item.logout-item:hover {
+  background: #fef0f0;
+}
+.mobile-menu-badge {
+  margin-left: auto;
+}
+
+/* ====== 移动端适配 ====== */
+@media (max-width: 767px) {
+  .navbar-wrapper {
+    padding: 0 8px 0 0;
+  }
+  .mobile-hamburger {
+    display: flex;
+  }
+  .navbar-brand {
+    padding: 0 8px;
+    margin-right: 0;
+  }
+  .user-section {
+    padding-right: 8px;
+    gap: 4px;
+  }
+  /* 移动端隐藏用户下拉和登录/注册按钮（在抽屉中） */
+  .user-dropdown {
+    display: none !important;
+  }
+  .user-section > .el-button {
+    display: none !important;
+  }
+  /* 移动端用户区缩小间距 */
+  .notification-bell {
+    margin-right: 8px;
+  }
+  .chat-entry {
+    margin-right: 4px;
+  }
+  /* 移动端通知下拉改为全宽 */
+  .notif-dropdown {
+    position: fixed;
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: 55vh;
+  }
+}
+
+/* ====== 横屏手机适配 ====== */
+@media (max-height: 500px) {
+  .navbar-wrapper {
+    padding: 0 8px 0 0;
+  }
+  .mobile-hamburger {
+    display: flex;
+  }
+  .navbar-brand {
+    padding: 0 8px;
+    margin-right: 0;
+  }
+  .user-section {
+    padding-right: 8px;
+    gap: 4px;
+  }
+  .user-dropdown {
+    display: none !important;
+  }
+  .user-section > .el-button {
+    display: none !important;
+  }
+  .notification-bell {
+    margin-right: 8px;
+  }
+  .chat-entry {
+    margin-right: 4px;
+  }
+  .notif-dropdown {
+    position: fixed;
+    top: 48px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: 70vh;
+  }
 }
 </style>

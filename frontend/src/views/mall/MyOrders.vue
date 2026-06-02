@@ -210,7 +210,7 @@ onMounted(loadOrders)
 .orders-page {
   max-width: 800px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
 }
 .page-title {
   font-size: 20px;
@@ -312,6 +312,30 @@ onMounted(loadOrders)
 :deep(.el-tabs__active-bar) {
   background: var(--yc-accent);
 }
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  .orders-page {
+    padding: 12px 12px 40px;
+  }
+  .order-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .order-total {
+    text-align: left;
+  }
+  .order-actions {
+    flex-wrap: wrap;
+  }
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+</style>
 :deep(.el-tabs__item.is-active) {
   color: var(--yc-text-primary);
 }

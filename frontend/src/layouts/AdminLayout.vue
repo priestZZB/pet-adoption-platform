@@ -1,9 +1,16 @@
 <template>
-  <div class="admin-layout">
+  <div class="admin-layout" :class="{ 'is-mobile': isMobile }">
+    <!-- 移动端侧边栏遮罩 -->
+    <div
+      v-if="isMobile && !sidebarCollapsed"
+      class="sidebar-overlay"
+      @click="sidebarCollapsed = true"
+    ></div>
+
     <!-- 左侧边栏 -->
-    <div class="sidebar-wrap" :class="{ collapsed: sidebarCollapsed }">
+    <div class="sidebar-wrap" :class="{ collapsed: sidebarCollapsed, 'mobile-open': isMobile && !sidebarCollapsed }">
       <div class="logo-area" @click="$router.push('/admin')">
-        <span class="logo-text">{{ sidebarCollapsed ? '管' : '管理后台' }}</span>
+        <span class="logo-text">{{ sidebarCollapsed && !isMobile ? '管' : '管理后台' }}</span>
       </div>
       <el-scrollbar>
         <Sidebar />
@@ -48,16 +55,31 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import Sidebar from '@/components/Sidebar.vue'
+import { useMobile } from '@/composables/useMobile'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
+const { isMobile } = useMobile()
 const sidebarCollapsed = ref(false)
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
+
+// 移动端自动折叠，桌面端恢复
+watch(isMobile, (val) => {
+  sidebarCollapsed.value = val
+}, { immediate: true })
+
+// 移动端路由切换后关闭侧边栏
+watch(() => route.path, () => {
+  if (isMobile.value) {
+    sidebarCollapsed.value = true
+  }
+})
 
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
@@ -210,6 +232,66 @@ onUnmounted(() => {
   background: var(--yc-admin-bg);
 }
 
+/* ====== 移动端遮罩 ====== */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+}
+
+/* ====== 移动端侧边栏浮层模式 ====== */
+@media (max-width: 767px) {
+  .sidebar-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    width: 220px;
+  }
+  .sidebar-wrap.mobile-open {
+    transform: translateX(0);
+  }
+  .sidebar-wrap.collapsed {
+    transform: translateX(-100%);
+  }
+  .content-area {
+    padding: 12px;
+  }
+  .topbar {
+    padding: 0 12px;
+  }
+}
+
+/* ====== 横屏手机适配（侧边栏浮层模式）====== */
+@media (max-height: 500px) {
+  .sidebar-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    width: 220px;
+  }
+  .sidebar-wrap.mobile-open {
+    transform: translateX(0);
+  }
+  .sidebar-wrap.collapsed {
+    transform: translateX(-100%);
+  }
+  .content-area {
+    padding: 12px;
+  }
+  .topbar {
+    padding: 0 12px;
+  }
+}
+
 /* 侧边栏菜单激活 - 科技蓝左发光条 */
 .sidebar-wrap :deep(.el-menu-item.is-active) {
   background: rgba(64,158,255,0.08) !important;
@@ -312,5 +394,48 @@ onUnmounted(() => {
 .admin-page .toolbar .el-button--primary {
   background: #409EFF;
   border-color: #409EFF;
+}
+
+/* ====== 移动端后台适配 ====== */
+@media (max-width: 767px) {
+  /* 统计卡片网格 → 自适应列 */
+  .dashboard .stat-grid,
+  .admin-page .stat-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 10px;
+  }
+
+  /* 表格横向滚动 */
+  .admin-page .el-table,
+  .dashboard .el-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* 卡片内边距缩小 */
+  .admin-page .el-card__body,
+  .dashboard .el-card__body {
+    padding: 12px;
+  }
+
+  /* 弹窗全屏 */
+  .admin-page .el-dialog {
+    width: 95% !important;
+    max-width: 95vw;
+    margin: 10px auto;
+  }
+
+  /* 工具栏按钮换行 */
+  .admin-page .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* 欢迎卡片 */
+  .dashboard .welcome-card .el-card__body {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 </style>

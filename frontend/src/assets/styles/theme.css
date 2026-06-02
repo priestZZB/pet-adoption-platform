@@ -3,6 +3,11 @@
    宠物领养救助管理平台
    ========================================== */
 
+/* ====== 基础字体（rem 基准）====== */
+html {
+  font-size: 16px;
+}
+
 :root {
   /* ============ 前台 - 暖色系 ============ */
 
@@ -55,5 +60,29 @@
   --yc-shadow-card: 0 4px 24px rgba(0,0,0,0.04);       /* 前台卡片 */
   --yc-shadow-dialog: 0 8px 32px rgba(0,0,0,0.08);     /* 前台弹窗 */
   --yc-shadow-dropdown: 0 4px 16px rgba(0,0,0,0.12);   /* 下拉菜单 */
-  --yc-shadow-admin-card: 0 2px 12px rgba(0,0,0,0.06); /* 后台卡片 */
+
+  /* ============ 间距体系 ============ */
+
+  --yc-space-xs: 4px;
+  --yc-space-sm: 8px;
+  --yc-space-md: 12px;
+  --yc-space-lg: 16px;
+  --yc-space-xl: 20px;
+
+  /* ============ 字体大小 ============ */
+
+  --yc-font-xs: 0.75rem;    /* 12px */
+  --yc-font-sm: 0.8125rem;  /* 13px */
+  --yc-font-base: 0.875rem; /* 14px */
+  --yc-font-md: 1rem;       /* 16px */
+  --yc-font-lg: 1.125rem;   /* 18px */
+  --yc-font-xl: 1.25rem;    /* 20px */
+  --yc-font-2xl: 1.5rem;    /* 24px */
+}
+
+/* ====== 移动端基础字体微调 ====== */
+@media (max-width: 767px) {
+  html {
+    font-size: 15px;
+  }
 }

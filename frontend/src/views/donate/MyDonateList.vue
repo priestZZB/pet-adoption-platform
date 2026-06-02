@@ -312,7 +312,7 @@ onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>
-.donate-list-page { max-width: 800px; margin: 0 auto; padding: 24px 0 40px; }
+.donate-list-page { max-width: 800px; margin: 0 auto; padding: 24px 20px 40px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { margin: 0; font-size: 20px; color: var(--yc-text-primary); }
 .loading-center { display: flex; justify-content: center; padding: 80px 0; }

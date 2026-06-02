@@ -378,9 +378,7 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .brand-bar {
   position: relative;
   z-index: 2;
-  width: 100vw;
-  left: 50%;
-  margin-left: -50vw;
+  width: 100%;
   background: linear-gradient(135deg, #c19a6b 0%, #b0895a 100%);
   padding: 16px 0;
 }
@@ -514,6 +512,77 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .history-item i { color: #b5a898; font-size: 14px; }
 .history-x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 12px; color: #c0b8a8; transition: all 0.15s; flex-shrink: 0; }
 .history-x:hover { color: #fff; background: #e8564a; }
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  /* 品牌条缩小 */
+  .brand-bar {
+    padding: 10px 0;
+  }
+  .brand-row {
+    padding: 0 16px;
+    gap: 10px;
+  }
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+  .brand-name {
+    font-size: 18px;
+  }
+  .brand-slogan {
+    font-size: 12px;
+  }
+
+  /* 轮播区：取消 aspect-ratio，改为 flex 堆叠 */
+  .banner-section {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    margin: 12px 12px 0;
+    max-width: 100%;
+  }
+  .banner-carousel-bg {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .banner-overlay {
+    display: none;
+  }
+
+  /* 登录卡：从绝对定位浮层 → 居中卡片 */
+  .login-overlay {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    margin-top: 16px;
+    padding: 0;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px 20px 12px;
+    border-radius: 12px;
+  }
+
+  /* 公告区域 */
+  .notice-area {
+    padding: 16px 12px 60px;
+  }
+  .notice-inner {
+    padding: 14px 16px;
+    max-width: 100%;
+    border-radius: 12px;
+  }
+  .notice-card {
+    padding: 6px 0;
+  }
+}
 
 /* ===== 公告区域（跟轮播等宽）===== */
 .notice-area {

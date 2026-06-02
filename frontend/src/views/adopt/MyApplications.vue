@@ -84,7 +84,7 @@ onMounted(loadList)
 .applications-page {
   max-width: 700px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
 }
 .page-title {
   font-size: 20px;
@@ -174,5 +174,15 @@ onMounted(loadList)
   flex-shrink: 0;
   font-size: 14px;
   color: var(--yc-text-tertiary);
+}
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  .applications-page {
+    padding: 12px 12px 40px;
+  }
+  .app-content {
+    gap: 10px;
+  }
 }
 </style>

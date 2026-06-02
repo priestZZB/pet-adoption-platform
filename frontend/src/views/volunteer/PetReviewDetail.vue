@@ -304,4 +304,18 @@ onMounted(loadDetail)
 :deep(.review-confirm-btn) { background: var(--yc-btn-primary); border: 1px solid var(--yc-border); color: var(--yc-btn-text); border-radius: var(--yc-radius-btn); font-weight: 500; }
 :deep(.review-confirm-btn:hover) { background: var(--yc-btn-hover); border-color: var(--yc-border-hover); color: var(--yc-btn-text); }
 
+/* ====== 响应式适配 ====== */
+@media (max-width: 767px) {
+  .detail-page {
+    padding: 12px 12px 40px !important;
+  }
+  .detail-layout {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  .detail-right {
+    width: 100%;
+  }
+}
 </style>

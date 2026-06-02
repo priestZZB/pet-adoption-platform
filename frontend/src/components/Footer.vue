@@ -375,4 +375,26 @@ function showDialog(name) {
   color: #303133 !important;
   font-weight: 500;
 }
+
+/* ====== 移动端适配 ====== */
+@media (max-width: 767px) {
+  .footer {
+    padding: 20px 12px;
+    margin-top: 24px;
+  }
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+  .sep {
+    margin: 0 6px;
+  }
+  .footer-links a {
+    font-size: 12px;
+  }
+  .help-q {
+    width: 80px;
+  }
+}
 </style>

@@ -18,16 +18,61 @@
       <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
 
-    <!-- 分类 Tabs -->
-    <el-tabs v-model="categoryId" @tab-change="handleTabChange">
-      <el-tab-pane label="全部" name="all" />
-      <el-tab-pane
-        v-for="c in categories"
-        :key="c.id"
-        :label="c.name"
-        :name="c.id"
-      />
-    </el-tabs>
+    <!-- 分类 Tabs（桌面端） -->
+    <div class="category-tabs-desktop">
+      <el-tabs v-model="categoryId" @tab-change="handleTabChange">
+        <el-tab-pane label="全部" name="all" />
+        <el-tab-pane
+          v-for="c in categories"
+          :key="c.id"
+          :label="c.name"
+          :name="c.id"
+        />
+      </el-tabs>
+    </div>
+
+    <!-- 移动端分类筛选按钮 + 底部弹窗 -->
+    <div class="category-filter-mobile">
+      <el-button class="filter-btn" @click="filterDrawerOpen = true">
+        <el-icon><Operation /></el-icon>
+        {{ currentCategoryLabel }}
+        <el-icon><ArrowDown /></el-icon>
+      </el-button>
+      <el-drawer
+        v-model="filterDrawerOpen"
+        direction="btt"
+        size="auto"
+        :with-header="false"
+        :append-to-body="true"
+      >
+        <div class="filter-drawer">
+          <div class="filter-drawer-header">
+            <span class="filter-drawer-title">筛选分类</span>
+            <el-icon class="filter-drawer-close" :size="20" @click="filterDrawerOpen = false"><Close /></el-icon>
+          </div>
+          <div class="filter-drawer-list">
+            <div
+              class="filter-drawer-item"
+              :class="{ active: categoryId === 'all' }"
+              @click="selectCategory('all')"
+            >
+              全部
+              <el-icon v-if="categoryId === 'all'" color="var(--yc-accent)"><Select /></el-icon>
+            </div>
+            <div
+              v-for="c in categories"
+              :key="c.id"
+              class="filter-drawer-item"
+              :class="{ active: categoryId === c.id }"
+              @click="selectCategory(c.id)"
+            >
+              {{ c.name }}
+              <el-icon v-if="categoryId === c.id" color="var(--yc-accent)"><Select /></el-icon>
+            </div>
+          </div>
+        </div>
+      </el-drawer>
+    </div>
 
     <!-- 商品网格 -->
     <div v-if="loading" class="loading-center">
@@ -78,9 +123,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Loading, Search } from '@element-plus/icons-vue'
+import { Loading, Search, Operation, ArrowDown, Close, Select } from '@element-plus/icons-vue'
 import { getMallCategories, getMallProducts } from '@/api/mall'
 import Pagination from '@/components/Pagination.vue'
 
@@ -90,10 +135,24 @@ const categories = ref([])
 const productList = ref([])
 const total = ref(0)
 const loading = ref(true)
-const categoryId = ref(null)
+const categoryId = ref('all')
 const keyword = ref('')
 const page = ref(1)
 const size = ref(12)
+const filterDrawerOpen = ref(false)
+
+// 当前选中的分类名称
+const currentCategoryLabel = computed(() => {
+  if (categoryId.value === 'all') return '全部分类'
+  const cat = categories.value.find(c => c.id === categoryId.value)
+  return cat?.name || '全部分类'
+})
+
+function selectCategory(id) {
+  categoryId.value = id
+  filterDrawerOpen.value = false
+  handleTabChange()
+}
 
 async function loadCategories() {
   try {
@@ -150,7 +209,7 @@ onMounted(() => {
 .mall-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 20px 40px;
 }
 .page-title {
   font-size: 20px;
@@ -234,5 +293,115 @@ onMounted(() => {
 }
 :deep(.el-tabs__item:hover) {
   color: var(--yc-accent);
+}
+
+/* 移动端分类筛选按钮（默认隐藏） */
+.category-filter-mobile {
+  display: none;
+  margin-bottom: 16px;
+}
+.filter-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--yc-radius-btn);
+  border: 1px solid var(--yc-border);
+  font-size: 14px;
+}
+
+/* 分类筛选底部弹窗 */
+.filter-drawer {
+  padding: 0 0 16px;
+}
+.filter-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #f0f2f5;
+}
+.filter-drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+.filter-drawer-close {
+  cursor: pointer;
+  color: #909399;
+}
+.filter-drawer-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.filter-drawer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  font-size: 15px;
+  color: #303133;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.filter-drawer-item:hover {
+  background: #f5f7fa;
+}
+.filter-drawer-item.active {
+  color: var(--yc-accent);
+  font-weight: 600;
+  background: rgba(139,184,160,0.08);
+}
+
+/* ====== 响应式适配 ====== */
+@media (max-width: 1023px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  .mall-page {
+    padding: 12px 12px 40px;
+  }
+  .page-title {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+  .search-box {
+    flex-direction: column;
+  }
+  .search-box .el-input {
+    max-width: 100%;
+  }
+  .search-box .el-button {
+    width: 100%;
+  }
+  /* 隐藏桌面 tabs，显示移动端筛选按钮 */
+  .category-tabs-desktop {
+    display: none;
+  }
+  .category-filter-mobile {
+    display: block;
+  }
+  .product-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .product-card:hover {
+    transform: none;
+  }
+  .product-info {
+    padding: 10px 14px;
+  }
+  .product-name {
+    font-size: 14px;
+  }
+  .price {
+    font-size: 16px;
+  }
 }
 </style>
