@@ -39,13 +39,14 @@ public class ProductController {
     /**
      * 商品列表（分页+分类筛选）
      */
-    @ApiOperation("商品列表（分页+分类筛选）")
+    @ApiOperation("商品列表（分页+分类筛选+搜索）")
     @GetMapping("/products")
     public Result<PageInfo<ProductListVo>> products(
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        List<ProductListVo> list = productService.getProductList(categoryId, page, size);
+        List<ProductListVo> list = productService.getProductList(categoryId, keyword, 1, page, size);
         return Result.success(new PageInfo<>(list));
     }
 

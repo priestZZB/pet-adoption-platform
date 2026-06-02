@@ -46,4 +46,14 @@ public interface PetService {
     PetDetailVo getPetDetailForAdmin(Long petId);
 
     List<com.pet.module.pet.model.vo.PetSelectVo> getSelectablePets();
+
+    /**
+     * 批量更新宠物状态（上架/下架）
+     */
+    void batchUpdateStatus(List<Long> ids, String status);
+
+    /**
+     * 批量软删除宠物
+     */
+    void batchDelete(List<Long> ids);
 }

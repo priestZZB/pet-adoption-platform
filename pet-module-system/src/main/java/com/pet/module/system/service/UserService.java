@@ -54,4 +54,9 @@ public interface UserService {
     String getDonorStatus(Long userId);
 
     List<SysUser> getDonorApplies();
+
+    /**
+     * 批量启用/禁用用户
+     */
+    void batchToggleStatus(Long operatorId, List<Long> ids, String action);
 }

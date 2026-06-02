@@ -6,6 +6,7 @@ import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
 import com.pet.module.mall.model.dto.ShipDto;
 import com.pet.module.mall.model.vo.OrderVo;
+import com.pet.module.mall.model.vo.ProductListVo;
 import com.pet.module.mall.service.CategoryService;
 import com.pet.module.mall.service.OrderService;
 import com.pet.module.mall.service.ProductService;
@@ -95,6 +96,21 @@ public class AdminMallController {
                                         @RequestParam(required = false) String image) {
         productService.update(id, categoryId, name, description, price, stock, image);
         return Result.success("修改成功");
+    }
+
+    /**
+     * 所有商品列表（管理员，含下架商品）
+     */
+    @ApiOperation("所有商品列表（管理员）")
+    @GetMapping("/products")
+    public Result<PageInfo<ProductListVo>> products(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<ProductListVo> list = productService.getProductList(categoryId, keyword, status, page, size);
+        return Result.success(new PageInfo<>(list));
     }
 
     /**

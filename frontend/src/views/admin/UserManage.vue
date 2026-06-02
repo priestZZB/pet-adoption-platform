@@ -13,10 +13,19 @@
           @clear="handleSearch"
         />
         <el-button type="primary" @click="handleSearch">搜索</el-button>
+        <el-button @click="handleExport">导出CSV</el-button>
       </div>
 
-      <el-table :data="list" border stripe v-loading="loading">
-        <el-table-column prop="id" label="ID" width="70" />
+      <div v-if="selectedIds.length > 0" class="batch-bar">
+        <span class="batch-tip">已选 {{ selectedIds.length }} 项</span>
+        <el-button type="success" @click="handleBatchEnable">批量启用</el-button>
+        <el-button type="danger" @click="handleBatchDisable">批量禁用</el-button>
+        <el-button type="warning" @click="handleBatchRole">批量分配角色</el-button>
+        <el-button @click="selectedIds = []">取消选择</el-button>
+      </div>
+
+      <el-table :data="list" border stripe v-loading="loading" @selection-change="onSelectionChange" ref="tableRef">
+        <el-table-column type="selection" width="50" />
         <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="nickname" label="昵称" width="120" />
         <el-table-column prop="phone" label="手机号" width="130" />
@@ -108,10 +117,11 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getUserList, toggleUserStatus, getRoles, assignRole } from '@/api/admin'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getUserList, toggleUserStatus, getRoles, assignRole, batchToggleUserStatus, batchAssignRole } from '@/api/admin'
 import { useUserStore } from '@/stores/user'
 import { ROLE_MAP } from '@/utils/constants'
+import { exportToCSV } from '@/utils/export'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 
@@ -128,6 +138,8 @@ const keyword = ref('')
 const loading = ref(false)
 const roleOptions = ref([])
 const adminRoleId = ref(null)
+const selectedIds = ref([])
+const tableRef = ref(null)
 
 // 当前登录用户是否是超级管理员
 const isSuperAdmin = computed(() => userStore.userInfo?.isSuperAdmin === 1)
@@ -226,6 +238,83 @@ async function handleAssignRole(row, roleIds) {
   } catch { /* ignore */ }
 }
 
+function onSelectionChange(rows) {
+  selectedIds.value = rows.map(r => r.id)
+}
+
+async function handleBatchEnable() {
+  if (!selectedIds.value.length) return
+  try {
+    await ElMessageBox.confirm('确定批量启用所选用户？', '提示')
+    await batchToggleUserStatus({ ids: selectedIds.value, action: 'enable' })
+    ElMessage.success('批量启用成功')
+    selectedIds.value = []
+    loadList()
+  } catch { /* cancelled or error */ }
+}
+
+async function handleBatchDisable() {
+  if (!selectedIds.value.length) return
+  try {
+    await ElMessageBox.confirm('确定批量禁用所选用户？', '提示')
+    await batchToggleUserStatus({ ids: selectedIds.value, action: 'disable' })
+    ElMessage.success('批量禁用成功')
+    selectedIds.value = []
+    loadList()
+  } catch { /* cancelled or error */ }
+}
+
+async function handleBatchRole() {
+  if (!selectedIds.value.length) return
+  if (!roleOptions.value.length) { ElMessage.warning('角色列表未加载'); return }
+  // 普通管理员可选角色（排除ADMIN）
+  const availableRoles = isSuperAdmin.value
+    ? roleOptions.value
+    : roleOptions.value.filter(r => r.roleCode !== 'ADMIN')
+  try {
+    await ElMessageBox.confirm(
+      '将为所选 ' + selectedIds.value.length + ' 个用户统一分配角色，继续选择角色？',
+      '批量分配角色'
+    )
+    // 弹出角色选择
+    const { value: chosenLabels } = await ElMessageBox.prompt('请输入角色名称（用逗号分隔多个，如: 志愿者,送养人）', '选择角色', {
+      inputPattern: /.+/,
+      inputErrorMessage: '请输入角色名称'
+    })
+    if (!chosenLabels) return
+    const roleIds = []
+    for (const label of chosenLabels.split(',')) {
+      const r = availableRoles.find(ro => ro.roleName === label.trim() || ro.roleCode === label.trim().toUpperCase())
+      if (r) roleIds.push(r.id)
+    }
+    if (!roleIds.length) { ElMessage.warning('未识别到有效角色'); return }
+    await batchAssignRole({ userIds: selectedIds.value, roleIds })
+    ElMessage.success('批量分配角色成功')
+    selectedIds.value = []
+    loadList()
+  } catch { /* cancelled */ }
+}
+
+async function handleExport() {
+  try {
+    const params = { page: 1, size: 999999 }
+    if (keyword.value) params.keyword = keyword.value
+    const res = await getUserList(params)
+    const data = (res.list || []).map(r => ({
+      'ID': r.id,
+      '用户名': r.username,
+      '昵称': r.nickname,
+      '手机号': r.phone,
+      '角色': (r.roles || []).map(c => ROLE_MAP[c] || c).join('、'),
+      '实名': r.isRealName === 1 ? '是' : '否',
+      '状态': r.status === 1 ? '启用' : '禁用',
+      '注册时间': r.createdAt
+    }))
+    exportToCSV(data, '用户列表.csv')
+    ElMessage.success('导出成功')
+  } catch { ElMessage.error('导出失败') }
+}
+
 onMounted(() => {
   // 确保用户信息已加载（含isSuperAdmin）
   if (userStore.userInfo === null) {
@@ -244,4 +333,9 @@ onUnmounted(() => {
 .admin-page { max-width: 1200px; }
 .page-title { font-size: 20px; color: #303133; margin: 0 0 20px; }
 .toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
+.batch-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: #f0f9ff; border-radius: 6px; margin-bottom: 12px;
+}
+.batch-tip { font-size: 13px; color: #409eff; font-weight: 500; margin-right: 8px; }
 </style>

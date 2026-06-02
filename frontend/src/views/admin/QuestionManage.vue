@@ -2,11 +2,22 @@
   <div class="admin-page">
     <div class="page-header">
       <h3 class="page-title">试题管理</h3>
-      <el-button type="primary" @click="openDialog()">新增试题</el-button>
+      <div class="header-actions">
+        <el-button @click="handleExport">导出CSV</el-button>
+        <el-button @click="handleImport">批量导入</el-button>
+        <el-button type="primary" @click="openDialog()">新增试题</el-button>
+      </div>
     </div>
 
     <el-card>
-      <el-table :data="list" border stripe v-loading="loading">
+      <div v-if="selectedIds.length > 0" class="batch-bar">
+        <span class="batch-tip">已选 {{ selectedIds.length }} 项</span>
+        <el-button type="danger" @click="handleBatchDelete">批量删除</el-button>
+        <el-button @click="selectedIds = []">取消选择</el-button>
+      </div>
+
+      <el-table :data="list" border stripe v-loading="loading" @selection-change="onSelectionChange">
+        <el-table-column type="selection" width="40" />
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="question" label="题目" min-width="200" show-overflow-tooltip />
         <el-table-column prop="optionA" label="A" width="120" show-overflow-tooltip />
@@ -66,13 +77,37 @@
         <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 批量导入对话框 -->
+    <el-dialog v-model="importVisible" title="批量导入试题" width="500px">
+      <div class="import-guide">
+        <p>请上传 CSV 文件，格式如下（第一行为表头）：</p>
+        <p class="import-example">题目,选项A,选项B,选项C,选项D,正确答案</p>
+        <p class="import-example">猫咪的寿命一般是几年？,5-8年,10-15年,15-20年,20-25年,B</p>
+      </div>
+      <el-upload
+        ref="uploadRef"
+        :auto-upload="false"
+        :limit="1"
+        accept=".csv"
+        :on-change="onFileChange"
+        :file-list="importFileList"
+      >
+        <el-button type="primary">选择 CSV 文件</el-button>
+      </el-upload>
+      <template #footer>
+        <el-button @click="importVisible = false">取消</el-button>
+        <el-button type="primary" :loading="importing" @click="doImport">开始导入</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getQuestions, addQuestion, updateQuestion, deleteQuestion } from '@/api/admin'
+import { getQuestions, addQuestion, updateQuestion, deleteQuestion, batchDeleteQuestions, importQuestions } from '@/api/admin'
+import { exportToCSV } from '@/utils/export'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
@@ -86,6 +121,11 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
 const saving = ref(false)
+const selectedIds = ref([])
+const importVisible = ref(false)
+const importing = ref(false)
+const importFileList = ref([])
+let importFile = null
 
 const form = reactive({ question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A' })
 
@@ -133,6 +173,62 @@ async function handleDelete(id) {
   ElMessage.success('已删除'); loadList()
 }
 
+function onSelectionChange(rows) {
+  selectedIds.value = rows.map(r => r.id)
+}
+
+async function handleBatchDelete() {
+  if (!selectedIds.value.length) return
+  try {
+    await ElMessageBox.confirm(`确定批量删除所选 ${selectedIds.value.length} 道试题？`, '警告')
+    await batchDeleteQuestions({ ids: selectedIds.value })
+    ElMessage.success('批量删除成功')
+    selectedIds.value = []
+    loadList()
+  } catch { /* ignore */ }
+}
+
+function handleImport() {
+  importFileList.value = []
+  importFile = null
+  importVisible.value = true
+}
+
+function onFileChange(file) {
+  importFile = file.raw
+}
+
+async function doImport() {
+  if (!importFile) { ElMessage.warning('请选择文件'); return }
+  importing.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', importFile)
+    const res = await importQuestions(formData)
+    ElMessage.success(res.data || '导入成功')
+    importVisible.value = false
+    importFileList.value = []
+    loadList()
+  } catch { /* ignore */ }
+  finally { importing.value = false }
+}
+
+async function handleExport() {
+  try {
+    const res = await getQuestions({ page: 1, size: 999999 })
+    const data = (res.list || []).map(r => ({
+      '题目': r.question,
+      '选项A': r.optionA,
+      '选项B': r.optionB,
+      '选项C': r.optionC,
+      '选项D': r.optionD,
+      '正确答案': r.correctAnswer
+    }))
+    exportToCSV(data, '试题列表.csv')
+    ElMessage.success('导出成功')
+  } catch { ElMessage.error('导出失败') }
+}
+
 onMounted(loadList)
 onUnmounted(cleanupSelectAutoClose)
 </script>
@@ -141,9 +237,17 @@ onUnmounted(cleanupSelectAutoClose)
 .admin-page { max-width: 1100px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { margin: 0; font-size: 20px; color: #303133; }
+.header-actions { display: flex; gap: 8px; }
 .action-group {
   display: flex;
   gap: 4px;
   align-items: center;
 }
+.batch-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: #f0f9ff; border-radius: 6px; margin-bottom: 12px;
+}
+.batch-tip { font-size: 13px; color: #409eff; font-weight: 500; margin-right: 8px; }
+.import-guide { margin-bottom: 16px; color: #606266; }
+.import-example { font-family: monospace; font-size: 13px; color: #909399; margin: 4px 0; }
 </style>

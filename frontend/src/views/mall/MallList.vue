@@ -2,6 +2,22 @@
   <div class="mall-page">
     <h3 class="page-title">宠物商城</h3>
 
+    <!-- 搜索框 -->
+    <div class="search-box">
+      <el-input
+        v-model="keyword"
+        placeholder="搜索商品名称或描述"
+        clearable
+        @clear="handleSearch"
+        @keyup.enter="handleSearch"
+      >
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
+      <el-button type="primary" @click="handleSearch">搜索</el-button>
+    </div>
+
     <!-- 分类 Tabs -->
     <el-tabs v-model="categoryId" @tab-change="handleTabChange">
       <el-tab-pane label="全部" name="all" />
@@ -64,7 +80,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, Search } from '@element-plus/icons-vue'
 import { getMallCategories, getMallProducts } from '@/api/mall'
 import Pagination from '@/components/Pagination.vue'
 
@@ -75,6 +91,7 @@ const productList = ref([])
 const total = ref(0)
 const loading = ref(true)
 const categoryId = ref(null)
+const keyword = ref('')
 const page = ref(1)
 const size = ref(12)
 
@@ -91,6 +108,7 @@ async function loadProducts() {
   try {
     const params = { page: page.value, size: size.value }
     if (categoryId.value && categoryId.value !== 'all') params.categoryId = categoryId.value
+    if (keyword.value) params.keyword = keyword.value
     const res = await getMallProducts(params)
     productList.value = res.list || []
     total.value = res.total || 0
@@ -100,6 +118,11 @@ async function loadProducts() {
   } finally {
     loading.value = false
   }
+}
+
+function handleSearch() {
+  page.value = 1
+  loadProducts()
 }
 
 function handleTabChange() {
@@ -133,6 +156,14 @@ onMounted(() => {
   font-size: 20px;
   color: var(--yc-text-primary);
   margin: 0 0 20px;
+}
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.search-box .el-input {
+  max-width: 360px;
 }
 .loading-center {
   display: flex;

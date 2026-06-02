@@ -41,4 +41,14 @@ public interface PetInfoMapper {
     int countByStatus(@Param("status") String status);
 
     long countByCreatedDate(@Param("date") String date);
+
+    /**
+     * 批量更新宠物状态
+     */
+    int batchUpdateStatus(@Param("ids") List<Long> ids, @Param("status") String status);
+
+    /**
+     * 批量软删除宠物（状态改为 DELETED）
+     */
+    int batchDelete(@Param("ids") List<Long> ids);
 }

@@ -14,7 +14,7 @@ public interface MallProductMapper {
 
     MallProduct selectById(Long id);
 
-    List<MallProduct> selectPage(@Param("categoryId") Long categoryId);
+    List<MallProduct> selectPage(@Param("categoryId") Long categoryId, @Param("keyword") String keyword, @Param("status") Integer status);
 
     List<MallProduct> selectAll();
 }

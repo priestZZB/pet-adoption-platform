@@ -7,6 +7,7 @@ import com.pet.module.adopt.mapper.AdoptQuestionMapper;
 import com.pet.module.adopt.model.entity.AdoptQuestion;
 import com.pet.module.adopt.service.QuestionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -62,5 +63,23 @@ public class QuestionServiceImpl implements QuestionService {
             throw new BusinessException(ResultCodeEnum.QUESTION_NOT_FOUND);
         }
         adoptQuestionMapper.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void batchDelete(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请选择至少一道试题");
+        }
+        adoptQuestionMapper.batchDelete(ids);
+    }
+
+    @Override
+    @Transactional
+    public int batchImport(List<AdoptQuestion> questions) {
+        if (questions == null || questions.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "没有可导入的数据");
+        }
+        return adoptQuestionMapper.batchInsert(questions);
     }
 }

@@ -82,7 +82,7 @@ public class RoleServiceImpl implements RoleService {
         // ====== 超级管理员权限校验 ======
         if (operatorId != null) {
             SysUser operator = userMapper.selectById(operatorId);
-            boolean opIsSuper = operator != null && operator.getIsSuperAdmin() == 1;
+            boolean opIsSuper = operator != null && Integer.valueOf(1).equals(operator.getIsSuperAdmin());
             boolean targetIsAdmin = userRoleMapper.selectRoleCodesByUserId(userId)
                     .contains("ADMIN");
             SysRole adminRole = roleMapper.selectByCode("ADMIN");
@@ -177,11 +177,29 @@ public class RoleServiceImpl implements RoleService {
 
         SysUser update = new SysUser();
         update.setId(userId);
-        // 选中了送养人角色 → APPROVED，没选中 → NONE（重置申请状态）
-        update.setDonorStatus(hasDonor ? "APPROVED" : "NONE");
-        // 选中了志愿者角色 → APPROVED，没选中 → NONE（重置申请状态）
-        update.setVolunteerStatus(hasVolunteer ? "APPROVED" : "NONE");
-        userMapper.updateById(update);
+        boolean needUpdate = false;
+
+        // 仅在实际变更时更新状态：授予→APPROVED，取消已 APPROVED→NONE
+        // 保留 PENDING / REJECTED 等中间状态不被覆盖
+        if (hasDonor && cur != null && !"APPROVED".equals(cur.getDonorStatus())) {
+            update.setDonorStatus("APPROVED");
+            needUpdate = true;
+        } else if (!hasDonor && cur != null && "APPROVED".equals(cur.getDonorStatus())) {
+            update.setDonorStatus("NONE");
+            needUpdate = true;
+        }
+
+        if (hasVolunteer && cur != null && !"APPROVED".equals(cur.getVolunteerStatus())) {
+            update.setVolunteerStatus("APPROVED");
+            needUpdate = true;
+        } else if (!hasVolunteer && cur != null && "APPROVED".equals(cur.getVolunteerStatus())) {
+            update.setVolunteerStatus("NONE");
+            needUpdate = true;
+        }
+
+        if (needUpdate) {
+            userMapper.updateById(update);
+        }
     }
 
     @Override
@@ -224,6 +242,20 @@ public class RoleServiceImpl implements RoleService {
                     "送养人申请未通过",
                     "你的送养人申请未通过审核，原因：" + reason,
                     userId));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void batchAssignRoles(Long operatorId, List<Long> userIds, List<Long> roleIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请选择至少一个用户");
+        }
+        if (roleIds == null || roleIds.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请选择至少一个角色");
+        }
+        for (Long userId : userIds) {
+            assignRoles(operatorId, userId, roleIds);
         }
     }
 

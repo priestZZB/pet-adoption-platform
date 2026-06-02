@@ -56,4 +56,19 @@
         ORDER BY RAND()
         LIMIT 10
     </select>
+
+    <delete id="batchDelete">
+        DELETE FROM adopt_question WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO adopt_question (question, option_a, option_b, option_c, option_d, correct_answer)
+        VALUES
+        <foreach collection="list" item="q" separator=",">
+            (#{q.question}, #{q.optionA}, #{q.optionB}, #{q.optionC}, #{q.optionD}, #{q.correctAnswer})
+        </foreach>
+    </insert>
 </mapper>

@@ -117,4 +117,20 @@
         SELECT COUNT(*) FROM pet_info WHERE DATE(created_at) = #{date}
     </select>
 
+    <update id="batchUpdateStatus">
+        UPDATE pet_info SET status = #{status}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="batchDelete">
+        UPDATE pet_info SET status = 'DELETED'
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
 </mapper>

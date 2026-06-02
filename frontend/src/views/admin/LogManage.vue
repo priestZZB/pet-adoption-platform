@@ -1,6 +1,9 @@
 ﻿<template>
   <div class="admin-page">
-    <h3 class="page-title">操作日志</h3>
+    <div class="page-header">
+      <h3 class="page-title">操作日志</h3>
+      <el-button @click="handleExport">导出CSV</el-button>
+    </div>
 
     <el-card>
       <div class="toolbar">
@@ -41,7 +44,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { getLogs } from '@/api/admin'
+import { exportToCSV } from '@/utils/export'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
@@ -66,12 +71,31 @@ async function loadList() {
 
 function onPageChange({ page: p, size: s }) { page.value = p; size.value = s; loadList() }
 
+async function handleExport() {
+  try {
+    const params = { page: 1, size: 999999 }
+    if (moduleFilter.value) params.module = moduleFilter.value
+    const res = await getLogs(params)
+    const data = (res.list || []).map(r => ({
+      'ID': r.id,
+      '操作人': r.username,
+      '模块': r.module,
+      '操作内容': r.action,
+      'IP': r.ip,
+      '操作时间': r.createdAt
+    }))
+    exportToCSV(data, '操作日志.csv')
+    ElMessage.success('导出成功')
+  } catch { ElMessage.error('导出失败') }
+}
+
 onMounted(loadList)
 onUnmounted(cleanupSelectAutoClose)
 </script>
 
 <style scoped>
 .admin-page { max-width: 1100px; }
-.page-title { font-size: 20px; color: #303133; margin: 0 0 20px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-title { margin: 0; font-size: 20px; color: #303133; }
 .toolbar { margin-bottom: 16px; }
 </style>

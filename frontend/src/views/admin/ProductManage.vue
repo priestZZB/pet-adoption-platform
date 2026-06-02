@@ -91,8 +91,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMallCategories, getMallProducts } from '@/api/mall'
-import { addProduct, updateProduct, toggleProductStatus } from '@/api/admin'
+import { getMallCategories } from '@/api/mall'
+import { addProduct, updateProduct, toggleProductStatus, getAdminProducts } from '@/api/admin'
 import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
@@ -119,7 +119,7 @@ const uploadHeaders = computed(() => ({
 async function loadList() {
   loading.value = true
   try {
-    const res = await getMallProducts({ page: page.value, size: size.value, all: true })
+    const res = await getAdminProducts({ page: page.value, size: size.value })
     list.value = res.list || []; total.value = res.total || 0
   } catch { list.value = []; total.value = 0 }
   finally { loading.value = false }

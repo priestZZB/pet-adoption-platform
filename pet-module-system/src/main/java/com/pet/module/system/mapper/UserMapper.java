@@ -46,4 +46,9 @@ public interface UserMapper {
     int countByDonorStatus(@Param("status") String status);
 
     long countByCreatedDate(@Param("date") String date);
+
+    /**
+     * 批量更新用户状态（启用/禁用）
+     */
+    int batchUpdateStatus(@Param("ids") List<Long> ids, @Param("status") Integer status);
 }

@@ -5,10 +5,14 @@ import request from './request'
 export const getUserList = (params) => request.get('/admin/users', { params })
 // 禁用/启用用户
 export const toggleUserStatus = (id) => request.put('/admin/user/' + id + '/status')
+// 批量启用/禁用用户
+export const batchToggleUserStatus = (data) => request.post('/admin/users/batch-status', data)
 // 角色列表
 export const getRoles = () => request.get('/admin/roles')
 // 修改用户角色
 export const assignRole = (id, roleIds) => request.put('/admin/user/' + id + '/role', null, { params: { roleIds } })
+// 批量分配角色
+export const batchAssignRole = (data) => request.post('/admin/users/batch-role', data)
 
 // ===== 志愿者审核 =====
 // 志愿者申请列表
@@ -35,6 +39,10 @@ export const deletePetCategory = (id) => request.delete('/admin/pet/categories/'
 export const getAllPets = (params) => request.get('/admin/pets', { params })
 // 上架/下架/删除宠物
 export const updatePetStatus = (id, status) => request.put('/admin/pets/' + id + '/status', null, { params: { status } })
+// 批量上架/下架宠物
+export const batchUpdatePetStatus = (data) => request.post('/admin/pets/batch-status', data)
+// 批量软删除宠物
+export const batchDeletePets = (data) => request.post('/admin/pets/batch-delete', data)
 // 终审（通过/打回）
 export const finalReview = (id, data) => request.post('/admin/pets/' + id + '/final-review', data)
 
@@ -47,6 +55,10 @@ export const addQuestion = (params) => request.post('/admin/adopt/questions', nu
 export const updateQuestion = (id, params) => request.put('/admin/adopt/questions/' + id, null, { params })
 // 删除试题
 export const deleteQuestion = (id) => request.delete('/admin/adopt/questions/' + id)
+// 批量删除试题
+export const batchDeleteQuestions = (data) => request.post('/admin/adopt/questions/batch-delete', data)
+// 批量导入试题（上传 CSV 文件）
+export const importQuestions = (formData) => request.post('/admin/adopt/questions/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
 
 // ===== 领养管理 =====
 // 所有领养申请列表
@@ -65,6 +77,8 @@ export const updateMallCategory = (id, params) => request.put('/admin/mall/categ
 export const deleteMallCategory = (id) => request.delete('/admin/mall/categories/' + id)
 
 // ===== 商品管理 =====
+// 所有商品列表（管理员，含下架商品）
+export const getAdminProducts = (params) => request.get('/admin/mall/products', { params })
 // 新增商品
 export const addProduct = (params) => request.post('/admin/mall/products', null, { params })
 // 编辑商品

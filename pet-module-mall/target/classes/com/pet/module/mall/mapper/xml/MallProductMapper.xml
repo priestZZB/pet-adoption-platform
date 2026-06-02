@@ -48,7 +48,12 @@
     <select id="selectPage" resultMap="BaseResultMap">
         SELECT <include refid="BaseColumns"/> FROM mall_product
         <where>
+            <if test="status != null">status = #{status}</if>
             <if test="categoryId != null">AND category_id = #{categoryId}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%')
+                     OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
         </where>
         ORDER BY created_at DESC
     </select>

@@ -9,7 +9,7 @@ public interface ProductService {
 
     void evictProductCache();
 
-    List<ProductListVo> getProductList(Long categoryId, int page, int size);
+    List<ProductListVo> getProductList(Long categoryId, String keyword, Integer status, int page, int size);
 
     ProductDetailVo getProductDetail(Long id);
 

@@ -1,5 +1,7 @@
 package com.pet.module.system.controller;
 
+import com.pet.common.enums.ResultCodeEnum;
+import com.pet.common.exception.BusinessException;
 import com.pet.common.result.Result;
 import com.pet.framework.annotation.Log;
 import com.pet.framework.annotation.RequireRole;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Log("系统管理")
 @Api(tags = "管理员-系统管理")
@@ -81,6 +85,63 @@ public class AdminController {
                 request.getRemoteAddr()
         );
         return Result.success("角色修改成功");
+    }
+
+    /**
+     * 批量启用/禁用用户
+     */
+    @ApiOperation("批量启用/禁用用户")
+    @PostMapping("/users/batch-status")
+    public Result<String> batchToggleStatus(HttpServletRequest request,
+                                            @RequestBody Map<String, Object> body) {
+        Long operatorId = Long.valueOf(request.getAttribute("userId").toString());
+        List<Long> ids = extractLongList(body, "ids");
+        String action = (String) body.get("action");
+        if (action == null || (!"enable".equals(action) && !"disable".equals(action))) {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "action 必须是 enable 或 disable");
+        }
+        userService.batchToggleStatus(operatorId, ids, action);
+        operationLogService.addLog(
+                operatorId, null,
+                "用户管理", "批量" + ("enable".equals(action) ? "启用" : "禁用") + "用户: ids=" + ids,
+                request.getRemoteAddr()
+        );
+        return Result.success("批量操作成功");
+    }
+
+    /**
+     * 批量分配角色
+     */
+    @ApiOperation("批量分配角色")
+    @PostMapping("/users/batch-role")
+    public Result<String> batchAssignRole(HttpServletRequest request,
+                                          @RequestBody Map<String, Object> body) {
+        Long operatorId = Long.valueOf(request.getAttribute("userId").toString());
+        List<Long> userIds = extractLongList(body, "userIds");
+        List<Long> roleIds = extractLongList(body, "roleIds");
+        roleService.batchAssignRoles(operatorId, userIds, roleIds);
+        operationLogService.addLog(
+                operatorId, null,
+                "用户管理", "批量分配角色: userIds=" + userIds + ", roleIds=" + roleIds,
+                request.getRemoteAddr()
+        );
+        return Result.success("批量分配角色成功");
+    }
+
+    /**
+     * 从 Map body 中安全提取 List&lt;Long&gt;，支持 Integer/Long/Number 类型
+     */
+    private List<Long> extractLongList(Map<String, Object> body, String key) {
+        Object value = body.get(key);
+        if (value == null) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "缺少参数: " + key);
+        }
+        if (value instanceof List) {
+            return ((List<?>) value).stream()
+                    .map(item -> item instanceof Number ? ((Number) item).longValue() : Long.valueOf(item.toString()))
+                    .collect(Collectors.toList());
+        }
+        throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "参数格式错误，应为数组: " + key);
     }
 
     @ApiOperation("操作日志列表")

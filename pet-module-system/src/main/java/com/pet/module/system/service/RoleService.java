@@ -20,4 +20,9 @@ public interface RoleService {
     void reviewVolunteerApply(Long userId, String action, String remark);
 
     void reviewDonorApply(Long userId, String action, String remark);
+
+    /**
+     * 批量分配角色
+     */
+    void batchAssignRoles(Long operatorId, List<Long> userIds, List<Long> roleIds);
 }

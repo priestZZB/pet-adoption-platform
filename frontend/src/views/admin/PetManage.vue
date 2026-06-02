@@ -23,9 +23,19 @@
         </el-select>
         <el-input v-model="keyword" placeholder="搜索宠物名称" clearable style="width:200px" @keyup.enter="handleSearch" @clear="handleSearch" />
         <el-button type="primary" @click="handleSearch">搜索</el-button>
+        <el-button @click="handleExport">导出CSV</el-button>
       </div>
 
-      <el-table :data="list" border stripe v-loading="loading">
+      <div v-if="selectedIds.length > 0" class="batch-bar">
+        <span class="batch-tip">已选 {{ selectedIds.length }} 项</span>
+        <el-button type="success" @click="handleBatchStatus('APPROVED')">批量上架</el-button>
+        <el-button type="info" @click="handleBatchStatus('OFFLINE')">批量下架</el-button>
+        <el-button type="danger" @click="handleBatchDelete">批量删除</el-button>
+        <el-button @click="selectedIds = []">取消选择</el-button>
+      </div>
+
+      <el-table :data="list" border stripe v-loading="loading" @selection-change="onSelectionChange">
+        <el-table-column type="selection" width="50" />
         <el-table-column label="封面" width="60">
           <template #default="{ row }">
             <el-image :src="row.coverImage" fit="cover" style="width:40px;height:40px;border-radius:4px">
@@ -63,8 +73,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAllPets, updatePetStatus } from '@/api/admin'
+import { getAllPets, updatePetStatus, batchUpdatePetStatus, batchDeletePets } from '@/api/admin'
 import { PET_STATUS } from '@/utils/constants'
+import { exportToCSV } from '@/utils/export'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
@@ -75,6 +86,7 @@ const page = ref(1)
 const size = ref(10)
 const keyword = ref('')
 const statusFilter = ref('')
+const selectedIds = ref([])
 const loading = ref(false)
 
 async function loadList() {
@@ -104,6 +116,52 @@ async function handleStatus(row, status) {
   loadList()
 }
 
+function onSelectionChange(rows) {
+  selectedIds.value = rows.map(r => r.id)
+}
+
+async function handleBatchStatus(status) {
+  if (!selectedIds.value.length) return
+  const label = status === 'APPROVED' ? '上架' : '下架'
+  try {
+    await ElMessageBox.confirm(`确定批量${label}所选 ${selectedIds.value.length} 个宠物？`, '提示')
+    await batchUpdatePetStatus({ ids: selectedIds.value, status })
+    ElMessage.success('批量' + label + '成功')
+    selectedIds.value = []
+    loadList()
+  } catch { /* ignore */ }
+}
+
+async function handleBatchDelete() {
+  if (!selectedIds.value.length) return
+  try {
+    await ElMessageBox.confirm(`确定批量删除所选 ${selectedIds.value.length} 个宠物？（软删除，可恢复）`, '警告')
+    await batchDeletePets({ ids: selectedIds.value })
+    ElMessage.success('批量删除成功')
+    selectedIds.value = []
+    loadList()
+  } catch { /* ignore */ }
+}
+
+async function handleExport() {
+  try {
+    const params = { page: 1, size: 999999 }
+    if (keyword.value) params.keyword = keyword.value
+    if (statusFilter.value) params.status = statusFilter.value
+    const res = await getAllPets(params)
+    const data = (res.list || []).map(r => ({
+      'ID': r.id,
+      '名称': r.name,
+      '送养人': r.userNickname,
+      '分类': r.categoryName,
+      '状态': PET_STATUS[r.status]?.label || r.status,
+      '发布时间': r.createdAt
+    }))
+    exportToCSV(data, '宠物列表.csv')
+    ElMessage.success('导出成功')
+  } catch { ElMessage.error('导出失败') }
+}
+
 onMounted(loadList)
 onUnmounted(cleanupSelectAutoClose)
 </script>
@@ -112,5 +170,10 @@ onUnmounted(cleanupSelectAutoClose)
 .admin-page { max-width: 1100px; }
 .page-title { font-size: 20px; color: #303133; margin: 0 0 20px; }
 .toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
+.batch-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: #f0f9ff; border-radius: 6px; margin-bottom: 12px;
+}
+.batch-tip { font-size: 13px; color: #409eff; font-weight: 500; margin-right: 8px; }
 .img-xs { width: 40px; height: 40px; background: #f5f7fa; border-radius: 4px; }
 </style>

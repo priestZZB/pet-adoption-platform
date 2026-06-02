@@ -82,7 +82,7 @@ public class PetServiceImpl implements PetService {
     }
 
 
-    @Cacheable(key = "'list:' + #categoryId + ':' + #keyword + ':' + #status")
+    @Cacheable(key = "'list:' + #categoryId + ':' + #keyword + ':' + #status + ':' + #page + ':' + #size")
     @Override
     public List<PetListVo> getPetList(Long categoryId, String keyword, String status, int page, int size) {
         PageHelper.startPage(page, size);
@@ -410,6 +410,26 @@ public class PetServiceImpl implements PetService {
     @Override
     public PetDetailVo getPetDetailForAdmin(Long petId) {
         return getPetDetail(petId, null);
+    }
+
+    @CacheEvict(allEntries = true)
+    @Override
+    @Transactional
+    public void batchUpdateStatus(List<Long> ids, String status) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请选择至少一个宠物");
+        }
+        petInfoMapper.batchUpdateStatus(ids, status);
+    }
+
+    @CacheEvict(allEntries = true)
+    @Override
+    @Transactional
+    public void batchDelete(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请选择至少一个宠物");
+        }
+        petInfoMapper.batchDelete(ids);
     }
 
     // ========== 私有转换方法 ==========

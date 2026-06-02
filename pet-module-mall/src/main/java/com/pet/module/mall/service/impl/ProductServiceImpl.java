@@ -36,11 +36,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    @Cacheable(key = "'list:' + #categoryId")
+    @Cacheable(key = "'list:' + #categoryId + ':' + #keyword + ':' + #status + ':' + #page + ':' + #size")
     @Override
-    public List<ProductListVo> getProductList(Long categoryId, int page, int size) {
+    public List<ProductListVo> getProductList(Long categoryId, String keyword, Integer status, int page, int size) {
         PageHelper.startPage(page, size);
-        List<MallProduct> list = mallProductMapper.selectPage(categoryId);
+        List<MallProduct> list = mallProductMapper.selectPage(categoryId, keyword, status);
         return list.stream().map(this::convertToListVo).collect(Collectors.toList());
     }
 
@@ -105,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
         }
         MallProduct update = new MallProduct();
         update.setId(id);
-        update.setStatus(product.getStatus() == 0 ? 1 : 0);
+        update.setStatus(Integer.valueOf(0).equals(product.getStatus()) ? 1 : 0);
         mallProductMapper.updateById(update);
     }
 

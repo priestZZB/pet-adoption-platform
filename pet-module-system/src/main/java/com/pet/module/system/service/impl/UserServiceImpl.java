@@ -204,7 +204,7 @@ public class UserServiceImpl implements UserService {
             // 用户不存在时记录失败，防止枚举用户名
             recordLoginFailure(loginIdentity);
         }
-        if (user.getStatus() == 0) {
+        if (Integer.valueOf(0).equals(user.getStatus())) {
             throw new BusinessException(ResultCodeEnum.USER_DISABLED);
         }
         if (!encoder.matches(dto.getPassword(), user.getPassword())) {
@@ -241,7 +241,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.USER_NOT_FOUND, "用户不存在，请先注册");
         }
-        if (user.getStatus() == 0) {
+        if (Integer.valueOf(0).equals(user.getStatus())) {
             throw new BusinessException(ResultCodeEnum.USER_DISABLED);
         }
 
@@ -507,11 +507,11 @@ public class UserServiceImpl implements UserService {
         }
         SysUser update = new SysUser();
         update.setId(targetUserId);
-        update.setStatus(user.getStatus() == 0 ? 1 : 0);
+        update.setStatus(Integer.valueOf(0).equals(user.getStatus()) ? 1 : 0);
         userMapper.updateById(update);
 
         // 管理员启用用户时，清除违禁记录
-        if (user.getStatus() == 0) {
+        if (Integer.valueOf(0).equals(user.getStatus())) {
             redisTemplate.delete("chat:violations:" + targetUserId);
         }
     }
@@ -596,5 +596,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<SysUser> getDonorApplies() {
         return userMapper.selectDonorApplies();
+    }
+
+    @Override
+    @Transactional
+    public void batchToggleStatus(Long operatorId, List<Long> ids, String action) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.PARAM_MISSING, "请选择至少一个用户");
+        }
+        // 自动排除操作员自己，避免误操作
+        ids.removeIf(id -> id.equals(operatorId));
+        if (ids.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.BAD_REQUEST, "所选用户仅包含自己，无法操作");
+        }
+        int status;
+        if ("enable".equals(action)) {
+            status = 1;
+        } else if ("disable".equals(action)) {
+            status = 0;
+        } else {
+            throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "action 必须是 enable 或 disable");
+        }
+        userMapper.batchUpdateStatus(ids, status);
     }
 }

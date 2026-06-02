@@ -1,6 +1,9 @@
 <template>
   <div class="admin-page">
-    <h3 class="page-title">订单管理</h3>
+    <div class="page-header">
+      <h3 class="page-title">订单管理</h3>
+      <el-button @click="handleExport">导出CSV</el-button>
+    </div>
 
     <el-card>
       <div class="toolbar">
@@ -133,6 +136,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { getAllOrders, getAdminOrderDetail, shipOrder } from '@/api/admin'
 import { ORDER_STATUS } from '@/utils/constants'
+import { exportToCSV } from '@/utils/export'
 import Pagination from '@/components/Pagination.vue'
 import { useSelectAutoClose } from '@/composables/useSelectAutoClose'
 const { setSelectRef, onSelectVisible, cleanupSelectAutoClose } = useSelectAutoClose()
@@ -174,6 +178,24 @@ async function loadList() {
 }
 
 function onPageChange({ page: p, size: s }) { page.value = p; size.value = s; loadList() }
+
+async function handleExport() {
+  try {
+    const params = { page: 1, size: 999999 }
+    if (statusFilter.value) params.status = statusFilter.value
+    const res = await getAllOrders(params)
+    const data = (res.list || []).map(r => ({
+      '订单号': r.orderNo,
+      '收货人': r.receiverName,
+      '金额': r.totalAmount,
+      '状态': ORDER_STATUS[r.status]?.label || r.status,
+      '物流单号': r.logisticsNo || '',
+      '下单时间': r.createdAt
+    }))
+    exportToCSV(data, '订单列表.csv')
+    ElMessage.success('导出成功')
+  } catch { ElMessage.error('导出失败') }
+}
 
 const COURIER_PREFIX = {
   '顺丰快递': 'SF', '圆通快递': 'YT', '申通快递': 'STO',
@@ -235,7 +257,8 @@ onUnmounted(cleanupSelectAutoClose)
 
 <style scoped>
 .admin-page { max-width: 1100px; }
-.page-title { font-size: 20px; color: #303133; margin: 0 0 20px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-title { margin: 0; font-size: 20px; color: #303133; }
 .toolbar { margin-bottom: 16px; }
 .img-xs { width: 50px; height: 50px; background: #f5f7fa; border-radius: 4px; }
 .loading-center { display: flex; justify-content: center; padding: 20px 0; }
