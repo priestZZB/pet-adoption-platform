@@ -125,7 +125,7 @@ pet:
 
   # -------- 全站维护模式 --------
   maintenance:
-    enabled: true
+    enabled: false
 
   # -------- CORS 跨域 --------
   cors:
