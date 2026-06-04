@@ -81,7 +81,7 @@
                 <input type="checkbox" v-model="agreed" class="agree-check" />
                 <span class="agree-text">已阅读并同意</span>
               </label>
-              <span class="agree-sep" style="margin:0 4px">|</span>
+              <span class="agree-sep agree-sep--lead">|</span>
               <span class="agree-links">
                 <a href="javascript:void(0)" @click="showLegal('privacy')">隐私政策</a>
                 <span class="agree-sep">|</span>
@@ -133,7 +133,7 @@
                 <input type="checkbox" v-model="agreed" class="agree-check" />
                 <span class="agree-text">已阅读并同意</span>
               </label>
-              <span class="agree-sep" style="margin:0 4px">|</span>
+              <span class="agree-sep agree-sep--lead">|</span>
               <span class="agree-links">
                 <a href="javascript:void(0)" @click="showLegal('privacy')">隐私政策</a>
                 <span class="agree-sep">|</span>
@@ -216,7 +216,6 @@ onMounted(() => {
   showLoginReason()
 })
 
-// 监听路由参数变化（已在登录页时被重定向过来也能显示）
 watch(() => route.query.reason, (nv) => {
   if (nv) showLoginReason()
 })
@@ -247,7 +246,6 @@ function loadHistory() {
   } catch { historyList.value = [] }
 }
 function saveHistory(username) {
-  // 先重新加载 localStorage，确保拿到最新的历史数据
   loadHistory()
   let list = [username]
   for (const h of historyList.value) {
@@ -273,7 +271,7 @@ function removeHistory(index) {
 function selectHistory(value) {
   if (loginTab.value === 'username') {
     loginForm.username = value
-    loginForm.password = ''  // 切换账号时清空密码
+    loginForm.password = ''
   } else {
     phoneForm.phone = value
   }
@@ -367,7 +365,7 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   height: 100%;
 }
 
-/* 遮罩 — 深色半透明渐变，让文字更清晰 */
+/* 遮罩 — 深色半透明渐变 */
 .banner-overlay {
   position: absolute;
   inset: 0;
@@ -481,8 +479,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .agree-links a:hover { color: #5a4a42; text-decoration: underline; }
 .agree-label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
 .agree-check { width: 14px; height: 14px; cursor: pointer; accent-color: #8ab8a0; }
-.agree-links a { color: #8ab8a0; text-decoration: none; }
-.agree-links a:hover { color: #5a4a42; text-decoration: underline; }
 .agree-sep { color: #d1e7dd; }
 
 .switch-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-top: 6px; }
@@ -517,7 +513,7 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 
 /* ====== 响应式适配 ====== */
 @media (max-width: 767px) {
-  /* 品牌条缩小 */
+  /* === 品牌条 === */
   .brand-bar {
     padding: 10px 0;
   }
@@ -528,7 +524,7 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   .brand-logo {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 10px;
   }
   .brand-name {
     font-size: 18px;
@@ -537,52 +533,184 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
     font-size: 12px;
   }
 
-  /* 轮播区：取消 aspect-ratio，改为 flex 堆叠 */
+  /* === 轮播区：分离式堆叠布局 === */
   .banner-section {
-    aspect-ratio: auto;
+    all: unset;
     display: flex;
     flex-direction: column;
-    margin: 12px 12px 0;
-    max-width: 100%;
+    width: 100%;
+    margin: 0;
   }
   .banner-carousel-bg {
     position: relative;
+    width: 100%;
     aspect-ratio: 16 / 9;
-    height: auto;
-    border-radius: 10px;
+    border-radius: 0;
     overflow: hidden;
   }
   .banner-overlay {
     display: none;
   }
 
-  /* 登录卡：从绝对定位浮层 → 居中卡片 */
+  /* === 登录卡：独立卡片，不覆盖轮播 === */
   .login-overlay {
-    position: relative;
-    top: auto;
-    right: auto;
+    position: static;
     transform: none;
-    margin-top: 16px;
-    padding: 0;
+    margin: 0;
+    padding: 16px 14px;
+    z-index: auto;
   }
   .login-card {
     width: 100%;
     max-width: 100%;
-    padding: 16px 20px 12px;
-    border-radius: 12px;
+    padding: 24px 20px 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    background: #fefaf5;
+    border: 1px solid #d1e7dd;
   }
 
-  /* 公告区域 */
+  /* === Tab 按钮：更大的触摸区域 === */
+  .sub-tabs {
+    margin-bottom: 16px;
+  }
+  .st {
+    padding: 12px 0 10px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  /* === 表单触屏优化 === */
+  .login-card :deep(.el-input__wrapper) {
+    height: 44px;
+    border-radius: 10px;
+  }
+  .login-card :deep(.el-input__inner) {
+    font-size: 16px;
+  }
+  .login-card :deep(.el-input__prefix) {
+    font-size: 16px;
+  }
+  .login-card :deep(.el-form-item) {
+    padding-bottom: 16px;
+  }
+  .login-card :deep(.el-form-item__error) {
+    font-size: 12px;
+    bottom: 0;
+  }
+
+  .login-btn {
+    height: 46px;
+    font-size: 16px;
+    border-radius: 10px;
+    letter-spacing: 2px;
+  }
+
+  .sms-row {
+    gap: 10px;
+  }
+  .sms-btn {
+    height: 44px;
+    min-width: 96px;
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 0 10px;
+  }
+
+  /* === 协议行：复选框在上，链接换行 === */
+  .agree-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .agree-check {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .agree-text {
+    font-size: 13px;
+  }
+  .agree-sep--lead {
+    display: none;
+  }
+  .agree-links {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    line-height: 1.8;
+    padding-left: 20px;
+  }
+  .agree-links a {
+    font-size: 12px;
+    padding: 2px 2px;
+  }
+  .agree-sep {
+    margin: 0 1px;
+  }
+
+  .switch-row {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .switch-row .link {
+    font-size: 14px;
+  }
+  .register-row {
+    font-size: 14px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .register-row .link {
+    font-size: 14px;
+  }
+
+  /* === 公告区域 === */
   .notice-area {
-    padding: 16px 12px 60px;
+    padding: 0 14px 90px;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .notice-inner {
-    padding: 14px 16px;
+    padding: 16px;
     max-width: 100%;
-    border-radius: 12px;
+    border-radius: 14px;
+    margin: 0;
   }
   .notice-card {
-    padding: 6px 0;
+    padding: 8px 0;
+  }
+  .nc-text {
+    font-size: 13px;
+  }
+  .nc-time {
+    font-size: 11px;
+  }
+  .n-label {
+    font-size: 13px;
+  }
+  .n-more {
+    font-size: 12px;
+  }
+
+  /* 弹窗适配窄屏 */
+  :deep(.el-dialog) {
+    width: 92% !important;
+    border-radius: 14px;
+  }
+  :deep(.el-dialog__header) {
+    padding: 16px 16px 10px;
+  }
+  :deep(.el-dialog__body) {
+    padding: 6px 16px 20px;
   }
 }
 

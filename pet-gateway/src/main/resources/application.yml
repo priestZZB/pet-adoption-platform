@@ -13,5 +13,5 @@
 
 spring:
   profiles:
-    active: prod
+    active: dev
     include: secret
