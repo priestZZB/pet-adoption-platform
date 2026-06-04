@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getBanners, addBanner, updateBanner, deleteBanner } from '@/api/admin'
 import MobileCard from '../../components/MobileCard.vue'
@@ -39,8 +39,6 @@ async function handleSave() {
   } catch {}
 }
 async function handleDelete(id) { try { await ElMessageBox.confirm('确定删除？'); await deleteBanner(id); ElMessage.success('已删除'); loadData() } catch {} }
-
-import { onMounted } from 'vue'
 onMounted(loadData)
 </script>
 

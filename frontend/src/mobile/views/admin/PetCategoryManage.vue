@@ -18,7 +18,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getCategories, addPetCategory, updatePetCategory, deletePetCategory } from '@/api/pet'
+import { getCategories } from '@/api/pet'
+import { addPetCategory, updatePetCategory, deletePetCategory } from '@/api/admin'
 import MobileCard from '../../components/MobileCard.vue'
 import MobileEmpty from '../../components/MobileEmpty.vue'
 import MobileDialog from '../../components/MobileDialog.vue'

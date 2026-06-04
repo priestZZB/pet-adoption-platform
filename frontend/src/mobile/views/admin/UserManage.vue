@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getUserList, toggleUserStatus } from '@/api/admin'
 import MobileCard from '../../components/MobileCard.vue'
@@ -32,8 +32,6 @@ async function loadMore() { page.value++; await loadData(false) }
 async function toggleStatus(u) {
   try { await toggleUserStatus(u.id); u.status = u.status === 1 ? 0 : 1; ElMessage.success('已更新') } catch {}
 }
-
-import { onMounted } from 'vue'
 onMounted(() => loadData(true))
 </script>
 

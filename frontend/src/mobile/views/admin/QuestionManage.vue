@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getQuestions, addQuestion, updateQuestion, deleteQuestion } from '@/api/admin'
 import MobileCard from '../../components/MobileCard.vue'
@@ -47,8 +47,6 @@ async function handleSave() {
   } catch {}
 }
 async function handleDelete(id) { try { await ElMessageBox.confirm('确定删除？'); await deleteQuestion(id); ElMessage.success('已删除'); loadData(true) } catch {} }
-
-import { onMounted } from 'vue'
 onMounted(() => loadData(true))
 </script>
 

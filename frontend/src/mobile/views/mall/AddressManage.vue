@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAddressList, addAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/api/mall'
 import MobileCard from '../../components/MobileCard.vue'
@@ -66,8 +66,6 @@ async function setDefault(id) { try { await setDefaultAddress(id); ElMessage.suc
 async function handleDelete(id) {
   try { await ElMessageBox.confirm('确定删除？', '提示'); await deleteAddress(id); ElMessage.success('已删除'); loadAddresses() } catch {}
 }
-
-import { onMounted } from 'vue'
 onMounted(loadAddresses)
 </script>
 

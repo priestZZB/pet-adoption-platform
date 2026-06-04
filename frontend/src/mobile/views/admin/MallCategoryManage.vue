@@ -16,9 +16,10 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMallCategories, addMallCategory, updateMallCategory, deleteMallCategory } from '@/api/mall'
+import { getMallCategories } from '@/api/mall'
+import { addMallCategory, updateMallCategory, deleteMallCategory } from '@/api/admin'
 import MobileCard from '../../components/MobileCard.vue'
 import MobileEmpty from '../../components/MobileEmpty.vue'
 import MobileDialog from '../../components/MobileDialog.vue'
@@ -36,8 +37,6 @@ async function handleSave() {
   } catch {}
 }
 async function handleDelete(id) { try { await ElMessageBox.confirm('确定删除？'); await deleteMallCategory(id); ElMessage.success('已删除'); loadData() } catch {} }
-
-import { onMounted } from 'vue'
 onMounted(loadData)
 </script>
 

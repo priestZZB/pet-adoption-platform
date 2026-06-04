@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { addReview } from '@/api/review'
@@ -43,8 +43,6 @@ const product = ref(null)
 const rating = ref(0)
 const content = ref('')
 const submitting = ref(false)
-
-import { onMounted } from 'vue'
 onMounted(async () => {
   try { product.value = await getMallProductDetail(route.params.id) } catch {}
 })
