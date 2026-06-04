@@ -2,20 +2,19 @@
   <div class="auth-page">
     <div class="auth-bg"></div>
 
-    <!-- ===== 品牌条（顶部，暖色背景全宽）===== -->
+    <!-- ===== 品牌条 ===== -->
     <div class="brand-bar">
       <div class="brand-row">
         <img src="/images/logo.jpg" class="brand-logo" />
         <div>
           <div class="brand-name">有宠</div>
-          <div class="brand-slogan">用领养代替购买 ❤️</div>
+          <div class="brand-slogan">用领养代替购买</div>
         </div>
       </div>
     </div>
 
     <!-- ===== 轮播满宽区（含浮层登录卡）===== -->
     <div class="banner-section">
-      <!-- 轮播背景 -->
       <div class="banner-carousel-bg">
         <el-carousel
           class="login-carousel"
@@ -32,14 +31,9 @@
           </el-carousel-item>
         </el-carousel>
       </div>
-
-      <!-- 遮罩 -->
       <div class="banner-overlay"></div>
-
-      <!-- 登录卡（浮在轮播上方，居中）-->
       <div class="login-overlay">
         <div class="login-card">
-          <!-- 子标签 -->
           <div class="sub-tabs">
             <button :class="['st', { active: loginTab === 'username' }]" @click="loginTab = 'username'">密码登录</button>
             <button :class="['st', { active: loginTab === 'phone' }]" @click="loginTab = 'phone'">短信登录</button>
@@ -48,7 +42,7 @@
           <el-form v-show="loginTab === 'username'" ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0" size="large" @keyup.enter="handleLogin">
             <el-form-item prop="username" class="username-item">
               <div class="i-wrap">
-                <el-input v-model="loginForm.username" placeholder="请输入用户名或手机号" @focus="showHistory" @blur="hideHistoryDelay">
+                <el-input v-model="loginForm.username" placeholder="用户名或手机号" @focus="showHistory" @blur="hideHistoryDelay">
                   <template #prefix><i class="fas fa-user"></i></template>
                 </el-input>
                 <div v-if="historyVisible && historyList.length > 0" class="history-dropdown">
@@ -64,7 +58,7 @@
             </el-form-item>
             <el-form-item prop="password" class="password-item">
               <div class="i-wrap">
-                <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password>
+                <el-input v-model="loginForm.password" type="password" placeholder="密码" show-password>
                   <template #prefix><i class="fas fa-lock"></i></template>
                 </el-input>
               </div>
@@ -93,8 +87,8 @@
               </span>
             </div>
             <div class="switch-row">
-              <span class="link" @click="loginTab = 'phone'">使用手机号登录 ›</span>
-              <router-link to="/reset-password" class="link">忘记密码？</router-link>
+              <span class="link" @click="loginTab = 'phone'">手机号登录</span>
+              <router-link to="/reset-password" class="link">忘记密码</router-link>
             </div>
             <div class="register-row">
               还没有账号？<router-link to="/register" class="link">立即注册</router-link>
@@ -104,7 +98,7 @@
           <el-form v-show="loginTab === 'phone'" ref="phoneFormRef" :model="phoneForm" :rules="phoneRules" label-width="0" size="large" @keyup.enter="handlePhoneLogin">
             <el-form-item prop="phone">
               <div class="i-wrap">
-                <el-input v-model="phoneForm.phone" placeholder="请输入手机号" maxlength="11" @focus="showHistory" @blur="hideHistoryDelay">
+                <el-input v-model="phoneForm.phone" placeholder="手机号" maxlength="11" @focus="showHistory" @blur="hideHistoryDelay">
                   <template #prefix><i class="fas fa-phone"></i></template>
                 </el-input>
               </div>
@@ -113,11 +107,11 @@
               <div class="sms-row">
                 <div class="flex-1 i-wrap">
                   <el-input v-model="phoneForm.smsCode" placeholder="6位验证码" maxlength="6">
-                    <template #prefix><i class="fas fa-lock"></i></template>
+                    <template #prefix><i class="fas fa-shield-alt"></i></template>
                   </el-input>
                 </div>
                 <button type="button" class="sms-btn" :disabled="smsSending || smsCountdown > 0" @click="handleSendSms">
-                  {{ smsCountdown > 0 ? smsCountdown + 's' : (smsSending ? '发送中…' : '获取验证码') }}
+                  {{ smsCountdown > 0 ? smsCountdown + 's' : (smsSending ? '发送中' : '获取验证码') }}
                 </button>
               </div>
             </el-form-item>
@@ -145,8 +139,8 @@
               </span>
             </div>
             <div class="switch-row">
-              <span class="link" @click="loginTab = 'username'">使用密码登录 ›</span>
-              <router-link to="/reset-password" class="link">忘记密码？</router-link>
+              <span class="link" @click="loginTab = 'username'">密码登录</span>
+              <router-link to="/reset-password" class="link">忘记密码</router-link>
             </div>
             <div class="register-row">
               还没有账号？<router-link to="/register" class="link">立即注册</router-link>
@@ -156,13 +150,13 @@
       </div>
     </div>
 
-    <!-- ===== 公告区域（在轮播下方）===== -->
+    <!-- ===== 公告区域 ===== -->
     <div class="notice-area">
       <div class="notice-inner">
         <div class="notice-head" v-if="notices.length > 0">
           <span class="n-icon">📢</span>
           <span class="n-label">平台公告</span>
-          <span class="n-more" @click="showAllNotices">查看全部 ›</span>
+          <span class="n-more" @click="showAllNotices">查看全部</span>
         </div>
         <div class="notice-grid" v-if="notices.length > 0">
           <div class="notice-card" v-for="(item, idx) in notices.slice(0, 4)" :key="idx" @click="showNoticeDetail(item)">
@@ -323,6 +317,9 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 </script>
 
 <style scoped>
+/* ==========================================
+   桌面端样式（保持不变）
+   ========================================== */
 .auth-page {
   width: 100%;
   min-height: 100vh;
@@ -336,7 +333,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   background: linear-gradient(135deg, rgba(247,241,229,0.78) 0%, rgba(254,250,245,0.88) 100%), url('/images/bg.png') center/cover no-repeat;
 }
 
-/* ===== 轮播满宽区 ===== */
 .banner-section {
   position: relative;
   width: 100%;
@@ -346,8 +342,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   overflow: hidden;
   border-radius: 12px;
 }
-
-/* 轮播背景 — 填满 banner-section */
 .banner-carousel-bg {
   position: absolute;
   inset: 0;
@@ -364,8 +358,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   width: 100%;
   height: 100%;
 }
-
-/* 遮罩 — 深色半透明渐变 */
 .banner-overlay {
   position: absolute;
   inset: 0;
@@ -374,7 +366,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   pointer-events: none;
 }
 
-/* ===== 品牌条（顶部全宽暖色背景）===== */
 .brand-bar {
   position: relative;
   z-index: 2;
@@ -408,7 +399,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   margin-top: 2px;
 }
 
-/* ===== 登录浮层卡（靠右）===== */
 .login-overlay {
   position: absolute;
   top: 50%;
@@ -489,7 +479,6 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .register-row .link { color: #8ab8a0; text-decoration: none; font-weight: 500; }
 .register-row .link:hover { color: #5a4a42; text-decoration: underline; }
 
-/* 历史账号下拉 */
 .history-dropdown {
   position: absolute;
   top: 100%;
@@ -511,210 +500,9 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .history-x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 12px; color: #c0b8a8; transition: all 0.15s; flex-shrink: 0; }
 .history-x:hover { color: #fff; background: #e8564a; }
 
-/* ====== 响应式适配 ====== */
-@media (max-width: 767px) {
-  /* === 品牌条 === */
-  .brand-bar {
-    padding: 10px 0;
-  }
-  .brand-row {
-    padding: 0 16px;
-    gap: 10px;
-  }
-  .brand-logo {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-  }
-  .brand-name {
-    font-size: 18px;
-  }
-  .brand-slogan {
-    font-size: 12px;
-  }
-
-  /* === 轮播区：分离式堆叠布局 === */
-  .banner-section {
-    all: unset;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin: 0;
-  }
-  .banner-carousel-bg {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 0;
-    overflow: hidden;
-  }
-  .banner-overlay {
-    display: none;
-  }
-
-  /* === 登录卡：独立卡片，不覆盖轮播 === */
-  .login-overlay {
-    position: static;
-    transform: none;
-    margin: 0;
-    padding: 16px 14px;
-    z-index: auto;
-  }
-  .login-card {
-    width: 100%;
-    max-width: 100%;
-    padding: 24px 20px 20px;
-    border-radius: 16px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-    background: #fefaf5;
-    border: 1px solid #d1e7dd;
-  }
-
-  /* === Tab 按钮：更大的触摸区域 === */
-  .sub-tabs {
-    margin-bottom: 16px;
-  }
-  .st {
-    padding: 12px 0 10px;
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  /* === 表单触屏优化 === */
-  .login-card :deep(.el-input__wrapper) {
-    height: 44px;
-    border-radius: 10px;
-  }
-  .login-card :deep(.el-input__inner) {
-    font-size: 16px;
-  }
-  .login-card :deep(.el-input__prefix) {
-    font-size: 16px;
-  }
-  .login-card :deep(.el-form-item) {
-    padding-bottom: 16px;
-  }
-  .login-card :deep(.el-form-item__error) {
-    font-size: 12px;
-    bottom: 0;
-  }
-
-  .login-btn {
-    height: 46px;
-    font-size: 16px;
-    border-radius: 10px;
-    letter-spacing: 2px;
-  }
-
-  .sms-row {
-    gap: 10px;
-  }
-  .sms-btn {
-    height: 44px;
-    min-width: 96px;
-    font-size: 13px;
-    border-radius: 10px;
-    padding: 0 10px;
-  }
-
-  /* === 协议行：复选框在上，链接换行 === */
-  .agree-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 2px;
-    margin-bottom: 6px;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .agree-check {
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-  .agree-text {
-    font-size: 13px;
-  }
-  .agree-sep--lead {
-    display: none;
-  }
-  .agree-links {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 2px;
-    font-size: 12px;
-    line-height: 1.8;
-    padding-left: 20px;
-  }
-  .agree-links a {
-    font-size: 12px;
-    padding: 2px 2px;
-  }
-  .agree-sep {
-    margin: 0 1px;
-  }
-
-  .switch-row {
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  .switch-row .link {
-    font-size: 14px;
-  }
-  .register-row {
-    font-size: 14px;
-    margin-top: 12px;
-    padding-top: 12px;
-  }
-  .register-row .link {
-    font-size: 14px;
-  }
-
-  /* === 公告区域 === */
-  .notice-area {
-    padding: 0 14px 90px;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  .notice-inner {
-    padding: 16px;
-    max-width: 100%;
-    border-radius: 14px;
-    margin: 0;
-  }
-  .notice-card {
-    padding: 8px 0;
-  }
-  .nc-text {
-    font-size: 13px;
-  }
-  .nc-time {
-    font-size: 11px;
-  }
-  .n-label {
-    font-size: 13px;
-  }
-  .n-more {
-    font-size: 12px;
-  }
-
-  /* 弹窗适配窄屏 */
-  :deep(.el-dialog) {
-    width: 92% !important;
-    border-radius: 14px;
-  }
-  :deep(.el-dialog__header) {
-    padding: 16px 16px 10px;
-  }
-  :deep(.el-dialog__body) {
-    padding: 6px 16px 20px;
-  }
-}
-
-/* ===== 公告区域（跟轮播等宽）===== */
+/* ==========================================
+   公告区域（桌面端）
+   ========================================== */
 .notice-area {
   position: relative;
   z-index: 1;
@@ -747,8 +535,256 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 
 .notice-body { white-space: pre-wrap; font-size: 14px; color: #606266; line-height: 1.8; }
 
-/* ===== 全局 El-Dialog 覆盖（登录页用）===== */
 :deep(.el-dialog) { border-radius: 16px; }
 :deep(.el-dialog__header) { margin: 0; padding: 18px 20px 12px; }
 :deep(.el-dialog__title) { font-size: 17px; }
+
+/* ==========================================
+   移动端 — 完整重构，保持桌面端暖色风格
+   ========================================== */
+@media (max-width: 767px) {
+  /* === 品牌条 === */
+  .brand-bar {
+    padding: 10px 0;
+  }
+  .brand-row {
+    padding: 0 16px;
+    gap: 10px;
+  }
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .brand-name {
+    font-size: 18px;
+  }
+  .brand-slogan {
+    font-size: 12px;
+  }
+
+  /* === 轮播区 === */
+  .banner-section {
+    all: unset;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .banner-carousel-bg {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  /* 移动端保留深色遮罩，与桌面端氛围一致 */
+  .banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    max-height: calc(100vw * 9 / 16);
+    background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.05) 100%);
+  }
+
+  /* === 登录卡 === */
+  .login-overlay {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    margin: 0;
+    padding: 0 16px;
+    z-index: 2;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 100%;
+    margin-top: -20px;
+    padding: 22px 20px 20px;
+    border-radius: 16px;
+    /* 移动端也保持毛玻璃效果 */
+    background: rgba(254, 250, 245, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+      0 -2px 10px rgba(0, 0, 0, 0.04),
+      0 8px 32px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* === Tab 按钮 === */
+  .sub-tabs {
+    margin-bottom: 18px;
+  }
+  .st {
+    padding: 12px 0 10px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* === 表单元素 === */
+  .login-card :deep(.el-input__wrapper) {
+    height: 46px;
+    border-radius: 10px;
+    box-shadow: none !important;
+  }
+  .login-card :deep(.el-input__inner) {
+    font-size: 15px;
+  }
+  .login-card :deep(.el-input__prefix) {
+    font-size: 16px;
+  }
+  .login-card :deep(.el-form-item) {
+    padding-bottom: 16px;
+  }
+  .login-card :deep(.el-form-item__error) {
+    font-size: 12px;
+    bottom: 0;
+  }
+
+  /* 登录按钮 — 暖色系，与桌面端品牌色呼应 */
+  .login-btn {
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #c19a6b 0%, #b0895a 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(177, 137, 90, 0.3);
+    transition: all 0.25s;
+  }
+  .login-btn:hover {
+    background: linear-gradient(135deg, #b0895a 0%, #a07848 100%);
+    box-shadow: 0 6px 20px rgba(177, 137, 90, 0.4);
+    transform: translateY(-1px);
+  }
+  .login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(177, 137, 90, 0.25);
+  }
+  .login-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* 短信行 */
+  .sms-row {
+    gap: 10px;
+  }
+  .sms-btn {
+    height: 46px;
+    min-width: 100px;
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 0 12px;
+  }
+
+  /* === 协议行 === */
+  .agree-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .agree-check {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .agree-text {
+    font-size: 13px;
+  }
+  .agree-sep--lead {
+    display: none;
+  }
+  .agree-links {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 2px;
+    font-size: 12.5px;
+    line-height: 1.8;
+    padding-left: 20px;
+  }
+  .agree-links a {
+    font-size: 12.5px;
+    padding: 2px 0;
+  }
+  .agree-sep {
+    margin: 0 1px;
+    color: #c8dcd0;
+  }
+
+  .switch-row {
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  .switch-row .link {
+    font-size: 14px;
+  }
+  .register-row {
+    font-size: 14px;
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .register-row .link {
+    font-size: 14px;
+  }
+
+  /* === 公告区域 === */
+  .notice-area {
+    padding: 20px 16px 100px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .notice-inner {
+    padding: 16px;
+    max-width: 100%;
+    border-radius: 14px;
+    margin: 0;
+  }
+  .notice-head {
+    margin-bottom: 10px;
+  }
+  .notice-card {
+    padding: 10px 0;
+  }
+  .nc-text {
+    font-size: 13.5px;
+  }
+  .nc-time {
+    font-size: 11px;
+  }
+  .n-label {
+    font-size: 13.5px;
+  }
+  .n-more {
+    font-size: 12.5px;
+  }
+
+  /* === 弹窗 === */
+  :deep(.el-dialog) {
+    width: 92% !important;
+    border-radius: 14px;
+  }
+  :deep(.el-dialog__header) {
+    padding: 16px 16px 10px;
+  }
+  :deep(.el-dialog__body) {
+    padding: 6px 16px 20px;
+  }
+}
 </style>
