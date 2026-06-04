@@ -222,19 +222,4 @@ onMounted(loadDetail)
 .phone-na { font-size: 14px; color: var(--yc-text-tertiary); }
 .copy-btn { color: var(--yc-accent); font-weight: 500; }
 .copy-btn:hover { opacity: 0.8; }
-
-/* ====== 响应式适配 ====== */
-@media (max-width: 767px) {
-  .app-detail-page {
-    padding: 12px 12px 40px;
-  }
-  .detail-layout {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
-  .detail-right {
-    width: 100%;
-  }
-}
 </style>

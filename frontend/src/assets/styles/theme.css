@@ -79,10 +79,3 @@ html {
   --yc-font-xl: 1.25rem;    /* 20px */
   --yc-font-2xl: 1.5rem;    /* 24px */
 }
-
-/* ====== 移动端基础字体微调 ====== */
-@media (max-width: 767px) {
-  html {
-    font-size: 15px;
-  }
-}

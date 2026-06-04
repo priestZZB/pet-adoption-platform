@@ -240,58 +240,6 @@ onUnmounted(() => {
   z-index: 999;
 }
 
-/* ====== 移动端侧边栏浮层模式 ====== */
-@media (max-width: 767px) {
-  .sidebar-wrap {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 1000;
-    transform: translateX(-100%);
-    transition: transform 0.3s;
-    width: 220px;
-  }
-  .sidebar-wrap.mobile-open {
-    transform: translateX(0);
-  }
-  .sidebar-wrap.collapsed {
-    transform: translateX(-100%);
-  }
-  .content-area {
-    padding: 12px;
-  }
-  .topbar {
-    padding: 0 12px;
-  }
-}
-
-/* ====== 横屏手机适配（侧边栏浮层模式）====== */
-@media (max-height: 500px) {
-  .sidebar-wrap {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 1000;
-    transform: translateX(-100%);
-    transition: transform 0.3s;
-    width: 220px;
-  }
-  .sidebar-wrap.mobile-open {
-    transform: translateX(0);
-  }
-  .sidebar-wrap.collapsed {
-    transform: translateX(-100%);
-  }
-  .content-area {
-    padding: 12px;
-  }
-  .topbar {
-    padding: 0 12px;
-  }
-}
-
 /* 侧边栏菜单激活 - 科技蓝左发光条 */
 .sidebar-wrap :deep(.el-menu-item.is-active) {
   background: rgba(64,158,255,0.08) !important;
@@ -394,48 +342,5 @@ onUnmounted(() => {
 .admin-page .toolbar .el-button--primary {
   background: #409EFF;
   border-color: #409EFF;
-}
-
-/* ====== 移动端后台适配 ====== */
-@media (max-width: 767px) {
-  /* 统计卡片网格 → 自适应列 */
-  .dashboard .stat-grid,
-  .admin-page .stat-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
-    gap: 10px;
-  }
-
-  /* 表格横向滚动 */
-  .admin-page .el-table,
-  .dashboard .el-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  /* 卡片内边距缩小 */
-  .admin-page .el-card__body,
-  .dashboard .el-card__body {
-    padding: 12px;
-  }
-
-  /* 弹窗全屏 */
-  .admin-page .el-dialog {
-    width: 95% !important;
-    max-width: 95vw;
-    margin: 10px auto;
-  }
-
-  /* 工具栏按钮换行 */
-  .admin-page .toolbar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  /* 欢迎卡片 */
-  .dashboard .welcome-card .el-card__body {
-    flex-direction: column;
-    text-align: center;
-  }
 }
 </style>

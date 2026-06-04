@@ -11,9 +11,6 @@
     <!-- 页脚 -->
     <Footer />
 
-    <!-- 移动端底部导航栏 -->
-    <MobileTabBar />
-
     <!-- 浮动AI助手按钮 -->
     <AIChatWidget v-if="userStore.isLogin" />
   </div>
@@ -23,7 +20,6 @@
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
 import AIChatWidget from '@/components/AIChatWidget.vue'
-import MobileTabBar from '@/components/MobileTabBar.vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -50,19 +46,5 @@ const userStore = useUserStore()
 .main-content :deep(.dashboard),
 .main-content :deep(.ai-chat-page) {
   padding-bottom: 0 !important;
-}
-
-/* ====== 移动端适配 ====== */
-@media (max-width: 767px) {
-  .main-content {
-    padding: 60px 12px 72px; /* 顶部导航 + 底部TabBar留白 */
-  }
-}
-
-/* ====== 横屏手机适配 ====== */
-@media (max-height: 500px) {
-  .main-content {
-    padding: 56px 12px 72px;
-  }
 }
 </style>

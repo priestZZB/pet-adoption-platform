@@ -226,19 +226,4 @@ onMounted(loadDetail)
 .toggle-btn:hover { color: var(--yc-accent); }
 .toggle-btn .el-icon { transition: transform 0.2s; margin-left: 4px; }
 .toggle-btn .rotated { transform: rotate(180deg); }
-
-/* ====== 响应式适配 ====== */
-@media (max-width: 767px) {
-  .review-detail-page {
-    padding: 12px 12px 40px;
-  }
-  .detail-layout {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
-  .detail-right {
-    width: 100%;
-  }
-}
 </style>

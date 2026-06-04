@@ -376,33 +376,4 @@ onMounted(async () => { await loadFolders(); await refreshAll() })
 .batch-list { max-height: 300px; overflow-y: auto; }
 .batch-item { padding: 8px 0; }
 .batch-meta { font-size: 12px; color: #999; margin-left: 8px; }
-
-/* ====== 响应式适配 ====== */
-@media (max-width: 767px) {
-  .favorites-page {
-    padding: 12px 12px 40px;
-  }
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
-
-@media (max-width: 639px) {
-  .pet-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .pet-card:hover {
-    transform: none;
-  }
-}
-
-@media (max-width: 420px) {
-  .pet-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-}
 </style>

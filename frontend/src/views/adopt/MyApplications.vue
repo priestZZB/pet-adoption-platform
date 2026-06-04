@@ -175,14 +175,4 @@ onMounted(loadList)
   font-size: 14px;
   color: var(--yc-text-tertiary);
 }
-
-/* ====== 响应式适配 ====== */
-@media (max-width: 767px) {
-  .applications-page {
-    padding: 12px 12px 40px;
-  }
-  .app-content {
-    gap: 10px;
-  }
-}
 </style>

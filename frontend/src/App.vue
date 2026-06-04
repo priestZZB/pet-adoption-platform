@@ -140,12 +140,4 @@ html, body {
   padding: 0;
   background: var(--yc-bg-page);
 }
-
-/* ====== 全局移动端 Dialog 适配 ====== */
-@media (max-width: 767px) {
-  .el-dialog {
-    width: 90% !important;
-    max-width: 95vw !important;
-  }
-}
 </style>

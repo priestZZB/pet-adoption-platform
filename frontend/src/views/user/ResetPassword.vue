@@ -123,16 +123,4 @@ async function handleReset() { const v = await formRef.value.validate().catch(()
 .link { color: #5a4a42; font-weight: 500; text-decoration: none; }
 .link:hover { text-decoration: underline; }
 
-@media (max-width: 800px) { .card-body { flex-direction: column; } .card-right { width: 100%; } }
-
-/* ====== 移动端适配 ====== */
-@media (max-width: 767px) {
-  .main {
-    padding: 12px 12px 40vh; /* 底部留白保证键盘弹出后可滚动 */
-  }
-  .card {
-    padding: 16px;
-    border-radius: 14px;
-  }
-}
 </style>

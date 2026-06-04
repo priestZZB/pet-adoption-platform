@@ -1,0 +1,43 @@
+<template>
+  <div class="page">
+    <div v-if="loading" class="loading-wrap"><i class="fas fa-spinner fa-pulse"></i></div>
+    <MobileEmpty v-else-if="list.length === 0" icon="fas fa-paw" description="暂无发布的宠物" action-label="发布送养" @action="$router.push('/donate/publish')" />
+    <div v-else class="list">
+      <MobileCard v-for="pet in list" :key="pet.id" class="item" clickable @click="goDetail(pet.id)">
+        <div class="pet-row">
+          <img :src="pet.coverImage" class="pet-img" />
+          <div class="pet-info">
+            <h4>{{ pet.name }}</h4>
+            <p>{{ pet.breed }} · {{ pet.age }}</p>
+            <span class="pet-status">{{ pet.status || '审核中' }}</span>
+          </div>
+        </div>
+      </MobileCard>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getMyPets } from '@/api/pet'
+import MobileCard from '../../components/MobileCard.vue'
+import MobileEmpty from '../../components/MobileEmpty.vue'
+
+const router = useRouter()
+const list = ref([]); const loading = ref(true)
+
+onMounted(async () => { try { list.value = await getMyPets() } catch {} finally { loading.value = false } })
+function goDetail(id) { router.push('/donate/detail/' + id) }
+</script>
+
+<style scoped>
+.page { padding: 12px 16px 40px; }
+.loading-wrap { display: flex; justify-content: center; padding: 80px 0; font-size: 28px; color: #d1e7dd; }
+.item { margin-bottom: 10px; }
+.pet-row { display: flex; gap: 10px; align-items: center; }
+.pet-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.pet-info h4 { font-size: 15px; font-weight: 600; color: #5a4a42; margin: 0 0 2px; }
+.pet-info p { font-size: 13px; color: #a09080; margin: 0 0 4px; }
+.pet-status { font-size: 12px; color: #8ab8a0; font-weight: 500; }
+</style>

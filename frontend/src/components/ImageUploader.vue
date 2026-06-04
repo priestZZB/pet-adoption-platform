@@ -99,24 +99,4 @@ if (props.fileList.length && urls.value.length === 0) {
 :deep(.el-upload-list--picture-card .el-upload-list__item-status-label) {
   display: none;
 }
-
-/* ====== 移动端适配 ====== */
-@media (max-width: 479px) {
-  .image-uploader :deep(.el-upload--picture-card) {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1;
-    min-height: 120px;
-  }
-  .image-uploader :deep(.el-upload-list--picture-card .el-upload-list__item) {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1;
-  }
-  .image-uploader :deep(.el-upload-list) {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-}
 </style>

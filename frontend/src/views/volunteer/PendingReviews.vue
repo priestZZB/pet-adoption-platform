@@ -218,23 +218,4 @@ onMounted(loadList)
   flex-shrink: 0;
   width: 100px;
 }
-
-/* ====== 响应式适配 ====== */
-@media (max-width: 767px) {
-  .pending-page {
-    padding: 12px 12px 40px;
-  }
-  .pet-content {
-    gap: 10px;
-  }
-  .pet-actions {
-    width: 80px;
-  }
-  .pet-header h4 {
-    font-size: 14px;
-  }
-  .pet-meta {
-    font-size: 12px;
-  }
-}
 </style>
