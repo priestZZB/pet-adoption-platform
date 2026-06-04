@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-bg"></div>
 
-    <!-- ===== 品牌条 ===== -->
+    <!-- 品牌条 -->
     <div class="brand-bar">
       <div class="brand-row">
         <img src="/images/logo.jpg" class="brand-logo" />
@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <!-- ===== 轮播满宽区（含浮层登录卡）===== -->
+    <!-- 轮播 + 登录卡 -->
     <div class="banner-section">
       <div class="banner-carousel-bg">
         <el-carousel
@@ -150,7 +150,7 @@
       </div>
     </div>
 
-    <!-- ===== 公告区域 ===== -->
+    <!-- 公告区域 -->
     <div class="notice-area">
       <div class="notice-inner">
         <div class="notice-head" v-if="notices.length > 0">
@@ -317,9 +317,9 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 </script>
 
 <style scoped>
-/* ==========================================
-   桌面端样式（保持不变）
-   ========================================== */
+/* ==============================================
+   桌面端 — 原样保留，一行不改
+   ============================================== */
 .auth-page {
   width: 100%;
   min-height: 100vh;
@@ -500,9 +500,7 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 .history-x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 12px; color: #c0b8a8; transition: all 0.15s; flex-shrink: 0; }
 .history-x:hover { color: #fff; background: #e8564a; }
 
-/* ==========================================
-   公告区域（桌面端）
-   ========================================== */
+/* 公告区域（桌面） */
 .notice-area {
   position: relative;
   z-index: 1;
@@ -539,13 +537,27 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
 :deep(.el-dialog__header) { margin: 0; padding: 18px 20px 12px; }
 :deep(.el-dialog__title) { font-size: 17px; }
 
-/* ==========================================
-   移动端 — 完整重构，保持桌面端暖色风格
-   ========================================== */
+/* ==============================================
+   移动端 — 完全重写，不复用桌面端布局
+   风格与桌面端一致（暖色系、豆沙绿、毛玻璃）
+   ============================================== */
 @media (max-width: 767px) {
-  /* === 品牌条 === */
+  /* -- 全局重置 -- */
+  .auth-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .auth-bg {
+    background: linear-gradient(180deg, rgba(247,241,229,0.9) 0%, rgba(254,250,245,0.95) 100%), url('/images/bg.png') center/cover no-repeat;
+  }
+
+  /* -- 品牌条 -- */
   .brand-bar {
-    padding: 10px 0;
+    width: 100%;
+    padding: 12px 0;
   }
   .brand-row {
     padding: 0 16px;
@@ -555,28 +567,65 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
     width: 36px;
     height: 36px;
     border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
   }
   .brand-name {
     font-size: 18px;
+    font-weight: 700;
   }
   .brand-slogan {
     font-size: 12px;
   }
 
-  /* === 轮播区 === */
+  /* -- 轮播容器 — 重置桌面端所有样式 -- */
   .banner-section {
-    all: unset;
-    display: flex;
-    flex-direction: column;
+    position: static;
     width: 100%;
+    max-width: 100%;
+    margin: 0;
+    aspect-ratio: auto;
+    overflow: visible;
+    border-radius: 0;
   }
+
+  /* -- 轮播图 — 独立定义高度 -- */
   .banner-carousel-bg {
     position: relative;
     width: 100%;
+    height: auto;
     aspect-ratio: 16 / 9;
     overflow: hidden;
+    background: #e8ddd0;
   }
-  /* 移动端保留深色遮罩，与桌面端氛围一致 */
+  /* 确保 el-carousel 内部元素铺满 */
+  .banner-carousel-bg :deep(.el-carousel) {
+    height: 100% !important;
+  }
+  .banner-carousel-bg :deep(.el-carousel__container) {
+    height: 100% !important;
+  }
+  .banner-carousel-bg :deep(.el-carousel__item) {
+    height: 100% !important;
+  }
+  .login-carousel {
+    width: 100%;
+    height: 100% !important;
+  }
+  .carousel-item-inner {
+    width: 100%;
+    height: 100%;
+  }
+  .carousel-item-inner :deep(.el-image) {
+    width: 100%;
+    height: 100%;
+  }
+  .carousel-item-inner :deep(.el-image__inner) {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* -- 轮播遮罩 — 与桌面端氛围一致 -- */
   .banner-overlay {
     position: absolute;
     top: 0;
@@ -586,85 +635,99 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
     width: 100%;
     height: 100%;
     max-height: calc(100vw * 9 / 16);
-    background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.05) 100%);
+    background: linear-gradient(180deg,
+      rgba(0,0,0,0.3) 0%,
+      rgba(0,0,0,0.08) 60%,
+      rgba(0,0,0,0.0) 100%);
   }
 
-  /* === 登录卡 === */
+  /* -- 登录卡容器 — 居中对齐，左右等距 -- */
   .login-overlay {
-    position: relative;
-    top: auto;
-    right: auto;
+    position: static;
     transform: none;
-    margin: 0;
-    padding: 0 16px;
-    z-index: 2;
+    width: 100%;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    z-index: auto;
   }
+
+  /* -- 登录卡片 — 暖白色调，延续桌面毛玻璃风格 -- */
   .login-card {
     width: 100%;
     max-width: 100%;
-    margin-top: -20px;
-    padding: 22px 20px 20px;
+    padding: 24px 20px 20px;
     border-radius: 16px;
-    /* 移动端也保持毛玻璃效果 */
-    background: rgba(254, 250, 245, 0.96);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(254, 250, 245, 0.97);
+    border: 1px solid rgba(210, 195, 175, 0.4);
     box-shadow:
-      0 -2px 10px rgba(0, 0, 0, 0.04),
-      0 8px 32px rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+      0 2px 8px rgba(0, 0, 0, 0.04),
+      0 8px 24px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+  }
+  .login-card :deep(.el-form) {
+    flex: 1;
   }
 
-  /* === Tab 按钮 === */
+  /* -- Tab 切换 -- */
   .sub-tabs {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
   .st {
     padding: 12px 0 10px;
     font-size: 15px;
     font-weight: 500;
-    letter-spacing: 0.5px;
   }
 
-  /* === 表单元素 === */
+  /* -- 输入框（移动端尺寸）-- */
   .login-card :deep(.el-input__wrapper) {
     height: 46px;
     border-radius: 10px;
+    border: 1px solid #d1e7dd;
     box-shadow: none !important;
+    background: #fefaf5;
+  }
+  .login-card :deep(.el-input__wrapper:hover) {
+    border-color: #b5d5c5;
+  }
+  .login-card :deep(.el-input__wrapper.is-focus) {
+    border-color: #8ab8a0;
+    box-shadow: 0 0 0 2px rgba(139,184,160,0.15) !important;
   }
   .login-card :deep(.el-input__inner) {
     font-size: 15px;
+    color: #5a4a42;
   }
   .login-card :deep(.el-input__prefix) {
     font-size: 16px;
+    color: #b5a898;
   }
   .login-card :deep(.el-form-item) {
     padding-bottom: 16px;
+    margin-bottom: 0;
   }
   .login-card :deep(.el-form-item__error) {
     font-size: 12px;
     bottom: 0;
   }
 
-  /* 登录按钮 — 暖色系，与桌面端品牌色呼应 */
+  /* -- 登录按钮 — 品牌暖金色，匹配品牌条 -- */
   .login-btn {
+    width: 100%;
     height: 48px;
-    font-size: 16px;
-    font-weight: 600;
+    border: none;
     border-radius: 12px;
-    letter-spacing: 2px;
     background: linear-gradient(135deg, #c19a6b 0%, #b0895a 100%);
     color: #fff;
-    box-shadow: 0 4px 16px rgba(177, 137, 90, 0.3);
-    transition: all 0.25s;
-  }
-  .login-btn:hover {
-    background: linear-gradient(135deg, #b0895a 0%, #a07848 100%);
-    box-shadow: 0 6px 20px rgba(177, 137, 90, 0.4);
-    transform: translateY(-1px);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(177, 137, 90, 0.3);
+    transition: all 0.2s;
   }
   .login-btn:active {
-    transform: translateY(0);
+    transform: scale(0.98);
     box-shadow: 0 2px 8px rgba(177, 137, 90, 0.25);
   }
   .login-btn:disabled {
@@ -674,36 +737,63 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
     box-shadow: none;
   }
 
-  /* 短信行 */
+  /* -- 短信按钮 -- */
   .sms-row {
+    display: flex;
     gap: 10px;
+    width: 100%;
+  }
+  .flex-1 {
+    flex: 1;
   }
   .sms-btn {
-    height: 46px;
+    flex-shrink: 0;
     min-width: 100px;
-    font-size: 13px;
+    height: 46px;
+    border: 1px solid #d1e7dd;
     border-radius: 10px;
+    background: #fefaf5;
+    color: #5a4a42;
+    font-size: 13px;
+    cursor: pointer;
     padding: 0 12px;
+    white-space: nowrap;
+  }
+  .sms-btn:active {
+    background: #f0e8dc;
+  }
+  .sms-btn:disabled {
+    color: #b5a898;
+    cursor: not-allowed;
   }
 
-  /* === 协议行 === */
+  /* -- 协议行 -- */
   .agree-row {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
-    gap: 2px;
+    gap: 4px;
     margin-bottom: 6px;
     font-size: 13px;
     line-height: 1.5;
+  }
+  .agree-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
   }
   .agree-check {
     width: 16px;
     height: 16px;
     margin-top: 2px;
     flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #8ab8a0;
   }
   .agree-text {
     font-size: 13px;
+    color: #5a4a42;
   }
   .agree-sep--lead {
     display: none;
@@ -713,51 +803,77 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    column-gap: 6px;
-    row-gap: 2px;
+    column-gap: 4px;
     font-size: 12.5px;
     line-height: 1.8;
     padding-left: 20px;
   }
   .agree-links a {
+    color: #8ab8a0;
+    text-decoration: none;
     font-size: 12.5px;
     padding: 2px 0;
   }
   .agree-sep {
-    margin: 0 1px;
     color: #c8dcd0;
   }
 
+  /* -- 切换行 + 注册行 -- */
   .switch-row {
+    display: flex;
+    justify-content: space-between;
     font-size: 14px;
     margin-top: 12px;
   }
   .switch-row .link {
+    color: #8ab8a0;
+    cursor: pointer;
+    text-decoration: none;
     font-size: 14px;
+    border: none;
+    background: none;
+    padding: 0;
   }
   .register-row {
+    text-align: center;
     font-size: 14px;
+    color: #a09080;
     margin-top: 14px;
     padding-top: 14px;
+    border-top: 1px solid #ece4d8;
   }
   .register-row .link {
-    font-size: 14px;
+    color: #8ab8a0;
+    text-decoration: none;
+    font-weight: 500;
   }
 
-  /* === 公告区域 === */
+  /* -- 公告区域 — 左右等距 -- */
   .notice-area {
+    width: 100%;
     padding: 20px 16px 100px;
     max-width: 100%;
+    margin: 0;
     box-sizing: border-box;
   }
   .notice-inner {
+    width: 100%;
     padding: 16px;
     max-width: 100%;
     border-radius: 14px;
     margin: 0;
+    background: rgba(254, 250, 245, 0.97);
+    border: 1px solid rgba(210, 195, 175, 0.3);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
   }
   .notice-head {
     margin-bottom: 10px;
+  }
+  .n-label {
+    font-size: 13.5px;
+  }
+  .n-more {
+    font-size: 12.5px;
   }
   .notice-card {
     padding: 10px 0;
@@ -768,14 +884,27 @@ onUnmounted(() => { if (smsTimer) clearInterval(smsTimer) })
   .nc-time {
     font-size: 11px;
   }
-  .n-label {
-    font-size: 13.5px;
-  }
-  .n-more {
-    font-size: 12.5px;
+  .nc-bullet {
+    width: 6px;
+    height: 6px;
   }
 
-  /* === 弹窗 === */
+  /* -- 历史账号下拉 -- */
+  .history-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #d1e7dd;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 6px 0;
+    margin-top: 4px;
+  }
+
+  /* -- 弹窗 -- */
   :deep(.el-dialog) {
     width: 92% !important;
     border-radius: 14px;
