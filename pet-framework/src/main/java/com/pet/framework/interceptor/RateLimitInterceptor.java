@@ -85,12 +85,19 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         if (userId != null) {
             return "user:" + userId;
         }
-        // 从请求属性或 header 取 IP
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        } else {
-            ip = ip.split(",")[0].trim();
+        // 从 header 取真实客户端 IP
+        String ip = request.getHeader("CF-Connecting-IP");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Forwarded-For");
+            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+                int commaIdx = ip.indexOf(',');
+                ip = (commaIdx > 0) ? ip.substring(0, commaIdx).trim() : ip.trim();
+            } else {
+                ip = request.getHeader("X-Real-IP");
+                if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+                    ip = request.getRemoteAddr();
+                }
+            }
         }
         return "ip:" + ip;
     }

@@ -158,20 +158,30 @@ public class LogAspect {
     }
 
     /**
-     * 获取客户端真实 IP（支持 X-Forwarded-For）
+     * 获取客户端真实 IP（按优先级：CF-Connecting-IP → X-Forwarded-For → X-Real-IP → RemoteAddr）
+     * <p>
+     * CF-Connecting-IP 是 Cloudflare 专用的真实客户端 IP 头，不会被中间代理篡改。
+     * X-Forwarded-For 可能包含多个逗号分隔的 IP（代理链），取第一个（最原始客户端）。
      */
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
+        // 1. Cloudflare 专用头（最可靠的真实客户端 IP）
+        String ip = request.getHeader("CF-Connecting-IP");
+        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+            return ip;
         }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
+        // 2. X-Forwarded-For（取代理链中第一个 IP）
+        ip = request.getHeader("X-Forwarded-For");
+        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+            // 多个代理时取第一个（最原始客户端 IP）
+            int commaIdx = ip.indexOf(',');
+            return (commaIdx > 0) ? ip.substring(0, commaIdx).trim() : ip.trim();
         }
-        // 多个代理时取第一个
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
+        // 3. X-Real-IP（nginx 常用单值头）
+        ip = request.getHeader("X-Real-IP");
+        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+            return ip;
         }
-        return ip;
+        // 4. 兜底：直连 IP
+        return request.getRemoteAddr();
     }
 }

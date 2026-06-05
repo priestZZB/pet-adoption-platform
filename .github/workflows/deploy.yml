@@ -28,10 +28,10 @@ jobs:
           APP_SECRET: ${{ secrets.APP_SECRET }}
         run: |
           mkdir -p pet-gateway/src/main/resources
-          
+
           # 创建 application-secret.yml
           printf '%s\n' "$APP_SECRET" > pet-gateway/src/main/resources/application-secret.yml
-          
+
           # 强制覆盖 application.yml，设置为 prod 环境
           echo "spring:" > pet-gateway/src/main/resources/application.yml
           echo "  profiles:" >> pet-gateway/src/main/resources/application.yml
@@ -47,7 +47,7 @@ jobs:
           npm install --legacy-peer-deps --no-audit --no-fund
           npm run build
 
-      - name: Deploy to Server
+      - name: Upload to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -57,31 +57,36 @@ jobs:
           source: pet-gateway/target/pet-gateway-1.0.0.jar,frontend/dist/
           target: /tmp/deploy/
 
-
-
-      - name: Restart Server
+      - name: Deploy and Restart
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
-          timeout: 120s
+          timeout: 180s
           script: |
+            echo "=== 1. 创建目标目录 ==="
             mkdir -p /www/wwwroot/pet-adoption/pet-gateway/target
             mkdir -p /www/wwwroot/pet-adoption/frontend/dist
 
-            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl stop spring_pet-adoption.service
-            sleep 2
-
+            echo "=== 2. 部署 JAR ==="
             cp /tmp/deploy/pet-gateway/target/pet-gateway-1.0.0.jar /www/wwwroot/pet-adoption/pet-gateway/target/pet-gateway-1.0.0.jar
+
+            echo "=== 3. 部署前端 ==="
             cp -r /tmp/deploy/frontend/dist/* /www/wwwroot/pet-adoption/frontend/dist/
 
-            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl start spring_pet-adoption.service
-            sleep 5
-
+            echo "=== 4. 清理临时文件 ==="
             rm -rf /tmp/deploy
 
-            echo '${{ secrets.SERVER_PASSWORD }}' | sudo -S systemctl status spring_pet-adoption.service --no-pager
+            echo "=== 5. 重启应用（宝塔守护进程自动拉起） ==="
+            pkill -f pet-gateway-1.0.0.jar 2>/dev/null || true
+            sleep 8
 
-
+            echo "=== 6. 验证 ==="
+            if pgrep -f pet-gateway-1.0.0.jar > /dev/null; then
+              echo "✅ 部署成功！"
+            else
+              echo "❌ 进程未启动，检查宝塔面板或 /data/pet-adoption/logs/"
+              exit 1
+            fi
