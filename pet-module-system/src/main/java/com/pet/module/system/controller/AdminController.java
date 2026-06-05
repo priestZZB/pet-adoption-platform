@@ -58,11 +58,6 @@ public class AdminController {
     public Result<String> toggleStatus(HttpServletRequest request, @PathVariable Long id) {
         Long operatorId = Long.valueOf(request.getAttribute("userId").toString());
         userService.toggleUserStatus(operatorId, id);
-        operationLogService.addLog(
-                operatorId, null,
-                "用户管理", "切换用户状态: id=" + id,
-                request.getRemoteAddr()
-        );
         return Result.success("操作成功");
     }
 
@@ -79,11 +74,6 @@ public class AdminController {
                                      @RequestParam List<Long> roleIds) {
         Long operatorId = Long.valueOf(request.getAttribute("userId").toString());
         roleService.assignRoles(operatorId, id, roleIds);
-        operationLogService.addLog(
-                Long.valueOf(request.getAttribute("userId").toString()), null,
-                "用户管理", "修改用户角色: userId=" + id + ", roleIds=" + roleIds,
-                request.getRemoteAddr()
-        );
         return Result.success("角色修改成功");
     }
 
@@ -101,11 +91,6 @@ public class AdminController {
             throw new BusinessException(ResultCodeEnum.PARAM_INVALID, "action 必须是 enable 或 disable");
         }
         userService.batchToggleStatus(operatorId, ids, action);
-        operationLogService.addLog(
-                operatorId, null,
-                "用户管理", "批量" + ("enable".equals(action) ? "启用" : "禁用") + "用户: ids=" + ids,
-                request.getRemoteAddr()
-        );
         return Result.success("批量操作成功");
     }
 
@@ -120,11 +105,6 @@ public class AdminController {
         List<Long> userIds = extractLongList(body, "userIds");
         List<Long> roleIds = extractLongList(body, "roleIds");
         roleService.batchAssignRoles(operatorId, userIds, roleIds);
-        operationLogService.addLog(
-                operatorId, null,
-                "用户管理", "批量分配角色: userIds=" + userIds + ", roleIds=" + roleIds,
-                request.getRemoteAddr()
-        );
         return Result.success("批量分配角色成功");
     }
 
@@ -162,14 +142,9 @@ public class AdminController {
 
     @ApiOperation("审核志愿者申请")
     @PutMapping("/volunteer/apply/{id}")
-    public Result<String> reviewVolunteer(HttpServletRequest request,
-                                          @PathVariable Long id,
+    public Result<String> reviewVolunteer(@PathVariable Long id,
                                           @RequestBody VolunteerApplyDto dto) {
-        Long adminId = Long.valueOf(request.getAttribute("userId").toString());
         roleService.reviewVolunteerApply(id, dto.getAction(), dto.getRemark());
-        operationLogService.addLog(adminId, null,
-                "志愿者管理", "审核志愿者申请: userId=" + id + ", action=" + dto.getAction(),
-                request.getRemoteAddr());
         return Result.success("审核完成");
     }
 
@@ -181,14 +156,9 @@ public class AdminController {
 
     @ApiOperation("审核送养人申请")
     @PutMapping("/donor/apply/{id}")
-    public Result<String> reviewDonor(HttpServletRequest request,
-                                      @PathVariable Long id,
+    public Result<String> reviewDonor(@PathVariable Long id,
                                       @RequestBody VolunteerApplyDto dto) {
-        Long adminId = Long.valueOf(request.getAttribute("userId").toString());
         roleService.reviewDonorApply(id, dto.getAction(), dto.getRemark());
-        operationLogService.addLog(adminId, null,
-                "送养人管理", "审核送养人申请: userId=" + id + ", action=" + dto.getAction(),
-                request.getRemoteAddr());
         return Result.success("审核完成");
     }
 }
