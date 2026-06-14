@@ -80,17 +80,17 @@ jobs:
             rm -rf /tmp/deploy
 
             echo "=== 5. 重启应用 ==="
-            OLD_PID=$(pgrep -f pet-gateway-1.0.0.jar)
+            OLD_PID=$(pgrep -f "java.*pet-gateway-1.0.0.jar" | head -1)
             echo "当前 PID=$OLD_PID"
             if [ -n "$OLD_PID" ]; then
-              nohup sudo kill -9 "$OLD_PID" >/dev/null 2>&1 &
-              echo "已发送强杀信号"
+              sudo kill -9 "$OLD_PID" 2>/dev/null || true
+              echo "已强杀旧进程"
             fi
 
             echo "=== 6. 等待新进程启动 ==="
             for i in 1 2 3 4 5 6; do
               sleep 5
-              NEW_PID=$(pgrep -f pet-gateway-1.0.0.jar)
+              NEW_PID=$(pgrep -f "java.*pet-gateway-1.0.0.jar" | head -1)
               if [ -n "$NEW_PID" ] && [ "$NEW_PID" != "$OLD_PID" ]; then
                 echo "✅ 部署成功！新 PID=$NEW_PID"
                 exit 0
