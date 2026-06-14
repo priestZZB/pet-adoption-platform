@@ -79,11 +79,15 @@ jobs:
             echo "=== 4. 清理临时文件 ==="
             rm -rf /tmp/deploy
 
-            echo "=== 5. 重启应用（宝塔守护进程自动拉起） ==="
-            pkill -f pet-gateway-1.0.0.jar 2>/dev/null || true
-            sleep 8
+            echo "=== 5. 重启应用 ==="
+            PID=$(pgrep -f pet-gateway-1.0.0.jar)
+            if [ -n "$PID" ]; then
+              kill "$PID" 2>/dev/null || true
+              sleep 5
+            fi
 
             echo "=== 6. 验证 ==="
+            sleep 5
             if pgrep -f pet-gateway-1.0.0.jar > /dev/null; then
               echo "✅ 部署成功！"
             else
