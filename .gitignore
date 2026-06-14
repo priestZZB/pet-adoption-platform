@@ -14,3 +14,18 @@ application-secret.yml
 # 前端环境变量
 .env
 !.env.example
+
+# ==================== Docker 部署文件（仅本地，不上传 GitHub） ====================
+Dockerfile.backend
+Dockerfile.frontend
+docker-compose.yml
+.dockerignore
+docker/
+docker-images/
+*.tar
+
+# ==================== 部署运维文档（含敏感信息，不上传 GitHub） ====================
+DEPLOY.md
+服务器状态总结.md
+待办事项.md
+deploy/SERVER_SETUP.md

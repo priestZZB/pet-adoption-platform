@@ -1,0 +1,135 @@
+# ===============================================
+# Docker 环境配置
+# 专用于 Docker Compose 部署（生产级配置）
+#
+# 与 application-prod.yml 的区别：
+# - 数据库/Redis 使用容器服务名（mysql/redis）
+# - 端口 8090（Docker 内部端口）
+# - 连接池使用小内存优化值
+# ===============================================
+server:
+  port: 8090
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/pet_adoption?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: priest
+    # password 在 application-secret.yml
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+  redis:
+    host: redis
+    port: 6379
+    password: "Zzb070104"
+    database: 0
+    timeout: 5000ms
+    lettuce:
+      pool:
+        min-idle: 0
+        max-idle: 4
+        max-active: 8
+        max-wait: -1ms
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+mybatis:
+  mapper-locations: classpath*:com/pet/**/mapper/xml/*.xml
+  type-aliases-package: com.pet.**.model.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    lazy-loading-enabled: true
+    aggressive-lazy-loading: false
+
+logging:
+  level:
+    com.pet: info
+    org.springframework: warn
+
+# ============================================================
+# 🎛️ 模拟模式开关（与生产环境一致）
+#   captcha/sms/realname: mock=true（首次部署可跳过三方依赖）
+#   ai/map:               mock=false（走真实 API）
+# ============================================================
+pet:
+  # -------- 登录安全 --------
+  login:
+    max-attempts: 5
+    lock-minutes: 15
+
+  # -------- JWT --------
+  jwt:
+    expiration: 86400000
+
+  # -------- 滑块验证码 --------
+  captcha:
+    mock: false
+
+  # -------- 短信验证码 --------
+  sms:
+    rate-limit-seconds: 60
+    mock: false
+
+  # -------- 实名认证 --------
+  realname:
+    mock: false
+
+  # -------- AI智能咨询（DeepSeek）--------
+  ai:
+    model: "deepseek-chat"
+    api-url: "https://api.deepseek.com/chat/completions"
+    mock: false
+
+  # -------- 地图服务（高德Web服务API）--------
+  map:
+    regeo-url: "https://restapi.amap.com/v3/geocode/regeo"
+    inputtips-url: "https://restapi.amap.com/v3/assistant/inputtips"
+    mock: false
+
+  # -------- 聊天 --------
+  chat:
+    violation-limit: 3
+
+  # -------- 第三方 API 地址 --------
+  third-party:
+    face:
+      url: "https://kzfacev1.market.alicloudapi.com/api-mall/api/face_id_card_yi_suo/check"
+    liveness:
+      token-url: "https://kzlive.market.alicloudapi.com/api/liveness/h5/token"
+      result-url: "https://kzlive.market.alicloudapi.com/api/liveness/h5/result"
+    captcha:
+      verify-url: "https://lhxwyzmjk.market.alicloudapi.com/captcha/verification_code"
+    sms:
+      url: "https://gyytz.market.alicloudapi.com/sms/smsSend"
+
+  # -------- 文件上传路径 --------
+  upload:
+    path: /data/pet-adoption/uploads
+
+  # -------- 全站维护模式 --------
+  #   false = 正常模式（默认）
+  #   true  = 维护模式（所有 /api/** 返回 503，前端自动跳转维护页）
+  maintenance:
+    enabled: false
+
+  # -------- CORS 跨域 --------
+  cors:
+    allowed-origins: "https://pet.priestlab.top,http://8.138.110.116,http://localhost"

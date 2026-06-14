@@ -1,1 +1,0 @@
-import{b as e}from"./index-4STDtPBj.js";function t(t,n){return e.get(`/mall/products/${t}/reviews`,{params:n})}function n(t){return e.get(`/mall/products/${t}/review-stats`)}function r(t){return e.post(`/mall/reviews`,t)}function i(t){return e.get(`/mall/reviews/my`,{params:t})}export{n as i,i as n,t as r,r as t};

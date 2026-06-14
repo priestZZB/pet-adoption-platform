@@ -1,5 +1,0 @@
-com\pet\module\pet\service\impl\FolderServiceImpl.class
-com\pet\module\pet\model\entity\PetFavoriteFolder.class
-com\pet\module\pet\service\FolderService.class
-com\pet\module\pet\mapper\PetFavoriteFolderMapper.class
-com\pet\module\pet\controller\FolderController.class

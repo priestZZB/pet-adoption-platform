@@ -1,1 +1,0 @@
-import{b as e}from"./index-4STDtPBj.js";var t=t=>e.post(`/sms/code`,t);export{t};
