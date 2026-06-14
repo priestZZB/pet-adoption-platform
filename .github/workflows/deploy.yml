@@ -80,17 +80,21 @@ jobs:
             rm -rf /tmp/deploy
 
             echo "=== 5. 重启应用 ==="
-            PID=$(pgrep -f pet-gateway-1.0.0.jar)
-            if [ -n "$PID" ]; then
-              kill "$PID" 2>/dev/null || true
-              sleep 5
+            OLD_PID=$(pgrep -f pet-gateway-1.0.0.jar)
+            if [ -n "$OLD_PID" ]; then
+              sudo kill -9 "$OLD_PID" 2>/dev/null || true
+              echo "已杀掉旧进程 PID=$OLD_PID"
             fi
 
-            echo "=== 6. 验证 ==="
-            sleep 5
-            if pgrep -f pet-gateway-1.0.0.jar > /dev/null; then
-              echo "✅ 部署成功！"
-            else
-              echo "❌ 进程未启动，检查宝塔面板或 /data/pet-adoption/logs/"
-              exit 1
-            fi
+            echo "=== 6. 等待新进程启动 ==="
+            for i in 1 2 3 4 5 6; do
+              sleep 5
+              NEW_PID=$(pgrep -f pet-gateway-1.0.0.jar)
+              if [ -n "$NEW_PID" ] && [ "$NEW_PID" != "$OLD_PID" ]; then
+                echo "✅ 部署成功！新 PID=$NEW_PID"
+                exit 0
+              fi
+              echo "等待中... ($i/6)"
+            done
+            echo "❌ 进程未重启，检查宝塔面板"
+            exit 1
