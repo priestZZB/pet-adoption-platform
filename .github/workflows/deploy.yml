@@ -81,9 +81,10 @@ jobs:
 
             echo "=== 5. 重启应用 ==="
             OLD_PID=$(pgrep -f pet-gateway-1.0.0.jar)
+            echo "当前 PID=$OLD_PID"
             if [ -n "$OLD_PID" ]; then
-              sudo kill -9 "$OLD_PID" 2>/dev/null || true
-              echo "已杀掉旧进程 PID=$OLD_PID"
+              nohup sudo kill -9 "$OLD_PID" >/dev/null 2>&1 &
+              echo "已发送强杀信号"
             fi
 
             echo "=== 6. 等待新进程启动 ==="
